@@ -27,11 +27,13 @@ import org.springframework.core.type.filter.TypeFilter;
  *
  * @author Chris Beams
  * @since 3.1
+ * @see ComponentScanAnnotationIntegrationTests
  */
 public class ComponentScanAnnotationTests {
 	@Test
-	public void test() {
-
+	public void noop() {
+		// no-op; the @ComponentScan-annotated MyConfig class below simply excercises
+		// available attributes of the annotation.
 	}
 }
 

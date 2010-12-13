@@ -125,6 +125,19 @@ final class AnnotationMetadataReadingVisitor extends ClassMetadataReadingVisitor
 					}
 					value = convArray;
 				}
+				else if (classValuesAsString) {
+					if (value instanceof Class) {
+						value = ((Class) value).getName();
+					}
+					else if (value instanceof Class[]) {
+						Class[] clazzArray = (Class[]) value;
+						String[] newValue = new String[clazzArray.length];
+						for (int i = 0; i < clazzArray.length; i++) {
+							newValue[i] = clazzArray[i].getName();
+						}
+						value = newValue;
+					}
+				}
 				result.put(entry.getKey(), value);
 			}
 			catch (Exception ex) {
