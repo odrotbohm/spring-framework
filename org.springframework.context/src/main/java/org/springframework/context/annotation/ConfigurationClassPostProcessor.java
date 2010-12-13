@@ -38,8 +38,11 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.Assert;
@@ -63,7 +66,7 @@ import org.springframework.util.ClassUtils;
  * @since 3.0
  */
 public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor,
-		BeanClassLoaderAware, EnvironmentAware {
+		ResourceLoaderAware, BeanClassLoaderAware, EnvironmentAware {
 
 	/** Whether the CGLIB2 library is present on the classpath */
 	private static final boolean cglibAvailable = ClassUtils.isPresent(
@@ -75,6 +78,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	private SourceExtractor sourceExtractor = new PassThroughSourceExtractor();
 
 	private ProblemReporter problemReporter = new FailFastProblemReporter();
+
+	private ResourceLoader resourceLoader = new DefaultResourceLoader();
 
 	private ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
 
@@ -118,6 +123,11 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		this.setMetadataReaderFactoryCalled = true;
 	}
 
+	public void setResourceLoader(ResourceLoader resourceLoader) {
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
+		this.resourceLoader = resourceLoader;
+	}
+
 	public void setBeanClassLoader(ClassLoader beanClassLoader) {
 		this.beanClassLoader = beanClassLoader;
 		if (!this.setMetadataReaderFactoryCalled) {
@@ -126,6 +136,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 	public void setEnvironment(Environment environment) {
+		Assert.notNull(environment, "Environment must not be null");
 		this.environment = environment;
 	}
 
@@ -203,7 +214,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		// Read the model and create bean definitions based on its content
 		ConfigurationClassBeanDefinitionReader reader = new ConfigurationClassBeanDefinitionReader(
-				registry, this.sourceExtractor, this.problemReporter, this.metadataReaderFactory);
+				registry, this.sourceExtractor, this.problemReporter, this.metadataReaderFactory, this.resourceLoader, this.environment);
 		reader.loadBeanDefinitions(parser.getConfigurationClasses());
 	}
 

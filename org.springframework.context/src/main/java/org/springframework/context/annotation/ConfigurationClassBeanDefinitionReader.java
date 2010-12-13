@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor;
@@ -45,7 +44,9 @@ import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.Conventions;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.MethodMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
@@ -85,6 +86,9 @@ class ConfigurationClassBeanDefinitionReader {
 
 	private final MetadataReaderFactory metadataReaderFactory;
 
+	private final ComponentScanAnnotationMetadataParser componentScanAnnotationParser;
+
+	private final ComponentScanDefinitionReader componentScanDefinitionReader;
 
 	/**
 	 * Create a new {@link ConfigurationClassBeanDefinitionReader} instance that will be used
@@ -93,12 +97,15 @@ class ConfigurationClassBeanDefinitionReader {
 	 * @param metadataReaderFactory 
 	 */
 	public ConfigurationClassBeanDefinitionReader(BeanDefinitionRegistry registry, SourceExtractor sourceExtractor,
-			ProblemReporter problemReporter, MetadataReaderFactory metadataReaderFactory) {
+			ProblemReporter problemReporter, MetadataReaderFactory metadataReaderFactory,
+			ResourceLoader resourceLoader, Environment environment) {
 
 		this.registry = registry;
 		this.sourceExtractor = sourceExtractor;
 		this.problemReporter = problemReporter;
 		this.metadataReaderFactory = metadataReaderFactory;
+		this.componentScanAnnotationParser = new ComponentScanAnnotationMetadataParser(this.problemReporter);
+		this.componentScanDefinitionReader = new ComponentScanDefinitionReader(this.registry, resourceLoader, environment);
 	}
 
 
@@ -117,6 +124,9 @@ class ConfigurationClassBeanDefinitionReader {
 	 * class itself, all its {@link Bean} methods
 	 */
 	private void loadBeanDefinitionsForConfigurationClass(ConfigurationClass configClass) {
+		if (componentScanAnnotationParser.accepts(configClass.getMetadata())) {
+			componentScanDefinitionReader.read(componentScanAnnotationParser.parse(configClass.getMetadata()));
+		}
 		doLoadBeanDefinitionForConfigurationClassIfNecessary(configClass);
 		for (ConfigurationClassMethod method : configClass.getMethods()) {
 			loadBeanDefinitionsForModelMethod(method);
@@ -125,7 +135,7 @@ class ConfigurationClassBeanDefinitionReader {
 	}
 
 	/**
-	 * Registers the {@link Configuration} class itself as a bean definition.
+	 * Register the {@link Configuration} class itself as a bean definition.
 	 */
 	private void doLoadBeanDefinitionForConfigurationClassIfNecessary(ConfigurationClass configClass) {
 		if (configClass.getBeanName() != null) {
@@ -372,14 +382,12 @@ class ConfigurationClassBeanDefinitionReader {
 	 * declare at least one {@link Bean @Bean} method.
 	 */
 	private static class InvalidConfigurationImportProblem extends Problem {
-	
 		public InvalidConfigurationImportProblem(String className, Resource resource, AnnotationMetadata metadata) {
 			super(String.format("%s was imported as a Configuration class but is not annotated " +
 					"with @Configuration nor does it declare any @Bean methods. Update the class to " +
 					"meet either of these requirements or do not attempt to import it.", className),
 					new Location(resource, metadata));
 		}
-	
 	}
 
 }

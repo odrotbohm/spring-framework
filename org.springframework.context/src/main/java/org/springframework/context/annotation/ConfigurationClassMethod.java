@@ -67,7 +67,7 @@ final class ConfigurationClassMethod {
 			}
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("[%s:name=%s,declaringClass=%s]",

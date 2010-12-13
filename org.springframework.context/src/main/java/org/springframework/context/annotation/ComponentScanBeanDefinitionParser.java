@@ -32,6 +32,7 @@ import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.parsing.CompositeComponentDefinition;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
+import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -48,6 +49,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Fisher
  * @author Ramnivas Laddad
  * @author Juergen Hoeller
+ * @author Chris Beams
  * @since 2.5
  */
 public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
@@ -59,11 +61,11 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 	private static final String USE_DEFAULT_FILTERS_ATTRIBUTE = "use-default-filters";
 
 	private static final String ANNOTATION_CONFIG_ATTRIBUTE = "annotation-config";
-	
+
 	private static final String NAME_GENERATOR_ATTRIBUTE = "name-generator";
-	
+
 	private static final String SCOPE_RESOLVER_ATTRIBUTE = "scope-resolver";
-	
+
 	private static final String SCOPED_PROXY_ATTRIBUTE = "scoped-proxy";
 
 	private static final String EXCLUDE_FILTER_ELEMENT = "exclude-filter";
@@ -76,17 +78,104 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 
 
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
-		String[] basePackages = StringUtils.tokenizeToStringArray(element.getAttribute(BASE_PACKAGE_ATTRIBUTE),
-				ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
+		BeanDefinitionParserDelegate delegate = parserContext.getDelegate();
+		ComponentScanDefinition metadata = populateComponentScanDefinition(parserContext, element);
+		ComponentScanDefinitionReader reader =
+			new ComponentScanDefinitionReader(
+					parserContext.getRegistry(),
+					parserContext.getReaderContext().getResourceLoader(),
+					parserContext.getDelegate().getEnvironment());
+		reader.setBeanDefinitionDefaults(delegate.getBeanDefinitionDefaults());
+		reader.setAutowireCandidatePatterns(delegate.getAutowireCandidatePatterns());
 
-		// Actually scan for bean definitions and register them.
-		ClassPathBeanDefinitionScanner scanner = configureScanner(parserContext, element);
-		Set<BeanDefinitionHolder> beanDefinitions = scanner.doScan(basePackages);
-		registerComponents(parserContext.getReaderContext(), beanDefinitions, element);
+		Set<BeanDefinitionHolder> scannedBeans = reader.read(metadata);
+		registerComponents(parserContext.getReaderContext(), scannedBeans, element);
 
 		return null;
 	}
 
+	protected ComponentScanDefinition populateComponentScanDefinition(ParserContext parserContext, Element element) {
+		XmlReaderContext readerContext = parserContext.getReaderContext();
+
+		ComponentScanDefinition metadata = new ComponentScanDefinition();
+
+		metadata.setBasePackages(StringUtils.tokenizeToStringArray(element.getAttribute(BASE_PACKAGE_ATTRIBUTE),
+				ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS));
+
+		if (element.hasAttribute(ANNOTATION_CONFIG_ATTRIBUTE)) {
+			metadata.setIncludeAnnotationConfig(Boolean.valueOf(element.getAttribute(ANNOTATION_CONFIG_ATTRIBUTE)));
+		}
+
+		if (element.hasAttribute(USE_DEFAULT_FILTERS_ATTRIBUTE)) {
+			metadata.setUseDefaultFilters(Boolean.valueOf(element.getAttribute(USE_DEFAULT_FILTERS_ATTRIBUTE)));
+		}
+
+		if (element.hasAttribute(RESOURCE_PATTERN_ATTRIBUTE)) {
+			metadata.setResourcePattern(element.getAttribute(RESOURCE_PATTERN_ATTRIBUTE));
+		}
+
+		if (element.hasAttribute(NAME_GENERATOR_ATTRIBUTE)) {
+			metadata.setBeanNameGenerator(instantiateUserDefinedStrategy(
+					element.getAttribute(NAME_GENERATOR_ATTRIBUTE), BeanNameGenerator.class,
+					readerContext.getResourceLoader().getClassLoader()));
+		}
+
+
+		// Register ScopeMetadataResolver if class name provided.
+		if (element.hasAttribute(SCOPE_RESOLVER_ATTRIBUTE)) {
+			if (element.hasAttribute(SCOPED_PROXY_ATTRIBUTE)) {
+				throw new IllegalArgumentException(
+						"Cannot define both 'scope-resolver' and 'scoped-proxy' on <component-scan> tag");
+			}
+			ScopeMetadataResolver scopeMetadataResolver = instantiateUserDefinedStrategy(
+					element.getAttribute(SCOPE_RESOLVER_ATTRIBUTE), ScopeMetadataResolver.class,
+					readerContext.getResourceLoader().getClassLoader());
+			metadata.setScopeMetadataResolver(scopeMetadataResolver);
+		}
+
+		if (element.hasAttribute(SCOPED_PROXY_ATTRIBUTE)) {
+			String mode = element.getAttribute(SCOPED_PROXY_ATTRIBUTE);
+			if ("targetClass".equals(mode)) {
+				metadata.setScopedProxyMode(ScopedProxyMode.TARGET_CLASS);
+			}
+			else if ("interfaces".equals(mode)) {
+				metadata.setScopedProxyMode(ScopedProxyMode.INTERFACES);
+			}
+			else if ("no".equals(mode)) {
+				metadata.setScopedProxyMode(ScopedProxyMode.NO);
+			}
+			else {
+				throw new IllegalArgumentException("scoped-proxy only supports 'no', 'interfaces' and 'targetClass'");
+			}
+		}
+
+		// Parse exclude and include filter elements.
+		ClassLoader classLoader = readerContext.getResourceLoader().getClassLoader();
+		NodeList nodeList = element.getChildNodes();
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node node = nodeList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				String localName = parserContext.getDelegate().getLocalName(node);
+				try {
+					if (INCLUDE_FILTER_ELEMENT.equals(localName)) {
+						TypeFilter typeFilter = createTypeFilter((Element) node, classLoader);
+						metadata.addIncludeFilter(typeFilter);
+					}
+					else if (EXCLUDE_FILTER_ELEMENT.equals(localName)) {
+						TypeFilter typeFilter = createTypeFilter((Element) node, classLoader);
+						metadata.addExcludeFilter(typeFilter);
+					}
+				}
+				catch (Exception ex) {
+					readerContext.error(ex.getMessage(), readerContext.extractSource(element), ex.getCause());
+				}
+			}
+		}
+
+		return metadata;
+	}
+
+	/*
 	protected ClassPathBeanDefinitionScanner configureScanner(ParserContext parserContext, Element element) {
 		XmlReaderContext readerContext = parserContext.getReaderContext();
 
@@ -128,6 +217,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 	protected ClassPathBeanDefinitionScanner createScanner(XmlReaderContext readerContext, boolean useDefaultFilters) {
 		return new ClassPathBeanDefinitionScanner(readerContext.getRegistry(), useDefaultFilters);
 	}
+	*/
 
 	protected void registerComponents(
 			XmlReaderContext readerContext, Set<BeanDefinitionHolder> beanDefinitions, Element element) {
@@ -155,9 +245,10 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		readerContext.fireComponentRegistered(compositeDef);
 	}
 
+	/*
 	protected void parseBeanNameGenerator(Element element, ClassPathBeanDefinitionScanner scanner) {
 		if (element.hasAttribute(NAME_GENERATOR_ATTRIBUTE)) {
-			BeanNameGenerator beanNameGenerator = (BeanNameGenerator) instantiateUserDefinedStrategy(
+			BeanNameGenerator beanNameGenerator = instantiateUserDefinedStrategy(
 					element.getAttribute(NAME_GENERATOR_ATTRIBUTE), BeanNameGenerator.class,
 					scanner.getResourceLoader().getClassLoader());
 			scanner.setBeanNameGenerator(beanNameGenerator);
@@ -171,7 +262,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 				throw new IllegalArgumentException(
 						"Cannot define both 'scope-resolver' and 'scoped-proxy' on <component-scan> tag");
 			}
-			ScopeMetadataResolver scopeMetadataResolver = (ScopeMetadataResolver) instantiateUserDefinedStrategy(
+			ScopeMetadataResolver scopeMetadataResolver = instantiateUserDefinedStrategy(
 					element.getAttribute(SCOPE_RESOLVER_ATTRIBUTE), ScopeMetadataResolver.class,
 					scanner.getResourceLoader().getClassLoader());
 			scanner.setScopeMetadataResolver(scopeMetadataResolver);
@@ -220,6 +311,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 			}
 		}
 	}
+	*/
 
 	@SuppressWarnings("unchecked")
 	protected TypeFilter createTypeFilter(Element element, ClassLoader classLoader) {
@@ -239,7 +331,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 				return new RegexPatternTypeFilter(Pattern.compile(expression));
 			}
 			else if ("custom".equals(filterType)) {
-				Class filterClass = classLoader.loadClass(expression);
+				Class<?> filterClass = classLoader.loadClass(expression);
 				if (!TypeFilter.class.isAssignableFrom(filterClass)) {
 					throw new IllegalArgumentException(
 							"Class is not assignable to [" + TypeFilter.class.getName() + "]: " + expression);
@@ -256,7 +348,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Object instantiateUserDefinedStrategy(String className, Class strategyType, ClassLoader classLoader) {
+	private <T> T instantiateUserDefinedStrategy(String className, Class<T> strategyType, ClassLoader classLoader) {
 		Object result = null;
 		try {
 			result = classLoader.loadClass(className).newInstance();
@@ -273,7 +365,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		if (!strategyType.isAssignableFrom(result.getClass())) {
 			throw new IllegalArgumentException("Provided class name must be an implementation of " + strategyType);
 		}
-		return result;
+		return (T)result;
 	}
 
 }

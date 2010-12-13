@@ -43,7 +43,7 @@ public @interface ComponentScan {
 	/** base packages to scan */
 	String[] value() default {};
 
-	Class<?>[] packageOf() default Void.class;
+	Class<?>[] packageOf() default {};
 
 	Class<? extends BeanNameGenerator> nameGenerator() default AnnotationBeanNameGenerator.class;
 
