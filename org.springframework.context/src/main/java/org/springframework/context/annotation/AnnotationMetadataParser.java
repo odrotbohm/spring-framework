@@ -17,12 +17,49 @@
 package org.springframework.context.annotation;
 
 import org.springframework.context.metadata.MetadataDefinition;
+import org.springframework.context.metadata.MetadataDefinitionReader;
 import org.springframework.core.type.AnnotationMetadata;
 
+
+/**
+ * Interface for parsing {@link AnnotationMetadata} into a more generic
+ * {@link MetadataDefinition} object. Used in conjunction with a
+ * {@link MetadataDefinitionReader} to provide a source-agnostic approach to
+ * handling configuration metadata.
+ *
+ * <p>For example, Spring's component-scanning can be configured via XML using
+ * the context:component-scan element or via the {@link ComponentScan}
+ * annotation. In either case, the metadata is the same -- only the source
+ * format differs.  {@link ComponentScanBeanDefinitionParser} is used to parse
+ * the XML element, while {@link ComponentScanAnnotationMetadataParser} parses
+ * the annotation style.  They both produce a {@link ComponentScanMetadata}
+ * object that is ultimately delegated to a {@link ComponentScanMetadataReader}
+ * which understands how to configure a {@link ClassPathBeanDefinitionScanner},
+ * perform actual scanning, and register actual bean definitions against the
+ * container.
+ *
+ * @author Chris Beams
+ * @since 3.1
+ * @see MetadataDefinition
+ * @see MetadataDefinitionReader
+ */
 public interface AnnotationMetadataParser {
 
+	/**
+	 * Parse the given annotation metadata into a more general
+	 * {@link MetadataDefinition} object.
+	 * @param metadata the annotation metadata to parse
+	 * @return the metadata definition, suitable for reading by
+	 * a {@link MetadataDefinitionReader}.
+	 * @see AnnotationMetadataParser
+	 */
 	MetadataDefinition parse(AnnotationMetadata metadata);
 
+	/**
+	 * Whether this parser is capable of handling the metadata in question
+	 * i.e., whether the metadata contains the annotation(s) this parser knows
+	 * about.
+	 */
 	boolean accepts(AnnotationMetadata metadata);
 
 }

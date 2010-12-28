@@ -23,7 +23,21 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 
-public class ComponentScanDefinition implements MetadataDefinition {
+/**
+ * {@link MetadataDefinition} implementation that holds component-scanning
+ * configuration metadata.  This decouples the metadata from its XML or
+ * annotation source. Once this structure has been populated by an XML
+ * or annotation parser, it may be read by {@link ComponentScanMetadataReader}
+ * which is responsible for actual scanning and bean definition registration.
+ *
+ * @author Chris Beams
+ * @since 3.1
+ * @see ComponentScan
+ * @see ComponentScanAnnotationMetadataParser
+ * @see ComponentScanBeanDefinitionParser
+ * @see ComponentScanMetadataReader
+ */
+public class ComponentScanMetadata implements MetadataDefinition {
 
 	private Boolean includeAnnotationConfig = null;
 	private String resourcePattern = null;

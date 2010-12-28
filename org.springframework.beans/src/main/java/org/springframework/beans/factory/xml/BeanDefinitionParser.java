@@ -31,6 +31,11 @@ import org.springframework.beans.factory.config.BeanDefinition;
  * <p>The parser locates a {@link BeanDefinitionParser} from the associated
  * {@link NamespaceHandler} for the namespace in which the custom tag resides.
  *
+ * <p>{@link BeanDefinitionParser} implementations are encouraged to decouple XML parsing
+ * from bean registration by parsing into a {@link MetadataDefinition} object
+ * and delegating it to a {@link MetadataDefinitionReader} implementation.  This allows for
+ * maximum reuse between XML-based and annotation-based configuration options.
+ *
  * @author Rob Harrop
  * @since 2.0
  * @see NamespaceHandler

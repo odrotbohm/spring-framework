@@ -27,7 +27,13 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
 
 
-public class ComponentScanDefinitionReader implements MetadataDefinitionReader<ComponentScanDefinition> {
+/**
+ * 
+ * 
+ * @author Chris Beams
+ * @since 3.1
+ */
+public class ComponentScanMetadataReader implements MetadataDefinitionReader<ComponentScanMetadata> {
 
 	private final BeanDefinitionRegistry registry;
 	private final ResourceLoader resourceLoader;
@@ -35,7 +41,7 @@ public class ComponentScanDefinitionReader implements MetadataDefinitionReader<C
 	private BeanDefinitionDefaults beanDefinitionDefaults;
 	private String[] autowireCandidatePatterns;
 
-	public ComponentScanDefinitionReader(BeanDefinitionRegistry registry, ResourceLoader resourceLoader, Environment environment) {
+	public ComponentScanMetadataReader(BeanDefinitionRegistry registry, ResourceLoader resourceLoader, Environment environment) {
 		this.registry = registry;
 		this.resourceLoader = resourceLoader;
 		this.environment = environment;
@@ -57,7 +63,12 @@ public class ComponentScanDefinitionReader implements MetadataDefinitionReader<C
 		return autowireCandidatePatterns;
 	}
 
-	public Set<BeanDefinitionHolder> read(ComponentScanDefinition metadata) {
+	/**
+	 * Configure a {@link ClassPathBeanDefinitionScanner} based on the content of
+	 * the given metadata and perform actual scanning and bean definition registration.
+	 * @return the set of bean definitions scanned and registered (never {@code null})
+	 */
+	public Set<BeanDefinitionHolder> read(ComponentScanMetadata metadata) {
 		ClassPathBeanDefinitionScanner scanner = metadata.getUseDefaultFilters() == null ?
 			new ClassPathBeanDefinitionScanner(this.registry) :
 			new ClassPathBeanDefinitionScanner(this.registry, metadata.getUseDefaultFilters());
