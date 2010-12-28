@@ -88,7 +88,7 @@ class ConfigurationClassBeanDefinitionReader {
 
 	private final ComponentScanAnnotationMetadataParser componentScanAnnotationParser;
 
-	private final ComponentScanDefinitionReader componentScanDefinitionReader;
+	private final ComponentScanMetadataReader componentScanMetadataReader;
 
 	/**
 	 * Create a new {@link ConfigurationClassBeanDefinitionReader} instance that will be used
@@ -105,7 +105,7 @@ class ConfigurationClassBeanDefinitionReader {
 		this.problemReporter = problemReporter;
 		this.metadataReaderFactory = metadataReaderFactory;
 		this.componentScanAnnotationParser = new ComponentScanAnnotationMetadataParser(this.problemReporter);
-		this.componentScanDefinitionReader = new ComponentScanDefinitionReader(this.registry, resourceLoader, environment);
+		this.componentScanMetadataReader = new ComponentScanMetadataReader(this.registry, resourceLoader, environment);
 	}
 
 
@@ -125,7 +125,7 @@ class ConfigurationClassBeanDefinitionReader {
 	 */
 	private void loadBeanDefinitionsForConfigurationClass(ConfigurationClass configClass) {
 		if (componentScanAnnotationParser.accepts(configClass.getMetadata())) {
-			componentScanDefinitionReader.read(componentScanAnnotationParser.parse(configClass.getMetadata()));
+			componentScanMetadataReader.read(componentScanAnnotationParser.parse(configClass.getMetadata()));
 		}
 		doLoadBeanDefinitionForConfigurationClassIfNecessary(configClass);
 		for (ConfigurationClassMethod method : configClass.getMethods()) {

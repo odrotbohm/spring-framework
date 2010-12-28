@@ -21,6 +21,32 @@ import java.util.Set;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 
 
-public interface MetadataDefinitionReader<D extends MetadataDefinition> {
-	Set<BeanDefinitionHolder> read(D metadataDefinition);
+/**
+ * Interface for reading a populated {@link MetadataDefinition} object. Provides
+ * a generic mechanism for handling container configuration metadata regardless of
+ * origin in XML, annotations, or otherwise.
+ *
+ * <p>Population of a {@link MetadataDefinition} from XML or annotations will be
+ * performed by a {@link org.springframework.beans.factory.config.BeanDefinitionParser}
+ * or {@link org.springframework.context.annotation.AnnotationMetadataParser},
+ * respectively.
+ *
+ * <p><em>Reading</em> usually implies acting against the metadata in such a way that
+ * beans are registered against the Spring container.
+ *
+ * @author Chris Beams
+ * @since 3.1
+ * @see org.springframework.beans.factory.xml.BeanDefinitionParser
+ * @see org.springframework.context.annotation.AnnotationMetadataParser
+ * @see org.springframework.context.annotation.ComponentScanMetadataReader
+ */
+public interface MetadataDefinitionReader<M extends MetadataDefinition> {
+
+	/**
+	 * Read and act upon the given metadata.
+	 * @return set of bean definitions registered while reading (if any) for
+	 * tooling purposes. May return empty, never returns null.
+	 */
+	Set<BeanDefinitionHolder> read(M metadataDefinition);
+
 }

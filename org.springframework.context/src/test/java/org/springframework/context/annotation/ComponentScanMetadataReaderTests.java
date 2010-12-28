@@ -18,10 +18,8 @@ package org.springframework.context.annotation;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 
 import org.easymock.EasyMock;
 import org.junit.Test;
@@ -36,32 +34,22 @@ import org.springframework.mock.env.MockEnvironment;
 
 
 /**
- * Unit tests for {@link ComponentScanDefinitionReader}
+ * Unit tests for {@link ComponentScanMetadataReader}
  * 
  * @author Chris Beams
  */
-public class ComponentScanDefinitionReaderTests {
-	@Test
-	public void name() {
-		//new ComponentScanDefinitionReader();
-	}
-
-	@Test
-	public void assignable() {
-		assertTrue(Type[].class.isAssignableFrom(Class[].class));
-		Object foo = new Class[] { };
-		assertTrue(foo instanceof Type[]);
-	}
+public class ComponentScanMetadataReaderTests {
 
 	@Test
 	public void test() throws IOException {
 		MetadataReader reader = new SimpleMetadataReaderFactory().getMetadataReader(Example.class.getName());
-		ComponentScanDefinition componentScanDefinition =
-			new ComponentScanAnnotationMetadataParser(EasyMock.createNiceMock(ProblemReporter.class)).parse(reader.getAnnotationMetadata());
+		ComponentScanMetadata componentScanMetadata =
+			new ComponentScanAnnotationMetadataParser(
+					EasyMock.createNiceMock(ProblemReporter.class)).parse(reader.getAnnotationMetadata());
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		ResourceLoader resourceLoader = new DefaultResourceLoader();
 		Environment env = new MockEnvironment();
-		new ComponentScanDefinitionReader(bf, resourceLoader, env).read(componentScanDefinition);
+		new ComponentScanMetadataReader(bf, resourceLoader, env).read(componentScanMetadata);
 		assertThat(bf.containsBean("fooServiceImpl"), is(true));
 	}
 }

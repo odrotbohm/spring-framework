@@ -26,6 +26,20 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
 
 
+/**
+ * {@link AnnotationMetadataParser} implementation responsible for parsing metadata
+ * from {@link ComponentScan} annotations into the more general form of
+ * {@link ComponentScanMetadata} which can in turn be consumed by a
+ * {@link ComponentScanMetadataReader} for actual parsing and bean registration.
+ * {@link ComponentScanBeanDefinitionParser} provides serves as the XML counterpart
+ * to this component.
+ *
+ * @author Chris Beams
+ * @since 3.1
+ * @see ComponentScan
+ * @see ComponentScanMetadataReader
+ * @see ComponentScanBeanDefinitionParser
+ */
 public class ComponentScanAnnotationMetadataParser implements AnnotationMetadataParser {
 
 	private static final String BASE_PACKAGE_ATTRIBUTE = "value";
@@ -50,15 +64,25 @@ public class ComponentScanAnnotationMetadataParser implements AnnotationMetadata
 
 	private final ProblemReporter problemReporter;
 
+
 	public ComponentScanAnnotationMetadataParser(ProblemReporter problemReporter) {
 		this.problemReporter = problemReporter;
 	}
 
+	/**
+	 * @return whether the given metadata includes {@link ComponentScan} information
+	 */
 	public boolean accepts(AnnotationMetadata metadata) {
 		return metadata.hasAnnotation(ComponentScan.class.getName());
 	}
 
-	public ComponentScanDefinition parse(AnnotationMetadata metadata) {
+	/**
+	 * Parse {@link ComponentScan} information from the the given metadata
+	 * and return a populated {@link ComponentScanMetadata}.
+	 * @throws IllegalArgumentException if ComponentScan attributes are not present in metadata
+	 * @see #accepts
+	 */
+	public ComponentScanMetadata parse(AnnotationMetadata metadata) {
 		Map<String, Object> componentScanAttributes =
 			metadata.getAnnotationAttributes(ComponentScan.class.getName(), true);
 
@@ -67,7 +91,7 @@ public class ComponentScanAnnotationMetadataParser implements AnnotationMetadata
 						"metadata for class [%s]. Use accepts(metadata) before " +
 						"calling parse(metadata)", metadata.getClassName()));
 
-		ComponentScanDefinition definition = new ComponentScanDefinition();
+		ComponentScanMetadata componentScanMetadata = new ComponentScanMetadata();
 
 		String[] packageOfClasses = (String[])componentScanAttributes.get(PACKAGE_OF_ATTRIBUTE);
 		String[] basePackages = (String[])componentScanAttributes.get(BASE_PACKAGE_ATTRIBUTE);
@@ -75,16 +99,16 @@ public class ComponentScanAnnotationMetadataParser implements AnnotationMetadata
 			this.problemReporter.fatal(new InvalidComponentScanProblem(metadata.getClassName()));
 		}
 		for (String className : packageOfClasses) {
-			definition.addBasePackage(className.substring(0, className.lastIndexOf('.')));
+			componentScanMetadata.addBasePackage(className.substring(0, className.lastIndexOf('.')));
 		}
 		for (String pkg : basePackages) {
-			definition.addBasePackage(pkg);
+			componentScanMetadata.addBasePackage(pkg);
 		}
 
-		definition.setResourcePattern((String)componentScanAttributes.get(RESOURCE_PATTERN_ATTRIBUTE));
-		definition.setUseDefaultFilters((Boolean)componentScanAttributes.get(USE_DEFAULT_FILTERS_ATTRIBUTE));
+		componentScanMetadata.setResourcePattern((String)componentScanAttributes.get(RESOURCE_PATTERN_ATTRIBUTE));
+		componentScanMetadata.setUseDefaultFilters((Boolean)componentScanAttributes.get(USE_DEFAULT_FILTERS_ATTRIBUTE));
 
-		return definition;
+		return componentScanMetadata;
 	}
 
 

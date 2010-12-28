@@ -44,13 +44,19 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.StringUtils;
 
 /**
- * Parser for the &lt;context:component-scan/&gt; element.
+ * Parser for the &lt;context:component-scan/&gt; element. Parsed metadata is
+ * used to populate a {@link ComponentScanMetadata} object which is in turn
+ * delegated to a {@link ComponentScanMetadataReader} for actual scanning and
+ * bean definition registration.
  * 
  * @author Mark Fisher
  * @author Ramnivas Laddad
  * @author Juergen Hoeller
  * @author Chris Beams
  * @since 2.5
+ * @see ComponentScanMetadataReader
+ * @see ComponentScan
+ * @see ComponentScanAnnotationMetadataParser
  */
 public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 
@@ -79,9 +85,9 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
 		BeanDefinitionParserDelegate delegate = parserContext.getDelegate();
-		ComponentScanDefinition metadata = populateComponentScanDefinition(parserContext, element);
-		ComponentScanDefinitionReader reader =
-			new ComponentScanDefinitionReader(
+		ComponentScanMetadata metadata = parseComponentScanMetadata(parserContext, element);
+		ComponentScanMetadataReader reader =
+			new ComponentScanMetadataReader(
 					parserContext.getRegistry(),
 					parserContext.getReaderContext().getResourceLoader(),
 					parserContext.getDelegate().getEnvironment());
@@ -94,10 +100,10 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		return null;
 	}
 
-	protected ComponentScanDefinition populateComponentScanDefinition(ParserContext parserContext, Element element) {
+	protected ComponentScanMetadata parseComponentScanMetadata(ParserContext parserContext, Element element) {
 		XmlReaderContext readerContext = parserContext.getReaderContext();
 
-		ComponentScanDefinition metadata = new ComponentScanDefinition();
+		ComponentScanMetadata metadata = new ComponentScanMetadata();
 
 		metadata.setBasePackages(StringUtils.tokenizeToStringArray(element.getAttribute(BASE_PACKAGE_ATTRIBUTE),
 				ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS));
@@ -175,50 +181,6 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		return metadata;
 	}
 
-	/*
-	protected ClassPathBeanDefinitionScanner configureScanner(ParserContext parserContext, Element element) {
-		XmlReaderContext readerContext = parserContext.getReaderContext();
-
-		boolean useDefaultFilters = true;
-		if (element.hasAttribute(USE_DEFAULT_FILTERS_ATTRIBUTE)) {
-			useDefaultFilters = Boolean.valueOf(element.getAttribute(USE_DEFAULT_FILTERS_ATTRIBUTE));
-		}
-
-		// Delegate bean definition registration to scanner class.
-		ClassPathBeanDefinitionScanner scanner = createScanner(readerContext, useDefaultFilters);
-		scanner.setResourceLoader(readerContext.getResourceLoader());
-		scanner.setEnvironment(parserContext.getDelegate().getEnvironment());
-		scanner.setBeanDefinitionDefaults(parserContext.getDelegate().getBeanDefinitionDefaults());
-		scanner.setAutowireCandidatePatterns(parserContext.getDelegate().getAutowireCandidatePatterns());
-
-		if (element.hasAttribute(RESOURCE_PATTERN_ATTRIBUTE)) {
-			scanner.setResourcePattern(element.getAttribute(RESOURCE_PATTERN_ATTRIBUTE));
-		}
-
-		try {
-			parseBeanNameGenerator(element, scanner);
-		}
-		catch (Exception ex) {
-			readerContext.error(ex.getMessage(), readerContext.extractSource(element), ex.getCause());
-		}
-
-		try {
-			parseScope(element, scanner);
-		}
-		catch (Exception ex) {
-			readerContext.error(ex.getMessage(), readerContext.extractSource(element), ex.getCause());
-		}
-
-		parseTypeFilters(element, scanner, readerContext, parserContext);
-
-		return scanner;
-	}
-
-	protected ClassPathBeanDefinitionScanner createScanner(XmlReaderContext readerContext, boolean useDefaultFilters) {
-		return new ClassPathBeanDefinitionScanner(readerContext.getRegistry(), useDefaultFilters);
-	}
-	*/
-
 	protected void registerComponents(
 			XmlReaderContext readerContext, Set<BeanDefinitionHolder> beanDefinitions, Element element) {
 
@@ -245,73 +207,6 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		readerContext.fireComponentRegistered(compositeDef);
 	}
 
-	/*
-	protected void parseBeanNameGenerator(Element element, ClassPathBeanDefinitionScanner scanner) {
-		if (element.hasAttribute(NAME_GENERATOR_ATTRIBUTE)) {
-			BeanNameGenerator beanNameGenerator = instantiateUserDefinedStrategy(
-					element.getAttribute(NAME_GENERATOR_ATTRIBUTE), BeanNameGenerator.class,
-					scanner.getResourceLoader().getClassLoader());
-			scanner.setBeanNameGenerator(beanNameGenerator);
-		}
-	}
-
-	protected void parseScope(Element element, ClassPathBeanDefinitionScanner scanner) {
-		// Register ScopeMetadataResolver if class name provided.
-		if (element.hasAttribute(SCOPE_RESOLVER_ATTRIBUTE)) {
-			if (element.hasAttribute(SCOPED_PROXY_ATTRIBUTE)) {
-				throw new IllegalArgumentException(
-						"Cannot define both 'scope-resolver' and 'scoped-proxy' on <component-scan> tag");
-			}
-			ScopeMetadataResolver scopeMetadataResolver = instantiateUserDefinedStrategy(
-					element.getAttribute(SCOPE_RESOLVER_ATTRIBUTE), ScopeMetadataResolver.class,
-					scanner.getResourceLoader().getClassLoader());
-			scanner.setScopeMetadataResolver(scopeMetadataResolver);
-		}
-
-		if (element.hasAttribute(SCOPED_PROXY_ATTRIBUTE)) {
-			String mode = element.getAttribute(SCOPED_PROXY_ATTRIBUTE);
-			if ("targetClass".equals(mode)) {
-				scanner.setScopedProxyMode(ScopedProxyMode.TARGET_CLASS);
-			}
-			else if ("interfaces".equals(mode)) {
-				scanner.setScopedProxyMode(ScopedProxyMode.INTERFACES);
-			}
-			else if ("no".equals(mode)) {
-				scanner.setScopedProxyMode(ScopedProxyMode.NO);
-			}
-			else {
-				throw new IllegalArgumentException("scoped-proxy only supports 'no', 'interfaces' and 'targetClass'");
-			}
-		}
-	}
-
-	protected void parseTypeFilters(
-			Element element, ClassPathBeanDefinitionScanner scanner, XmlReaderContext readerContext, ParserContext parserContext) {
-
-		// Parse exclude and include filter elements.
-		ClassLoader classLoader = scanner.getResourceLoader().getClassLoader();
-		NodeList nodeList = element.getChildNodes();
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node node = nodeList.item(i);
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				String localName = parserContext.getDelegate().getLocalName(node);
-				try {
-					if (INCLUDE_FILTER_ELEMENT.equals(localName)) {
-						TypeFilter typeFilter = createTypeFilter((Element) node, classLoader);
-						scanner.addIncludeFilter(typeFilter);
-					}
-					else if (EXCLUDE_FILTER_ELEMENT.equals(localName)) {
-						TypeFilter typeFilter = createTypeFilter((Element) node, classLoader);
-						scanner.addExcludeFilter(typeFilter);
-					}
-				}
-				catch (Exception ex) {
-					readerContext.error(ex.getMessage(), readerContext.extractSource(element), ex.getCause());
-				}
-			}
-		}
-	}
-	*/
 
 	@SuppressWarnings("unchecked")
 	protected TypeFilter createTypeFilter(Element element, ClassLoader classLoader) {
