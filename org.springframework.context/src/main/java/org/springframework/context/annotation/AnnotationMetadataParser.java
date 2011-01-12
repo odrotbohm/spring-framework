@@ -28,7 +28,7 @@ import org.springframework.core.type.AnnotationMetadata;
  * handling configuration metadata.
  *
  * <p>For example, Spring's component-scanning can be configured via XML using
- * the context:component-scan element or via the {@link ComponentScan}
+ * the {@code context:component-scan} element or via the {@link ComponentScan}
  * annotation. In either case, the metadata is the same -- only the source
  * format differs.  {@link ComponentScanBeanDefinitionParser} is used to parse
  * the XML element, while {@link ComponentScanAnnotationMetadataParser} parses
