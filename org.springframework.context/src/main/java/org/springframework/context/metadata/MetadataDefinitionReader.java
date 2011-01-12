@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2010 the original author or authors.
+ * Copyright 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ import org.springframework.beans.factory.config.BeanDefinitionHolder;
  * origin in XML, annotations, or otherwise.
  *
  * <p>Population of a {@link MetadataDefinition} from XML or annotations will be
- * performed by a {@link org.springframework.beans.factory.config.BeanDefinitionParser}
- * or {@link org.springframework.context.annotation.AnnotationMetadataParser},
- * respectively.
+ * performed by a {@link org.springframework.beans.factory.config.BeanDefinitionParser
+ * BeanDefinitionParser} or {@link org.springframework.context.annotation.AnnotationMetadataParser
+ * AnnotationMetadataParser}, respectively.
  *
  * <p><em>Reading</em> usually implies acting against the metadata in such a way that
  * beans are registered against the Spring container.
