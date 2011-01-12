@@ -29,7 +29,7 @@ import org.springframework.beans.factory.support.BeanNameGenerator;
  * classes.  Provides support parallel with Spring XML's
  * {@code <context:component-scan>} element.
  *
- * TODO SPR-7508: complete documentation.
+ * TODO SPR-7194: document
  *
  * @author Chris Beams
  * @since 3.1

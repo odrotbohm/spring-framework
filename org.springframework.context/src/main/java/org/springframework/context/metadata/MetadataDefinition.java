@@ -16,21 +16,23 @@
 
 package org.springframework.context.metadata;
 
-
 /**
  * Marker interface for source-agnostic representations of configuration metadata.
  *
  * <p>For example, component-scanning may be configured via XML or the
- * {@link org.springframework.context.annotation.ComponentScan} annotation. These
- * specific source forms are parsed by
- * {@link org.springframework.context.annotation.ComponentScanBeanDefinitionParser} and
- * {@link org.springframework.context.annotation.ComponentScanAnnotationMetadataParser}
- * respectively, but both parse into a
- * {@link org.springframework.context.annotation.ComponentScanMetadata} object (a
- * {@link MetadataDefinition} implementation) which is then read by a
- * {@link org.springframework.context.annotation.ComponentScanMetadataReader} in order
- * to configure a {@link org.springframework.context.annotation.ClassPathBeanDefinitionScanner}
- * and perform actual scanning and bean definition registration against the container.
+ * {@link org.springframework.context.annotation.ComponentScan ComponentScan}
+ * annotation. These specific source forms are parsed by {@link
+ * org.springframework.context.annotation.ComponentScanBeanDefinitionParser
+ * ComponentScanDefinitionParser} and {@link
+ * org.springframework.context.annotation.ComponentScanAnnotationMetadataParser
+ * ComponentScanAnnotationMetadataParser} respectively, but both parse into a
+ * {@link org.springframework.context.annotation.ComponentScanMetadata
+ * ComponentScanMetadata} object (a {@link MetadataDefinition} implementation) which
+ * is then read by a {@link org.springframework.context.annotation.ComponentScanMetadataReader
+ * ComponentScanMetadataReader} in order to configure a {@link
+ * org.springframework.context.annotation.ClassPathBeanDefinitionScanner
+ * ClassPathBeanDefinitionScanner} and perform actual scanning and bean definition
+ * registration against the container.
  *
  * @author Chris Beams
  * @since 3.1
