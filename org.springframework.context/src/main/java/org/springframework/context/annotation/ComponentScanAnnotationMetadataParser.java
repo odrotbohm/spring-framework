@@ -21,10 +21,12 @@ import java.util.Map;
 import org.springframework.beans.factory.parsing.Location;
 import org.springframework.beans.factory.parsing.Problem;
 import org.springframework.beans.factory.parsing.ProblemReporter;
+import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.DescriptiveResource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
-
+import org.springframework.util.ClassUtils;
 
 /**
  * {@link AnnotationMetadataParser} implementation responsible for parsing metadata
@@ -107,9 +109,36 @@ public class ComponentScanAnnotationMetadataParser implements AnnotationMetadata
 
 		componentScanMetadata.setResourcePattern((String)componentScanAttributes.get(RESOURCE_PATTERN_ATTRIBUTE));
 		componentScanMetadata.setUseDefaultFilters((Boolean)componentScanAttributes.get(USE_DEFAULT_FILTERS_ATTRIBUTE));
+		componentScanMetadata.setBeanNameGenerator(instantiateUserDefinedStrategy(
+				(String)componentScanAttributes.get(NAME_GENERATOR_ATTRIBUTE), BeanNameGenerator.class, ClassUtils.getDefaultClassLoader()));
 
 		return componentScanMetadata;
 	}
+
+	/**
+	 * TODO SPR-7194: duplicated from {@link ComponentScanBeanDefinitionParser}
+	 */
+	@SuppressWarnings("unchecked")
+	private <T> T instantiateUserDefinedStrategy(String className, Class<T> strategyType, ClassLoader classLoader) {
+		Object result = null;
+		try {
+			result = classLoader.loadClass(className).newInstance();
+		}
+		catch (ClassNotFoundException ex) {
+			throw new IllegalArgumentException("Class [" + className + "] for strategy [" +
+					strategyType.getName() + "] not found", ex);
+		}
+		catch (Exception ex) {
+			throw new IllegalArgumentException("Unable to instantiate class [" + className + "] for strategy [" +
+					strategyType.getName() + "]. A zero-argument constructor is required", ex);
+		}
+
+		if (!strategyType.isAssignableFrom(result.getClass())) {
+			throw new IllegalArgumentException("Provided class name must be an implementation of " + strategyType);
+		}
+		return (T)result;
+	}
+
 
 
 	private static class InvalidComponentScanProblem extends Problem {

@@ -102,6 +102,15 @@ public class ComponentScanAnnotationIntegrationTests {
 			assertThat(ex.getMessage(), containsString("@ComponentScan must declare either 'value' or 'packageOf'"));
 		}
 	}
+
+	@Test
+	public void withCustomBeanNameGenerator() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(ComponentScanWithBeanNameGenenerator.class);
+		ctx.refresh();
+		assertThat(ctx.containsBean("custom_fooServiceImpl"), is(true));
+		assertThat(ctx.containsBean("fooServiceImpl"), is(false));
+	}
 }
 
 
@@ -126,3 +135,14 @@ class ComponentScanAnnotatedConfig_WithValueAttribute {
 @Configuration
 @ComponentScan
 class ComponentScanWithNoPackagesConfig { }
+
+@Configuration
+@ComponentScan(value="example.scannable", nameGenerator=MyBeanNameGenerator.class)
+class ComponentScanWithBeanNameGenenerator { }
+
+class MyBeanNameGenerator extends AnnotationBeanNameGenerator {
+	@Override
+	public String generateBeanName(BeanDefinition definition, BeanDefinitionRegistry registry) {
+		return "custom_" + super.generateBeanName(definition, registry);
+	}
+}
