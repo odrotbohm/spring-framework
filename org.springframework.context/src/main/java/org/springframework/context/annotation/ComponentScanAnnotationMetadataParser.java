@@ -22,7 +22,6 @@ import org.springframework.beans.factory.parsing.Location;
 import org.springframework.beans.factory.parsing.Problem;
 import org.springframework.beans.factory.parsing.ProblemReporter;
 import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.DescriptiveResource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
@@ -107,10 +106,13 @@ public class ComponentScanAnnotationMetadataParser implements AnnotationMetadata
 			componentScanMetadata.addBasePackage(pkg);
 		}
 
+		ClassLoader classLoader = ClassUtils.getDefaultClassLoader();
 		componentScanMetadata.setResourcePattern((String)componentScanAttributes.get(RESOURCE_PATTERN_ATTRIBUTE));
 		componentScanMetadata.setUseDefaultFilters((Boolean)componentScanAttributes.get(USE_DEFAULT_FILTERS_ATTRIBUTE));
 		componentScanMetadata.setBeanNameGenerator(instantiateUserDefinedStrategy(
-				(String)componentScanAttributes.get(NAME_GENERATOR_ATTRIBUTE), BeanNameGenerator.class, ClassUtils.getDefaultClassLoader()));
+				(String)componentScanAttributes.get(NAME_GENERATOR_ATTRIBUTE), BeanNameGenerator.class, classLoader));
+		componentScanMetadata.setScopeMetadataResolver(instantiateUserDefinedStrategy(
+				(String)componentScanAttributes.get(SCOPE_RESOLVER_ATTRIBUTE), ScopeMetadataResolver.class, classLoader));
 
 		return componentScanMetadata;
 	}

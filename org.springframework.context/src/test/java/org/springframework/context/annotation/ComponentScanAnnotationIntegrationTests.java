@@ -17,6 +17,8 @@
 package org.springframework.context.annotation;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -26,10 +28,11 @@ import org.junit.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.beans.factory.support.DefaultBeanNameGenerator;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.support.GenericApplicationContext;
+
+import example.scannable_scoped.CustomScopeAnnotationBean;
+import example.scannable_scoped.MyScope;
 
 /**
  * Integration tests for processing ComponentScan-annotated Configuration
@@ -111,6 +114,16 @@ public class ComponentScanAnnotationIntegrationTests {
 		assertThat(ctx.containsBean("custom_fooServiceImpl"), is(true));
 		assertThat(ctx.containsBean("fooServiceImpl"), is(false));
 	}
+
+	@Test
+	public void withScopeResolver() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(ComponentScanWithScopeResolver.class);
+		ctx.refresh();
+		// custom scope annotation makes the bean prototype scoped. subsequent calls
+		// to getBean should return distinct instances.
+		assertThat(ctx.getBean(CustomScopeAnnotationBean.class), not(sameInstance(ctx.getBean(CustomScopeAnnotationBean.class))));
+	}
 }
 
 
@@ -144,5 +157,15 @@ class MyBeanNameGenerator extends AnnotationBeanNameGenerator {
 	@Override
 	public String generateBeanName(BeanDefinition definition, BeanDefinitionRegistry registry) {
 		return "custom_" + super.generateBeanName(definition, registry);
+	}
+}
+
+@Configuration
+@ComponentScan(value="example.scannable_scoped", scopeResolver=MyScopeMetadataResolver.class)
+class ComponentScanWithScopeResolver { }
+
+class MyScopeMetadataResolver extends AnnotationScopeMetadataResolver {
+	MyScopeMetadataResolver() {
+		this.scopeAnnotationType = MyScope.class;
 	}
 }
