@@ -16,21 +16,34 @@
 
 package org.springframework.context.annotation;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.genericBeanDefinition;
 
+import java.io.IOException;
+import java.util.HashSet;
+
 import org.junit.Test;
+import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.annotation.CustomAutowireConfigurer;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.SimpleMapScope;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.ComponentScanParserTests.CustomAnnotationAutowiredBean;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.util.SerializationTestUtils;
 
+import example.scannable.FooService;
+import example.scannable.ScopedProxyTestBean;
 import example.scannable_scoped.CustomScopeAnnotationBean;
 import example.scannable_scoped.MyScope;
 
@@ -117,12 +130,34 @@ public class ComponentScanAnnotationIntegrationTests {
 
 	@Test
 	public void withScopeResolver() {
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(ComponentScanWithScopeResolver.class);
-		ctx.refresh();
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(ComponentScanWithScopeResolver.class);
 		// custom scope annotation makes the bean prototype scoped. subsequent calls
 		// to getBean should return distinct instances.
 		assertThat(ctx.getBean(CustomScopeAnnotationBean.class), not(sameInstance(ctx.getBean(CustomScopeAnnotationBean.class))));
+	}
+
+	@Test
+	public void withCustomTypeFilter() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(ComponentScanWithCustomTypeFilter.class);
+		CustomAnnotationAutowiredBean testBean = ctx.getBean(CustomAnnotationAutowiredBean.class);
+		assertThat(testBean.getDependency(), notNullValue());
+	}
+
+	@Test
+	public void withScopedProxy() throws IOException, ClassNotFoundException {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(ComponentScanWithScopedProxy.class);
+		ctx.getBeanFactory().registerScope("myScope", new SimpleMapScope());
+		ctx.refresh();
+		// should cast to the interface
+		FooService bean = (FooService) ctx.getBean("scopedProxyTestBean");
+		// should be dynamic proxy
+		assertThat(AopUtils.isJdkDynamicProxy(bean), is(true));
+		// test serializability
+		assertThat(bean.foo(1), equalTo("bar"));
+		FooService deserialized = (FooService) SerializationTestUtils.serializeAndDeserialize(bean);
+		assertThat(deserialized, notNullValue());
+		assertThat(deserialized.foo(1), equalTo("bar"));
 	}
 }
 
@@ -169,3 +204,30 @@ class MyScopeMetadataResolver extends AnnotationScopeMetadataResolver {
 		this.scopeAnnotationType = MyScope.class;
 	}
 }
+
+@Configuration
+@ComponentScan(value="org.springframework.context.annotation",
+		useDefaultFilters=false,
+		includeFilters=@Filter(type=FilterType.CUSTOM, value=ComponentScanParserTests.CustomTypeFilter.class),
+		// exclude this class from scanning since it's in the scanned package
+		excludeFilters=@Filter(type=FilterType.ASSIGNABLE_TYPE, value=ComponentScanWithCustomTypeFilter.class))
+class ComponentScanWithCustomTypeFilter {
+	@Bean
+	@SuppressWarnings({ "rawtypes", "serial", "unchecked" })
+	public CustomAutowireConfigurer customAutowireConfigurer() {
+		CustomAutowireConfigurer cac = new CustomAutowireConfigurer();
+		cac.setCustomQualifierTypes(new HashSet() {{ add(ComponentScanParserTests.CustomAnnotation.class); }});
+		return cac;
+	}
+
+	public ComponentScanParserTests.CustomAnnotationAutowiredBean testBean() {
+		return new ComponentScanParserTests.CustomAnnotationAutowiredBean();
+	}
+}
+
+@Configuration
+@ComponentScan(value="example.scannable",
+		scopedProxy=ScopedProxyMode.INTERFACES,
+		useDefaultFilters=false,
+		includeFilters=@Filter(type=FilterType.ASSIGNABLE_TYPE, value=ScopedProxyTestBean.class))
+class ComponentScanWithScopedProxy { }

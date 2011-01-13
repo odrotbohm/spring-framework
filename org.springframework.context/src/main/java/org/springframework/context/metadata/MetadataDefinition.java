@@ -34,6 +34,8 @@ package org.springframework.context.metadata;
  * ClassPathBeanDefinitionScanner} and perform actual scanning and bean definition
  * registration against the container.
  *
+ * TODO SPR-7194: refactor - rename to *Specification
+ *
  * @author Chris Beams
  * @since 3.1
  * @see MetadataDefinitionReader
