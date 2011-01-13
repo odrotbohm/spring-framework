@@ -18,8 +18,7 @@ package org.springframework.context.annotation;
 
 import org.junit.Test;
 import org.springframework.beans.factory.support.DefaultBeanNameGenerator;
-import org.springframework.context.annotation.ComponentScan.ExcludeFilter;
-import org.springframework.context.annotation.ComponentScan.IncludeFilter;
+import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.core.type.filter.TypeFilter;
 
 /**
@@ -48,10 +47,10 @@ public class ComponentScanAnnotationTests {
 	useDefaultFilters = false,
 	resourcePattern = "**/*custom.class",
 	includeFilters = {
-		@IncludeFilter(type = FilterType.ANNOTATION, value = MyAnnotation.class)
+		@Filter(type = FilterType.ANNOTATION, value = MyAnnotation.class)
 	},
 	excludeFilters = {
-		@ExcludeFilter(type = FilterType.CUSTOM, value = TypeFilter.class)
+		@Filter(type = FilterType.CUSTOM, value = TypeFilter.class)
 	}
 )
 class MyConfig {

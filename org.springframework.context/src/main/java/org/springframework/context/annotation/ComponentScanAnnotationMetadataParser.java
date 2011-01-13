@@ -16,14 +16,20 @@
 
 package org.springframework.context.annotation;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.parsing.Location;
 import org.springframework.beans.factory.parsing.Problem;
 import org.springframework.beans.factory.parsing.ProblemReporter;
 import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.core.io.DescriptiveResource;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -47,21 +53,19 @@ public class ComponentScanAnnotationMetadataParser implements AnnotationMetadata
 
 	private static final String PACKAGE_OF_ATTRIBUTE = "packageOf";
 
-	private static final String RESOURCE_PATTERN_ATTRIBUTE = "resourcePattern";
-
-	private static final String USE_DEFAULT_FILTERS_ATTRIBUTE = "useDefaultFilters";
-
 	private static final String NAME_GENERATOR_ATTRIBUTE = "nameGenerator";
 
 	private static final String SCOPE_RESOLVER_ATTRIBUTE = "scopeResolver";
 
 	private static final String SCOPED_PROXY_ATTRIBUTE = "scopedProxy";
 
+	private static final String RESOURCE_PATTERN_ATTRIBUTE = "resourcePattern";
+
+	private static final String USE_DEFAULT_FILTERS_ATTRIBUTE = "useDefaultFilters";
+
 	private static final String EXCLUDE_FILTER_ATTRIBUTE = "excludeFilters";
 
 	private static final String INCLUDE_FILTER_ATTRIBUTE = "includeFilters";
-
-	private static final String FILTER_TYPE_ATTRIBUTE = "type";
 
 	private final ProblemReporter problemReporter;
 
@@ -113,8 +117,36 @@ public class ComponentScanAnnotationMetadataParser implements AnnotationMetadata
 				(String)componentScanAttributes.get(NAME_GENERATOR_ATTRIBUTE), BeanNameGenerator.class, classLoader));
 		componentScanMetadata.setScopeMetadataResolver(instantiateUserDefinedStrategy(
 				(String)componentScanAttributes.get(SCOPE_RESOLVER_ATTRIBUTE), ScopeMetadataResolver.class, classLoader));
+		ScopedProxyMode scopedProxyMode = (ScopedProxyMode) componentScanAttributes.get(SCOPED_PROXY_ATTRIBUTE);
+		if (scopedProxyMode != ScopedProxyMode.DEFAULT) {
+			componentScanMetadata.setScopedProxyMode(scopedProxyMode);
+		}
+		Filter[] includeFilters = (Filter[]) componentScanAttributes.get(INCLUDE_FILTER_ATTRIBUTE);
+		for (Filter includeFilter : includeFilters) {
+			componentScanMetadata.addIncludeFilter(createTypeFilter(includeFilter));
+		}
+		Filter[] excludeFilters = (Filter[]) componentScanAttributes.get(EXCLUDE_FILTER_ATTRIBUTE);
+		for (Filter excludeFilter : excludeFilters) {
+			componentScanMetadata.addExcludeFilter(createTypeFilter(excludeFilter));
+		}
 
 		return componentScanMetadata;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected TypeFilter createTypeFilter(Filter filter) {
+		Class<?> clazz = filter.value();
+		FilterType filterType = filter.type();
+		switch (filterType) {
+			case ANNOTATION:
+				return new AnnotationTypeFilter((Class<? extends Annotation>)clazz);
+			case ASSIGNABLE_TYPE:
+				return new AssignableTypeFilter(clazz);
+			case CUSTOM:
+				return BeanUtils.instantiateClass(clazz, TypeFilter.class);
+			default:
+				throw new IllegalArgumentException("Unknown FilterType: " + filterType);
+		}
 	}
 
 	/**

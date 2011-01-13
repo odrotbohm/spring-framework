@@ -23,17 +23,15 @@ import java.lang.annotation.Target;
 
 import org.springframework.beans.factory.support.BeanNameGenerator;
 
-
 /**
  * Configures component scanning directives for use with {@link Configuration}
- * classes.  Provides support parallel with Spring XML's
+ * classes. Provides support parallel with Spring XML's
  * {@code <context:component-scan>} element.
  *
  * TODO SPR-7194: document
  *
  * @author Chris Beams
  * @since 3.1
- * @see FilterType
  * @see Configuration
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -49,25 +47,19 @@ public @interface ComponentScan {
 
 	Class<? extends ScopeMetadataResolver> scopeResolver() default AnnotationScopeMetadataResolver.class;
 
-	String resourcePattern() default "**/*.class";
-
 	ScopedProxyMode scopedProxy() default ScopedProxyMode.DEFAULT;
+
+	String resourcePattern() default "**/*.class";
 
 	boolean useDefaultFilters() default true;
 
-	IncludeFilter[] includeFilters() default {};
+	Filter[] includeFilters() default {};
 
-	ExcludeFilter[] excludeFilters() default {};
+	Filter[] excludeFilters() default {};
 
-
-	@Retention(RetentionPolicy.SOURCE)
-	@interface IncludeFilter {
-		FilterType type() default FilterType.ANNOTATION;
-		Class<?> value();
-	}
 
 	@Retention(RetentionPolicy.SOURCE)
-	@interface ExcludeFilter {
+	@interface Filter {
 		FilterType type() default FilterType.ANNOTATION;
 		Class<?> value();
 	}
