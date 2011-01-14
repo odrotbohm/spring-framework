@@ -26,7 +26,7 @@ package org.springframework.context;
  * annotation. These two options are equivalent to one another, and users choose between
  * them as a matter of convention or preference. Fundamentally, both are declarative mechanisms
  * for <em>specifying</em> how the Spring container should be configured.  A {@code Specification}
- * object, then, is a way of representing this configuration information divorced from its
+ * object, then, is a way of representing this configuration information independent of its
  * original source format, be it XML, annotations, or otherwise.
  *
  * <p>A {@link SpecificationCreator} is used to read from the original XML or annotation
@@ -40,7 +40,7 @@ package org.springframework.context;
  * been specified, and otherwise throw an {@link InvalidSpecificationException}.
  *
  * <p>The primary purpose of the {@code Specification} abstraction and its {@code Creator}/{@code Executor}
- * pairs is to decouple XML/annotation parsing logic from container configuration logic. This separates
+ * pairs is to decouple XML and annotation parsing logic from container configuration logic. This separates
  * concerns and helps avoid duplication between XML and annotation parsers. These interfaces and their
  * implementations are not not intended for direct use by everyday application developers, but rather by
  * those creating new Spring XML namespaces or annotations i.e., framework developers.

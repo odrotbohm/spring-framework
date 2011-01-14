@@ -37,10 +37,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * TODO SPR-7194: document
+ * {@link SpecificationCreator} implementation that reads attributes from a
+ * {@code <context:component-scan>} element into a {@link ComponentScanSpecification}
+ * which can in turn be executed by {@link ComponentScanSpecificationExecutor}.
+ * {@link ComponentScanAnnotationSpecificationCreator} serves the same role for
+ * the {@link ComponentScan @ComponentScan} annotation.
  *
  * @author Chris Beams
  * @since 3.1
+ * @see ComponentScanBeanDefinitionParser
+ * @see ComponentScanSpecificationExecutor
  * @see ComponentScanAnnotationSpecificationCreator
  */
 class ComponentScanElementSpecificationCreator implements XmlElementSpecificationCreator {

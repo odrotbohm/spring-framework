@@ -17,6 +17,8 @@
 package org.springframework.context;
 
 /**
+ * TODO SPR-7194: document (clean up)
+ *
  * Interface for executing a populated configuration {@link Specification}. Provides
  * a generic mechanism for handling container configuration metadata regardless of
  * origin in XML, annotations, or other source format.
