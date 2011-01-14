@@ -86,9 +86,9 @@ class ConfigurationClassBeanDefinitionReader {
 
 	private final MetadataReaderFactory metadataReaderFactory;
 
-	private final ComponentScanAnnotationMetadataParser componentScanAnnotationParser;
+	private final ComponentScanAnnotationSpecificationCreator componentScanSpecCreator;
 
-	private final ComponentScanMetadataReader componentScanMetadataReader;
+	private final ComponentScanSpecificationExecutor componentScanSpecExecutor;
 
 	/**
 	 * Create a new {@link ConfigurationClassBeanDefinitionReader} instance that will be used
@@ -104,8 +104,8 @@ class ConfigurationClassBeanDefinitionReader {
 		this.sourceExtractor = sourceExtractor;
 		this.problemReporter = problemReporter;
 		this.metadataReaderFactory = metadataReaderFactory;
-		this.componentScanAnnotationParser = new ComponentScanAnnotationMetadataParser(this.problemReporter);
-		this.componentScanMetadataReader = new ComponentScanMetadataReader(this.registry, resourceLoader, environment);
+		this.componentScanSpecCreator = new ComponentScanAnnotationSpecificationCreator(this.problemReporter);
+		this.componentScanSpecExecutor = new ComponentScanSpecificationExecutor(this.registry, resourceLoader, environment);
 	}
 
 
@@ -124,8 +124,8 @@ class ConfigurationClassBeanDefinitionReader {
 	 * class itself, all its {@link Bean} methods
 	 */
 	private void loadBeanDefinitionsForConfigurationClass(ConfigurationClass configClass) {
-		if (componentScanAnnotationParser.accepts(configClass.getMetadata())) {
-			componentScanMetadataReader.read(componentScanAnnotationParser.parse(configClass.getMetadata()));
+		if (this.componentScanSpecCreator.accepts(configClass.getMetadata())) {
+			this.componentScanSpecExecutor.execute(this.componentScanSpecCreator.createFrom(configClass.getMetadata()));
 		}
 		doLoadBeanDefinitionForConfigurationClassIfNecessary(configClass);
 		for (ConfigurationClassMethod method : configClass.getMethods()) {

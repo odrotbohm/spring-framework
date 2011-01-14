@@ -21,11 +21,10 @@ import java.util.Set;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.BeanDefinitionDefaults;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.context.metadata.MetadataDefinitionReader;
+import org.springframework.context.AbstractSpecificationExecutor;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
-
 
 /**
  * TODO SPR-7194: document
@@ -33,15 +32,16 @@ import org.springframework.core.type.filter.TypeFilter;
  * @author Chris Beams
  * @since 3.1
  */
-public class ComponentScanMetadataReader implements MetadataDefinitionReader<ComponentScanMetadata> {
+class ComponentScanSpecificationExecutor extends AbstractSpecificationExecutor<ComponentScanSpecification> {
 
 	private final BeanDefinitionRegistry registry;
 	private final ResourceLoader resourceLoader;
 	private final Environment environment;
 	private BeanDefinitionDefaults beanDefinitionDefaults;
 	private String[] autowireCandidatePatterns;
+	private Set<BeanDefinitionHolder> scannedBeans;
 
-	public ComponentScanMetadataReader(BeanDefinitionRegistry registry, ResourceLoader resourceLoader, Environment environment) {
+	public ComponentScanSpecificationExecutor(BeanDefinitionRegistry registry, ResourceLoader resourceLoader, Environment environment) {
 		this.registry = registry;
 		this.resourceLoader = resourceLoader;
 		this.environment = environment;
@@ -52,7 +52,7 @@ public class ComponentScanMetadataReader implements MetadataDefinitionReader<Com
 	}
 
 	public BeanDefinitionDefaults getBeanDefinitionDefaults() {
-		return beanDefinitionDefaults;
+		return this.beanDefinitionDefaults;
 	}
 
 	public void setAutowireCandidatePatterns(String[] autowireCandidatePatterns) {
@@ -60,18 +60,27 @@ public class ComponentScanMetadataReader implements MetadataDefinitionReader<Com
 	}
 
 	public String[] getAutowireCandidatePatterns() {
-		return autowireCandidatePatterns;
+		return this.autowireCandidatePatterns;
+	}
+
+	/**
+	 * Return the bean definitions scanned on the last call to
+	 * {@link #execute(ComponentScanSpecification)} or {@code null} if {@code execute} has
+	 * not yet been called.
+	 */
+	public Set<BeanDefinitionHolder> getScannedBeans() {
+		return this.scannedBeans;
 	}
 
 	/**
 	 * Configure a {@link ClassPathBeanDefinitionScanner} based on the content of
-	 * the given metadata and perform actual scanning and bean definition registration.
-	 * @return the set of bean definitions scanned and registered (never {@code null})
+	 * the given specification and perform actual scanning and bean definition
+	 * registration.
 	 */
-	public Set<BeanDefinitionHolder> read(ComponentScanMetadata metadata) {
-		ClassPathBeanDefinitionScanner scanner = metadata.getUseDefaultFilters() == null ?
+	public void doExecute(ComponentScanSpecification spec) {
+		ClassPathBeanDefinitionScanner scanner = spec.getUseDefaultFilters() == null ?
 			new ClassPathBeanDefinitionScanner(this.registry) :
-			new ClassPathBeanDefinitionScanner(this.registry, metadata.getUseDefaultFilters());
+			new ClassPathBeanDefinitionScanner(this.registry, spec.getUseDefaultFilters());
 
 		scanner.setResourceLoader(this.resourceLoader);
 		scanner.setEnvironment(this.environment);
@@ -83,32 +92,33 @@ public class ComponentScanMetadataReader implements MetadataDefinitionReader<Com
 			scanner.setAutowireCandidatePatterns(this.autowireCandidatePatterns);
 		}
 
-		if (metadata.getResourcePattern() != null) {
-			scanner.setResourcePattern(metadata.getResourcePattern());
+		if (spec.getResourcePattern() != null) {
+			scanner.setResourcePattern(spec.getResourcePattern());
 		}
-		if (metadata.getBeanNameGenerator() != null) {
-			scanner.setBeanNameGenerator(metadata.getBeanNameGenerator());
+		if (spec.getBeanNameGenerator() != null) {
+			scanner.setBeanNameGenerator(spec.getBeanNameGenerator());
 		}
-		if (metadata.getIncludeAnnotationConfig() != null) {
-			scanner.setIncludeAnnotationConfig(metadata.getIncludeAnnotationConfig());
+		if (spec.getIncludeAnnotationConfig() != null) {
+			scanner.setIncludeAnnotationConfig(spec.getIncludeAnnotationConfig());
 		}
-		if (metadata.getScopeMetadataResolver() != null) {
-			scanner.setScopeMetadataResolver(metadata.getScopeMetadataResolver());
+		if (spec.getScopeMetadataResolver() != null) {
+			scanner.setScopeMetadataResolver(spec.getScopeMetadataResolver());
 		}
-		if (metadata.getScopedProxyMode() != null) {
-			scanner.setScopedProxyMode(metadata.getScopedProxyMode());
+		if (spec.getScopedProxyMode() != null) {
+			scanner.setScopedProxyMode(spec.getScopedProxyMode());
 		}
-		if (metadata.getIncludeFilters() != null) {
-			for (TypeFilter filter : metadata.getIncludeFilters()) {
+		if (spec.getIncludeFilters() != null) {
+			for (TypeFilter filter : spec.getIncludeFilters()) {
 				scanner.addIncludeFilter(filter);
 			}
 		}
-		if (metadata.getExcludeFilters() != null) {
-			for (TypeFilter filter : metadata.getExcludeFilters()) {
+		if (spec.getExcludeFilters() != null) {
+			for (TypeFilter filter : spec.getExcludeFilters()) {
 				scanner.addExcludeFilter(filter);
 			}
 		}
 
-		return scanner.doScan(metadata.getBasePackages());
+		this.scannedBeans = scanner.doScan(spec.getBasePackages());
 	}
+
 }
