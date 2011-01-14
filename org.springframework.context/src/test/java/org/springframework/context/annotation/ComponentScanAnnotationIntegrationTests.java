@@ -115,7 +115,7 @@ public class ComponentScanAnnotationIntegrationTests {
 			ctx.refresh();
 			fail("Expected exception when parsing @ComponentScan definition that declares no packages");
 		} catch (BeanDefinitionParsingException ex) {
-			assertThat(ex.getMessage(), containsString("@ComponentScan must declare either 'value' or 'packageOf'"));
+			assertThat(ex.getMessage(), containsString("@ComponentScan must declare either 'basePackages' or 'packageOf'"));
 		}
 	}
 
@@ -159,6 +159,14 @@ public class ComponentScanAnnotationIntegrationTests {
 		assertThat(deserialized, notNullValue());
 		assertThat(deserialized.foo(1), equalTo("bar"));
 	}
+
+	@Test(expected=BeanDefinitionParsingException.class)
+	public void withBasePackagesAndValueAlias() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(ComponentScanWithBasePackagesAndValueAlias.class);
+		ctx.refresh();
+	}
+
 }
 
 
@@ -185,7 +193,7 @@ class ComponentScanAnnotatedConfig_WithValueAttribute {
 class ComponentScanWithNoPackagesConfig { }
 
 @Configuration
-@ComponentScan(value="example.scannable", nameGenerator=MyBeanNameGenerator.class)
+@ComponentScan(basePackages="example.scannable", nameGenerator=MyBeanNameGenerator.class)
 class ComponentScanWithBeanNameGenenerator { }
 
 class MyBeanNameGenerator extends AnnotationBeanNameGenerator {
@@ -196,7 +204,7 @@ class MyBeanNameGenerator extends AnnotationBeanNameGenerator {
 }
 
 @Configuration
-@ComponentScan(value="example.scannable_scoped", scopeResolver=MyScopeMetadataResolver.class)
+@ComponentScan(basePackages="example.scannable_scoped", scopeResolver=MyScopeMetadataResolver.class)
 class ComponentScanWithScopeResolver { }
 
 class MyScopeMetadataResolver extends AnnotationScopeMetadataResolver {
@@ -206,7 +214,7 @@ class MyScopeMetadataResolver extends AnnotationScopeMetadataResolver {
 }
 
 @Configuration
-@ComponentScan(value="org.springframework.context.annotation",
+@ComponentScan(basePackages="org.springframework.context.annotation",
 		useDefaultFilters=false,
 		includeFilters=@Filter(type=FilterType.CUSTOM, value=ComponentScanParserTests.CustomTypeFilter.class),
 		// exclude this class from scanning since it's in the scanned package
@@ -226,8 +234,12 @@ class ComponentScanWithCustomTypeFilter {
 }
 
 @Configuration
-@ComponentScan(value="example.scannable",
+@ComponentScan(basePackages="example.scannable",
 		scopedProxy=ScopedProxyMode.INTERFACES,
 		useDefaultFilters=false,
 		includeFilters=@Filter(type=FilterType.ASSIGNABLE_TYPE, value=ScopedProxyTestBean.class))
 class ComponentScanWithScopedProxy { }
+
+@Configuration
+@ComponentScan(value="example.scannable", basePackages="example.scannable")
+class ComponentScanWithBasePackagesAndValueAlias { }
