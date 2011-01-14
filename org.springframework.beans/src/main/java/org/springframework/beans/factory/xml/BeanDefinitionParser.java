@@ -21,9 +21,8 @@ import org.w3c.dom.Element;
 import org.springframework.beans.factory.config.BeanDefinition;
 
 /**
- * Interface used by the
- * {@link org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader} to
- * handle custom, top-level (directly under <code>&lt;beans&gt;</code>) tags.
+ * Interface used by the {@link DefaultBeanDefinitionDocumentReader} to handle custom,
+ * top-level (directly under {@code <beans>}) tags.
  *
  * <p>Implementations are free to turn the metadata in the custom tag into as many
  * {@link BeanDefinition BeanDefinitions} as required.
@@ -31,16 +30,20 @@ import org.springframework.beans.factory.config.BeanDefinition;
  * <p>The parser locates a {@link BeanDefinitionParser} from the associated
  * {@link NamespaceHandler} for the namespace in which the custom tag resides.
  *
- * <p>{@link BeanDefinitionParser} implementations are encouraged to decouple XML parsing
- * from bean registration by parsing into a {@link MetadataDefinition} object
- * and delegating it to a {@link MetadataDefinitionReader} implementation.  This allows for
- * maximum reuse between XML-based and annotation-based configuration options.
+ * <p>Implementations are encouraged to decouple XML parsing from bean registration by
+ * parsing element(s) into a {@link org.springframework.context.Specification Specification}
+ * object and delegating it to a {@link org.springframework.context.SpecificationExecutor
+ * SpecificationExecutor} implementation. This allows for maximum reuse between XML-based and
+ * annotation-based configuration options.
  *
  * @author Rob Harrop
  * @since 2.0
  * @see NamespaceHandler
- * @see org.springframework.beans.factory.xml.BeanDefinitionDecorator
  * @see AbstractBeanDefinitionParser
+ * @see org.springframework.beans.factory.xml.BeanDefinitionDecorator
+ * @see org.springframework.context.Specification
+ * @see org.springframework.context.xml.XmlElementSpecificationCreator
+ * @see org.springframework.context.AbstractSpecificationExecutor
  */
 public interface BeanDefinitionParser {
 

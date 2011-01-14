@@ -17,27 +17,28 @@
 package org.springframework.context.annotation;
 
 import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.context.metadata.MetadataDefinition;
+import org.springframework.context.InvalidSpecificationException;
+import org.springframework.context.Specification;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-
 /**
- * {@link MetadataDefinition} implementation that holds component-scanning
+ * {@link Specification} implementation that holds component-scanning
  * configuration metadata.  This decouples the metadata from its XML or
  * annotation source. Once this structure has been populated by an XML
- * or annotation parser, it may be read by {@link ComponentScanMetadataReader}
+ * or annotation parser, it may be read by {@link ComponentScanSpecificationExecutor}
  * which is responsible for actual scanning and bean definition registration.
  *
  * @author Chris Beams
  * @since 3.1
  * @see ComponentScan
- * @see ComponentScanAnnotationMetadataParser
- * @see ComponentScanBeanDefinitionParser
- * @see ComponentScanMetadataReader
+ * @see ComponentScanAnnotationSpecificationCreator
+ * @see ComponentScanElementSpecificationCreator
+ * @see ComponentScanSpecificationExecutor
  */
-public class ComponentScanMetadata implements MetadataDefinition {
+class ComponentScanSpecification implements Specification {
 
 	private Boolean includeAnnotationConfig = null;
 	private String resourcePattern = null;
@@ -48,6 +49,12 @@ public class ComponentScanMetadata implements MetadataDefinition {
 	private ScopedProxyMode scopedProxyMode = null;
 	private TypeFilter[] includeFilters = null;
 	private TypeFilter[] excludeFilters = null;
+
+	public void validate() throws InvalidSpecificationException {
+		if(ObjectUtils.isEmpty(this.basePackages)) {
+			throw new InvalidSpecificationException("At least one base package must be specified");
+		}
+	}
 
 	public Boolean getIncludeAnnotationConfig() {
 		return this.includeAnnotationConfig;
@@ -71,7 +78,8 @@ public class ComponentScanMetadata implements MetadataDefinition {
 			StringUtils.addStringToArray(this.basePackages, basePackage);
 	}
 
-	public void setBasePackages(String[] basePackages) {
+	public void setBasePackages(String... basePackages) {
+		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		this.basePackages = basePackages;
 	}
 
