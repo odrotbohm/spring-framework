@@ -34,20 +34,21 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
- * {@link AnnotationMetadataParser} implementation responsible for parsing metadata
+ * {@link AnnotationSpecificationCreator} implementation responsible for parsing metadata
  * from {@link ComponentScan} annotations into the more general form of
- * {@link ComponentScanMetadata} which can in turn be consumed by a
- * {@link ComponentScanMetadataReader} for actual parsing and bean registration.
+ * {@link ComponentScanSpecification} which can in turn be consumed by a
+ * {@link ComponentScanSpecificationExecutor} for actual parsing and bean registration.
  * {@link ComponentScanBeanDefinitionParser} provides serves as the XML counterpart
  * to this component.
  *
  * @author Chris Beams
  * @since 3.1
  * @see ComponentScan
- * @see ComponentScanMetadataReader
+ * @see ComponentScanSpecificationExecutor
  * @see ComponentScanBeanDefinitionParser
+ * @see ComponentScanElementSpecificationCreator
  */
-public class ComponentScanAnnotationMetadataParser implements AnnotationMetadataParser {
+class ComponentScanAnnotationSpecificationCreator implements AnnotationSpecificationCreator {
 
 	private static final String BASE_PACKAGE_ATTRIBUTE = "value";
 
@@ -70,7 +71,7 @@ public class ComponentScanAnnotationMetadataParser implements AnnotationMetadata
 	private final ProblemReporter problemReporter;
 
 
-	public ComponentScanAnnotationMetadataParser(ProblemReporter problemReporter) {
+	public ComponentScanAnnotationSpecificationCreator(ProblemReporter problemReporter) {
 		this.problemReporter = problemReporter;
 	}
 
@@ -83,11 +84,11 @@ public class ComponentScanAnnotationMetadataParser implements AnnotationMetadata
 
 	/**
 	 * Parse {@link ComponentScan} information from the the given metadata
-	 * and return a populated {@link ComponentScanMetadata}.
+	 * and return a populated {@link ComponentScanSpecification}.
 	 * @throws IllegalArgumentException if ComponentScan attributes are not present in metadata
 	 * @see #accepts
 	 */
-	public ComponentScanMetadata parse(AnnotationMetadata metadata) {
+	public ComponentScanSpecification createFrom(AnnotationMetadata metadata) {
 		Map<String, Object> componentScanAttributes =
 			metadata.getAnnotationAttributes(ComponentScan.class.getName(), true);
 
@@ -96,7 +97,7 @@ public class ComponentScanAnnotationMetadataParser implements AnnotationMetadata
 						"metadata for class [%s]. Use accepts(metadata) before " +
 						"calling parse(metadata)", metadata.getClassName()));
 
-		ComponentScanMetadata componentScanMetadata = new ComponentScanMetadata();
+		ComponentScanSpecification spec = new ComponentScanSpecification();
 
 		String[] packageOfClasses = (String[])componentScanAttributes.get(PACKAGE_OF_ATTRIBUTE);
 		String[] basePackages = (String[])componentScanAttributes.get(BASE_PACKAGE_ATTRIBUTE);
@@ -104,33 +105,33 @@ public class ComponentScanAnnotationMetadataParser implements AnnotationMetadata
 			this.problemReporter.fatal(new InvalidComponentScanProblem(metadata.getClassName()));
 		}
 		for (String className : packageOfClasses) {
-			componentScanMetadata.addBasePackage(className.substring(0, className.lastIndexOf('.')));
+			spec.addBasePackage(className.substring(0, className.lastIndexOf('.')));
 		}
 		for (String pkg : basePackages) {
-			componentScanMetadata.addBasePackage(pkg);
+			spec.addBasePackage(pkg);
 		}
 
 		ClassLoader classLoader = ClassUtils.getDefaultClassLoader();
-		componentScanMetadata.setResourcePattern((String)componentScanAttributes.get(RESOURCE_PATTERN_ATTRIBUTE));
-		componentScanMetadata.setUseDefaultFilters((Boolean)componentScanAttributes.get(USE_DEFAULT_FILTERS_ATTRIBUTE));
-		componentScanMetadata.setBeanNameGenerator(instantiateUserDefinedStrategy(
+		spec.setResourcePattern((String)componentScanAttributes.get(RESOURCE_PATTERN_ATTRIBUTE));
+		spec.setUseDefaultFilters((Boolean)componentScanAttributes.get(USE_DEFAULT_FILTERS_ATTRIBUTE));
+		spec.setBeanNameGenerator(instantiateUserDefinedStrategy(
 				(String)componentScanAttributes.get(NAME_GENERATOR_ATTRIBUTE), BeanNameGenerator.class, classLoader));
-		componentScanMetadata.setScopeMetadataResolver(instantiateUserDefinedStrategy(
+		spec.setScopeMetadataResolver(instantiateUserDefinedStrategy(
 				(String)componentScanAttributes.get(SCOPE_RESOLVER_ATTRIBUTE), ScopeMetadataResolver.class, classLoader));
 		ScopedProxyMode scopedProxyMode = (ScopedProxyMode) componentScanAttributes.get(SCOPED_PROXY_ATTRIBUTE);
 		if (scopedProxyMode != ScopedProxyMode.DEFAULT) {
-			componentScanMetadata.setScopedProxyMode(scopedProxyMode);
+			spec.setScopedProxyMode(scopedProxyMode);
 		}
 		Filter[] includeFilters = (Filter[]) componentScanAttributes.get(INCLUDE_FILTER_ATTRIBUTE);
 		for (Filter includeFilter : includeFilters) {
-			componentScanMetadata.addIncludeFilter(createTypeFilter(includeFilter));
+			spec.addIncludeFilter(createTypeFilter(includeFilter));
 		}
 		Filter[] excludeFilters = (Filter[]) componentScanAttributes.get(EXCLUDE_FILTER_ATTRIBUTE);
 		for (Filter excludeFilter : excludeFilters) {
-			componentScanMetadata.addExcludeFilter(createTypeFilter(excludeFilter));
+			spec.addExcludeFilter(createTypeFilter(excludeFilter));
 		}
 
-		return componentScanMetadata;
+		return spec;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -172,7 +173,6 @@ public class ComponentScanAnnotationMetadataParser implements AnnotationMetadata
 		}
 		return (T)result;
 	}
-
 
 
 	private static class InvalidComponentScanProblem extends Problem {
