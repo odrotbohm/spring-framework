@@ -24,6 +24,7 @@ import org.springframework.beans.factory.parsing.Location;
 import org.springframework.beans.factory.parsing.Problem;
 import org.springframework.beans.factory.parsing.ProblemReporter;
 import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.context.SpecificationCreator;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.core.io.DescriptiveResource;
 import org.springframework.core.type.AnnotationMetadata;
@@ -34,23 +35,24 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
- * {@link AnnotationSpecificationCreator} implementation responsible for parsing metadata
- * from {@link ComponentScan} annotations into the more general form of
- * {@link ComponentScanSpecification} which can in turn be consumed by a
- * {@link ComponentScanSpecificationExecutor} for actual parsing and bean registration.
- * {@link ComponentScanBeanDefinitionParser} provides serves as the XML counterpart
- * to this component.
+ * {@link SpecificationCreator} implementation that reads attributes from a
+ * {@link ComponentScan @ComponentScan} annotation into a {@link ComponentScanSpecification}
+ * which can in turn be executed by {@link ComponentScanSpecificationExecutor}.
+ * {@link ComponentScanElementSpecificationCreator} serves the same role for
+ * the {@code <context:component-scan>} XML element.
  *
  * @author Chris Beams
  * @since 3.1
  * @see ComponentScan
+ * @see ConfigurationClassBeanDefinitionReader
  * @see ComponentScanSpecificationExecutor
- * @see ComponentScanBeanDefinitionParser
  * @see ComponentScanElementSpecificationCreator
  */
 class ComponentScanAnnotationSpecificationCreator implements AnnotationSpecificationCreator {
 
-	private static final String BASE_PACKAGE_ATTRIBUTE = "value";
+	private static final String BASE_PACKAGES_ATTRIBUTE = "basePackages";
+
+	private static final String BASE_PACKAGES_ATTRIBUTE_ALIAS = "value";
 
 	private static final String PACKAGE_OF_ATTRIBUTE = "packageOf";
 
@@ -76,17 +78,17 @@ class ComponentScanAnnotationSpecificationCreator implements AnnotationSpecifica
 	}
 
 	/**
-	 * @return whether the given metadata includes {@link ComponentScan} information
+	 * Return whether the given metadata includes {@link ComponentScan} information.
 	 */
 	public boolean accepts(AnnotationMetadata metadata) {
 		return metadata.hasAnnotation(ComponentScan.class.getName());
 	}
 
 	/**
-	 * Parse {@link ComponentScan} information from the the given metadata
-	 * and return a populated {@link ComponentScanSpecification}.
+	 * Create and return a new {@link ComponentScanSpecification} from the given
+	 * {@link ComponentScan} annotation metadata.
 	 * @throws IllegalArgumentException if ComponentScan attributes are not present in metadata
-	 * @see #accepts
+	 * @see #accepts(AnnotationMetadata)
 	 */
 	public ComponentScanSpecification createFrom(AnnotationMetadata metadata) {
 		Map<String, Object> componentScanAttributes =
@@ -100,14 +102,19 @@ class ComponentScanAnnotationSpecificationCreator implements AnnotationSpecifica
 		ComponentScanSpecification spec = new ComponentScanSpecification();
 
 		String[] packageOfClasses = (String[])componentScanAttributes.get(PACKAGE_OF_ATTRIBUTE);
-		String[] basePackages = (String[])componentScanAttributes.get(BASE_PACKAGE_ATTRIBUTE);
-		if (packageOfClasses.length == 0 && basePackages.length == 0) {
+		String[] basePackages = (String[])componentScanAttributes.get(BASE_PACKAGES_ATTRIBUTE);
+		String[] basePackagesAlias = (String[])componentScanAttributes.get(BASE_PACKAGES_ATTRIBUTE_ALIAS);
+		if ((basePackages.length > 0 && basePackagesAlias.length > 0)
+				|| packageOfClasses.length == 0 && basePackages.length == 0 && basePackagesAlias.length == 0) {
 			this.problemReporter.fatal(new InvalidComponentScanProblem(metadata.getClassName()));
 		}
 		for (String className : packageOfClasses) {
 			spec.addBasePackage(className.substring(0, className.lastIndexOf('.')));
 		}
 		for (String pkg : basePackages) {
+			spec.addBasePackage(pkg);
+		}
+		for (String pkg : basePackagesAlias) {
 			spec.addBasePackage(pkg);
 		}
 
@@ -177,7 +184,9 @@ class ComponentScanAnnotationSpecificationCreator implements AnnotationSpecifica
 
 	private static class InvalidComponentScanProblem extends Problem {
 		public InvalidComponentScanProblem(String className) {
-			super("@ComponentScan must declare either 'value' or 'packageOf' attributes",
+			super("@ComponentScan must declare either 'basePackages' or 'packageOf' attributes; " +
+					"'value' may be used as an alias for 'basePackages' but they must not be used " +
+					"at the same time.",
 					new Location(new DescriptiveResource(className)));
 		}
 	}

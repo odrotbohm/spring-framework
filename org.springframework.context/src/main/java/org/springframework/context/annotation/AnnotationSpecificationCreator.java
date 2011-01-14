@@ -23,6 +23,8 @@ import org.springframework.context.xml.XmlElementSpecificationCreator;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
+ * TODO SPR-7194: documentation (clean up)
+ *
  * Interface for parsing {@link AnnotationMetadata} into a more generic
  * {@link Specification} object. Used in conjunction with a
  * {@link SpecificationExecutor} to provide a source-agnostic approach to
