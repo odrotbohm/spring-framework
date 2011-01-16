@@ -16,6 +16,8 @@
 
 package org.springframework.context;
 
+import org.springframework.util.Assert;
+
 /**
  * TODO SPR-7194: document
  *
@@ -32,6 +34,7 @@ public abstract class AbstractSpecificationExecutor<S extends Specification> imp
 	 * @throws InvalidSpecificationException if the given specification has has errors
 	 */
 	public final void execute(S specification) throws InvalidSpecificationException {
+		Assert.notNull(specification, "Specification must not be null");
 		specification.validate();
 		doExecute(specification);
 	}
