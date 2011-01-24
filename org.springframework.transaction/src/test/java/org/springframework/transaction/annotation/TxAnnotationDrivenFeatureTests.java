@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Feature;
 import org.springframework.context.annotation.FeatureConfiguration;
+import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.CallCountingTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -46,7 +47,7 @@ public class TxAnnotationDrivenFeatureTests {
 	@Test
 	public void isProxy() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(DataConfig.class, TxConfig.class);
+		ctx.register(TxConfig.class);
 		ctx.refresh();
 		TransactionalTestBean bean = ctx.getBean(TransactionalTestBean.class);
 		assertThat("testBean is not a proxy", AopUtils.isAopProxy(bean), is(true));
@@ -72,6 +73,7 @@ class DataConfig {
 
 
 @FeatureConfiguration
+@Import(DataConfig.class)
 class TxConfig {
 
 	@Feature
