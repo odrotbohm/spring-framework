@@ -20,9 +20,10 @@ import static java.lang.String.format;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,9 +36,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.parsing.BeanComponentDefinition;
-import org.springframework.beans.factory.parsing.ComponentDefinition;
-import org.springframework.beans.factory.parsing.ComponentRegistrar;
 import org.springframework.beans.factory.parsing.FailFastProblemReporter;
 import org.springframework.beans.factory.parsing.PassThroughSourceExtractor;
 import org.springframework.beans.factory.parsing.ProblemReporter;
@@ -45,7 +43,6 @@ import org.springframework.beans.factory.parsing.SourceExtractor;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.beans.factory.support.DefaultBeanNameGenerator;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ExecutorContext;
 import org.springframework.context.FeatureSpecification;
@@ -172,7 +169,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					"postProcessBeanFactory already called for this post-processor");
 		}
 		this.postProcessBeanDefinitionRegistryCalled = true;
-		processConfigClasses(registry);
+		processConfigurationClasses(registry);
+		processFeatureConfigurationClasses((ConfigurableListableBeanFactory) registry);
 	}
 
 	/**
@@ -188,45 +186,36 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		if (!this.postProcessBeanDefinitionRegistryCalled) {
 			// BeanDefinitionRegistryPostProcessor hook apparently not supported...
 			// Simply call processConfigClasses lazily at this point then.
-			processConfigClasses((BeanDefinitionRegistry)beanFactory);
+			processConfigurationClasses((BeanDefinitionRegistry)beanFactory);
+			processFeatureConfigurationClasses(beanFactory);
 		}
 	}
 
 	/**
 	 * Find and process all @Configuration classes with @Feature methods in the given registry.
 	 */
-	private void processConfigClasses(BeanDefinitionRegistry registry) {
+	private void processConfigurationClasses(BeanDefinitionRegistry registry) {
 		ConfigurationClassBeanDefinitionReader reader = getConfigurationClassBeanDefinitionReader(registry);
 		processConfigBeanDefinitions(registry, reader);
-		Set<Class<?>> enhancedConfigClasses = enhanceConfigurationClasses((ConfigurableListableBeanFactory)registry);
-		processFeatureMethods(enhancedConfigClasses, (ConfigurableListableBeanFactory)registry);
+		enhanceConfigurationClasses((ConfigurableListableBeanFactory)registry);
 	}
 
 	/**
-	 * Process any @Feature methods in the given set of configurationClasses.
+	 * Process any @FeatureConfiguration classes
 	 */
-	private void processFeatureMethods(Set<Class<?>> configurationClasses, ConfigurableListableBeanFactory beanFactory) {
-		final Map<Class<?>, Set<Method>> featureMethodMap = new HashMap<Class<?>, Set<Method>>();
-		for (final Class<?> configClass : configurationClasses) {
-			ReflectionUtils.doWithMethods(configClass,
+	private void processFeatureConfigurationClasses(final ConfigurableListableBeanFactory beanFactory) {
+		this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
+		Map<String, Object> featureConfigBeans = beanFactory.getBeansWithAnnotation(FeatureConfiguration.class);
+		for (final Object featureConfigBean : featureConfigBeans.values()) {
+			ReflectionUtils.doWithMethods(featureConfigBean.getClass(),
 					new ReflectionUtils.MethodCallback() {
 						public void doWith(Method featureMethod) throws IllegalArgumentException, IllegalAccessException {
-							if (!featureMethodMap.containsKey(configClass)) {
-								featureMethodMap.put(configClass, new LinkedHashSet<Method>());
-							}
-							featureMethodMap.get(configClass).add(featureMethod);
+							processFeatureMethod(featureMethod, featureConfigBean, beanFactory);
 						} },
 					new ReflectionUtils.MethodFilter() {
 						public boolean matches(Method candidateMethod) {
 							return candidateMethod.isAnnotationPresent(Feature.class);
 						} });
-		}
-		this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
-		for (Class<?> configClass : featureMethodMap.keySet()) {
-			Object configInstance = beanFactory.getBean(configClass);
-			for (Method featureMethod : featureMethodMap.get(configClass)) {
-				processFeatureMethod(featureMethod, configInstance, beanFactory);
-			}
 		}
 		this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = false;
 	}
@@ -247,10 +236,16 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				throw new IllegalArgumentException("return type from @Feature methods must be assignable to FeatureSpecification");
 			}
 
+			List<Object> beanArgs = new ArrayList<Object>();
+			Class<?>[] parameterTypes = featureMethod.getParameterTypes();
+			for (Class<?> paramType : parameterTypes) {
+				beanArgs.add(beanFactory.getBean(paramType));
+			}
+
 			// reflectively invoke that method
 			FeatureSpecification spec;
 			featureMethod.setAccessible(true);
-			spec = (FeatureSpecification) featureMethod.invoke(configInstance);
+			spec = (FeatureSpecification) featureMethod.invoke(configInstance, beanArgs.toArray(new Object[beanArgs.size()]));
 
 			Assert.notNull(spec,
 					format("The specification returned from @Feature method %s.%s() must not be null",
@@ -332,8 +327,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * Candidate status is determined by BeanDefinition attribute metadata.
 	 * @see ConfigurationClassEnhancer
 	 */
-	public Set<Class<?>> enhanceConfigurationClasses(ConfigurableListableBeanFactory beanFactory) {
-		Set<Class<?>> enhancedConfigClasses = new LinkedHashSet<Class<?>>();
+	public void enhanceConfigurationClasses(ConfigurableListableBeanFactory beanFactory) {
 		Map<String, AbstractBeanDefinition> configBeanDefs = new LinkedHashMap<String, AbstractBeanDefinition>();
 		for (String beanName : beanFactory.getBeanDefinitionNames()) {
 			BeanDefinition beanDef = beanFactory.getBeanDefinition(beanName);
@@ -347,7 +341,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 		if (configBeanDefs.isEmpty()) {
 			// nothing to enhance -> return immediately
-			return enhancedConfigClasses;
+			return;
 		}
 		if (!cglibAvailable) {
 			throw new IllegalStateException("CGLIB is required to process @Configuration classes. " +
@@ -365,14 +359,11 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 							"with enhanced class name '%s'", entry.getKey(), configClass.getName(), enhancedClass.getName()));
 				}
 				beanDef.setBeanClass(enhancedClass);
-				enhancedConfigClasses.add(enhancedClass);
 			}
 			catch (Throwable ex) {
 				throw new IllegalStateException("Cannot load configuration class: " + beanDef.getBeanClassName(), ex);
 			}
 		}
-
-		return enhancedConfigClasses;
 	}
 
 }
