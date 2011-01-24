@@ -30,10 +30,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ExecutorContext;
 import org.springframework.context.FeatureSpecification;
-import org.springframework.context.InvalidSpecificationException;
-import org.springframework.context.SpecificationExecutor;
+import org.springframework.context.annotation.configuration.StubSpecification;
 
 import test.beans.ITestBean;
 import test.beans.TestBean;
@@ -98,7 +96,8 @@ public class FeatureMethodEarlyBeanProxyTests {
 }
 
 
-@Configuration
+@FeatureConfiguration
+@Import(TestBeanConfig.class)
 class FeatureConfig implements BeanFactoryAware {
 	private DefaultListableBeanFactory beanFactory;
 
@@ -107,14 +106,13 @@ class FeatureConfig implements BeanFactoryAware {
 	}
 
 	@Feature
-	public DummySpecification feature() {
-		DummySpecification spec = new DummySpecification();
+	public StubSpecification feature(TestBeanConfig beans) {
 
 		// invocation of @Bean methods within @Feature methods should return proxies
-		ITestBean lazyHelperBean = this.lazyHelperBean();
-		ITestBean eagerHelperBean = this.eagerHelperBean();
-		ITestBean lazyPassthroughBean = this.lazyPassthroughBean();
-		ITestBean eagerPassthroughBean = this.eagerPassthroughBean();
+		ITestBean lazyHelperBean = beans.lazyHelperBean();
+		ITestBean eagerHelperBean = beans.eagerHelperBean();
+		ITestBean lazyPassthroughBean = beans.lazyPassthroughBean();
+		ITestBean eagerPassthroughBean = beans.eagerPassthroughBean();
 
 		assertThat(lazyHelperBean, instanceOf(EarlyBeanReferenceProxy.class));
 		assertThat(eagerHelperBean, instanceOf(EarlyBeanReferenceProxy.class));
@@ -142,8 +140,13 @@ class FeatureConfig implements BeanFactoryAware {
 		assertThat(this.beanFactory.containsSingleton("lazyPassthroughBean"), is(false));
 		assertThat(this.beanFactory.containsSingleton("eagerPassthroughBean"), is(false));
 
-		return spec;
+		return new StubSpecification();
 	}
+}
+
+
+@Configuration
+class TestBeanConfig {
 
 	@Lazy @Bean
 	public ITestBean lazyHelperBean() {
@@ -167,40 +170,21 @@ class FeatureConfig implements BeanFactoryAware {
 
 }
 
-class DummySpecification implements FeatureSpecification {
-
-	public void validate() throws InvalidSpecificationException {
+@FeatureConfiguration
+@Import(NonInterfaceBeans.class)
+class InvalidFeatureConfig {
+	@Feature
+	public FeatureSpecification feature(NonInterfaceBeans beans) throws Throwable {
+		// reference a non-interface returning @Bean method
+		// this will throw ProxyCreationException
+		beans.testBean();
+		return null; // will never be invoked
 	}
-
-	public Class<? extends SpecificationExecutor> getExecutorType() {
-		return DummyExecutor.class;
-	}
-
-}
-
-class DummyExecutor implements SpecificationExecutor {
-
-	public boolean accepts(FeatureSpecification spec) {
-		return true;
-	}
-
-	public void execute(FeatureSpecification spec, ExecutorContext executorContext) {
-		// no-op
-	}
-
 }
 
 
 @Configuration
-class InvalidFeatureConfig {
-	@Feature
-	public FeatureSpecification feature() throws Throwable {
-		// reference a non-interface returning @Bean method
-		// this will throw ProxyCreationException
-		this.testBean();
-		return null; // will never be invoked
-	}
-
+class NonInterfaceBeans {
 	@Bean
 	public TestBean testBean() {
 		return new TestBean("invalid");

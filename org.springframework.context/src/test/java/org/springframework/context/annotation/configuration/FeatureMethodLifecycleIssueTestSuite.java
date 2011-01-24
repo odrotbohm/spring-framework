@@ -29,8 +29,6 @@ import org.springframework.context.annotation.FeatureMethodEarlyBeanProxyTests;
 @RunWith(Suite.class)
 @SuiteClasses({
 	FeatureMethodEarlyBeanProxyTests.class,
-	FeatureMethodAndValueInjectionTests.class,
-	FeatureMethodAndAutowiredFieldTests.class,
 	ConfigurationClassWithPlaceholderConfigurerBeanTests.class,
 })
 public class FeatureMethodLifecycleIssueTestSuite {

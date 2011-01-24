@@ -50,6 +50,7 @@ import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.SourceAwareSpecification;
 import org.springframework.context.SpecificationExecutor;
 import org.springframework.core.Ordered;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
@@ -207,6 +208,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
 		Map<String, Object> featureConfigBeans = beanFactory.getBeansWithAnnotation(FeatureConfiguration.class);
 		for (final Object featureConfigBean : featureConfigBeans.values()) {
+			checkForBeanMethods(featureConfigBean.getClass());
+		}
+		for (final Object featureConfigBean : featureConfigBeans.values()) {
 			ReflectionUtils.doWithMethods(featureConfigBean.getClass(),
 					new ReflectionUtils.MethodCallback() {
 						public void doWith(Method featureMethod) throws IllegalArgumentException, IllegalAccessException {
@@ -214,10 +218,35 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						} },
 					new ReflectionUtils.MethodFilter() {
 						public boolean matches(Method candidateMethod) {
+							if (AnnotationUtils.findAnnotation(candidateMethod, Bean.class) != null) {
+								throw new FeatureMethodExecutionException(
+										format("@FeatureConfiguration classes must not contain @Bean-annotated methods. " +
+												"%s.%s() is annotated with @Bean and must be removed in order to proceed. " +
+												"Consider moving this method into a dedicated @Configuration class and " +
+												"injecting the bean as a parameter into any @Feature method(s) that need it.",
+												candidateMethod.getDeclaringClass().getSimpleName(), candidateMethod.getName()));
+							}
 							return candidateMethod.isAnnotationPresent(Feature.class);
 						} });
 		}
 		this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = false;
+	}
+
+	private void checkForBeanMethods(final Class<?> featureConfigClass) {
+		ReflectionUtils.doWithMethods(featureConfigClass,
+				new ReflectionUtils.MethodCallback() {
+					public void doWith(Method beanMethod) throws IllegalArgumentException, IllegalAccessException {
+						throw new FeatureMethodExecutionException(
+								format("@FeatureConfiguration classes must not contain @Bean-annotated methods. " +
+										"%s.%s() is annotated with @Bean and must be removed in order to proceed. " +
+										"Consider moving this method into a dedicated @Configuration class and " +
+										"injecting the bean as a parameter into any @Feature method(s) that need it.",
+										beanMethod.getDeclaringClass().getSimpleName(), beanMethod.getName()));
+					} },
+				new ReflectionUtils.MethodFilter() {
+					public boolean matches(Method candidateMethod) {
+						return (AnnotationUtils.findAnnotation(candidateMethod, Bean.class) != null);
+					} });
 	}
 
 	/**
