@@ -272,25 +272,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		final BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 		ExecutorContext executorContext = new ExecutorContext();
 		executorContext.setEnvironment(this.environment);
-		executorContext.setRegistry(registry);
 		executorContext.setResourceLoader(this.resourceLoader);
-		executorContext.setRegistrar(new ComponentRegistrar() {
-			public String registerWithGeneratedName(BeanDefinition beanDefinition) {
-				String name = new DefaultBeanNameGenerator().generateBeanName(beanDefinition, registry);
-				registry.registerBeanDefinition(name, beanDefinition);
-				System.out
-						.println("ConfigurationClassPostProcessor.createExecutorContext(...).new ComponentRegistrar() {...}.registerWithGeneratedName()");
-				return name;
-			}
-			public void registerBeanComponent(BeanComponentDefinition component) {
-				System.out
-						.println("ConfigurationClassPostProcessor.createExecutorContext(...).new ComponentRegistrar() {...}.registerBeanComponent()");
-			}
-			public void registerComponent(ComponentDefinition component) {
-				System.out
-						.println("ConfigurationClassPostProcessor.createExecutorContext(...).new ComponentRegistrar() {...}.registerComponent()");
-			}
-		});
+		executorContext.setRegistry(registry);
+		executorContext.setRegistrar(new SimpleComponentRegistrar(registry));
 		return executorContext;
 	}
 

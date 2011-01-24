@@ -49,23 +49,7 @@ public class ComponentScanSpecificationExecutorTests {
 		this.executorContext.setRegistry(bf);
 		this.executorContext.setResourceLoader(new DefaultResourceLoader());
 		this.executorContext.setEnvironment(new MockEnvironment());
-		this.executorContext.setRegistrar(new ComponentRegistrar() {
-			
-			public String registerWithGeneratedName(BeanDefinition beanDefinition) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-			
-			public void registerComponent(ComponentDefinition component) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			public void registerBeanComponent(BeanComponentDefinition component) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
+		this.executorContext.setRegistrar(new SimpleComponentRegistrar(bf));
 	}
 
 	@Test
