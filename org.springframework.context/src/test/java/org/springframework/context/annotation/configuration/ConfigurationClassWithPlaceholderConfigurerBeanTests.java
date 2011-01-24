@@ -22,7 +22,6 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -42,16 +41,17 @@ import test.beans.TestBean;
  * as has been done in the test below. Simply said, placeholder configurer @Bean methods
  * and @Value fields in the same configuration class are mutually exclusive.
  *
- * Theoretically, if early-instantiated configuration class instances were reprocessed
- * by {@link AutowiredAnnotationBeanPostProcessor} for late value injection, this timing
- * problem would largely go away.  This is also important for @Feature method lifecycle
- * issues with @Value fields, but is not done yet.
- *
  * @author Chris Beams
- * @since 3.1
  */
 public class ConfigurationClassWithPlaceholderConfigurerBeanTests {
 
+	/**
+	 * Intentionally ignored test proving that a property placeholder bean
+	 * cannot be declared in the same configuration class that has a @Value
+	 * field in need of placeholder replacement.  It's an obvious chicken-and-egg issue.
+	 * The solution is to do as {@link #valueFieldsAreProcessedWhenPlaceholderConfigurerIsSegregated()}
+	 * does and segragate the two bean definitions across configuration classes.
+	 */
 	@Ignore @Test
 	public void valueFieldsAreNotProcessedWhenPlaceholderConfigurerIsIntegrated() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
