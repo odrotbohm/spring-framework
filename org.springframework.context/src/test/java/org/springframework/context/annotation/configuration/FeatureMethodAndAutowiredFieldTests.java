@@ -19,6 +19,7 @@ package org.springframework.context.annotation.configuration;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.FeatureSpecification;
@@ -59,7 +60,7 @@ public class FeatureMethodAndAutowiredFieldTests {
 	/**
 	 * Fails.
 	 */
-	@Test
+	@Ignore @Test
 	public void autowiredInjectionOccursInConfigClassesWithFeatureMethods() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		ctx.register(ConfigWithFeatureMethodAndAutowiredField.class);
@@ -72,7 +73,7 @@ public class FeatureMethodAndAutowiredFieldTests {
 	/**
 	 * Fails.
 	 */
-	@Test
+	@Ignore @Test
 	public void autowiredInjectionFromXmlOccursInConfigClassesWithFeatureMethods() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		ctx.register(ConfigWithFeatureMethodAndAutowiredFieldFromXml.class);

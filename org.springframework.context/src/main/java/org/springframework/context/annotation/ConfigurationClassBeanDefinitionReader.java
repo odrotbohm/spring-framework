@@ -32,9 +32,6 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.parsing.BeanComponentDefinition;
-import org.springframework.beans.factory.parsing.ComponentDefinition;
-import org.springframework.beans.factory.parsing.ComponentRegistrar;
 import org.springframework.beans.factory.parsing.Location;
 import org.springframework.beans.factory.parsing.Problem;
 import org.springframework.beans.factory.parsing.ProblemReporter;
@@ -43,7 +40,6 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionReader;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.DefaultBeanNameGenerator;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ExecutorContext;
@@ -115,24 +111,8 @@ class ConfigurationClassBeanDefinitionReader {
 		this.componentScanSpecCreator = new ComponentScanAnnotationSpecificationCreator(this.problemReporter);
 		this.componentScanSpecExecutor = new ComponentScanExecutor();
 		this.executorContext = new ExecutorContext();
-		this.executorContext.setRegistry(registry);
-		this.executorContext.setRegistrar(new ComponentRegistrar() {
-			public String registerWithGeneratedName(BeanDefinition beanDefinition) {
-				String name = new DefaultBeanNameGenerator().generateBeanName(beanDefinition, registry);
-				registry.registerBeanDefinition(name, beanDefinition);
-				System.out
-						.println("ConfigurationClassBeanDefinitionReader.ConfigurationClassBeanDefinitionReader(...).new ComponentRegistrar() {...}.registerWithGeneratedName()");
-				return name;
-			}
-			public void registerBeanComponent(BeanComponentDefinition component) {
-				System.out
-						.println("ConfigurationClassBeanDefinitionReader.ConfigurationClassBeanDefinitionReader(...).new ComponentRegistrar() {...}.registerBeanComponent()");
-			}
-			public void registerComponent(ComponentDefinition component) {
-				System.out
-						.println("ConfigurationClassBeanDefinitionReader.ConfigurationClassBeanDefinitionReader(...).new ComponentRegistrar() {...}.registerComponent()");
-			}
-		});
+		this.executorContext.setRegistry(this.registry);
+		this.executorContext.setRegistrar(new SimpleComponentRegistrar(this.registry));
 		this.executorContext.setResourceLoader(resourceLoader);
 		this.executorContext.setEnvironment(environment);
 	}

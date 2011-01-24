@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,7 +52,7 @@ import test.beans.TestBean;
  */
 public class ConfigurationClassWithPlaceholderConfigurerBeanTests {
 
-	@Test
+	@Ignore @Test
 	public void valueFieldsAreNotProcessedWhenPlaceholderConfigurerIsIntegrated() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		ctx.register(ConfigWithValueFieldAndPlaceholderConfigurer.class);

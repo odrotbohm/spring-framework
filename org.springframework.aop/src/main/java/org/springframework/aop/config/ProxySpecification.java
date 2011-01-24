@@ -16,7 +16,21 @@
 
 package org.springframework.aop.config;
 
-public interface ProxySpecification /*implements Specification*/ {
+/**
+ * Represents the subset of configuration information common to spring container
+ * features that deal with AOP proxying, such as transaction management, AspectJ
+ * auto-proxying, etc.
+ *
+ * <p>Designed for implementation by {@code FeatureSpecification} classes; as such,
+ * methods do not follow get/set JavaBeans-style naming conventions. Rather, accessor
+ * methods return Object, with the assumption that this return type will be narrowed
+ * through covariant return types in the implementing class, which will return its 'this'
+ * reference.
+ * 
+ * @author Chris Beams
+ * @since 3.1
+ */
+public interface ProxySpecification {
 
 	Boolean proxyTargetClass();
 
