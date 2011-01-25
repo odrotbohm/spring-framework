@@ -37,10 +37,14 @@ public class ComponentScanFeatureTests {
 }
 
 @Configuration
+@Import(ComponentScanFeatureConfig.Features.class)
 class ComponentScanFeatureConfig {
-	@Feature
-	public ComponentScanSpecification componentScan() {
-		return new ComponentScanSpecification(example.scannable._package.class);
+	@FeatureConfiguration
+	static class Features {
+		@Feature
+		public ComponentScanSpecification componentScan() {
+			return new ComponentScanSpecification(example.scannable._package.class);
+		}
 	}
 
 	@Bean

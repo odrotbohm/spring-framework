@@ -21,6 +21,7 @@ import static java.lang.String.format;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -206,7 +207,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 */
 	private void processFeatureConfigurationClasses(final ConfigurableListableBeanFactory beanFactory) {
 		this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
-		Map<String, Object> featureConfigBeans = beanFactory.getBeansWithAnnotation(FeatureConfiguration.class);
+		Map<String, Object> featureConfigBeans = getFeatureConfigurationBeans(beanFactory);
 		for (final Object featureConfigBean : featureConfigBeans.values()) {
 			checkForBeanMethods(featureConfigBean.getClass());
 		}
@@ -230,6 +231,28 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						} });
 		}
 		this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = false;
+	}
+
+	/**
+	 * Alternative to {@link ListableBeanFactory#getBeansWithAnnotation(Class)} that avoids
+	 * instantiating FactoryBean objects.  FeatureConfiguration types cannot be registered as
+	 * FactoryBeans, so ignoring them won't cause a problem.  On the other hand, using gBWA()
+	 * at this early phase of the container would cause all @Bean methods to be invoked, as they
+	 * are ultimately FactoryBeans underneath.
+	 */
+	private Map<String, Object> getFeatureConfigurationBeans(ConfigurableListableBeanFactory beanFactory) {
+		Map<String, Object> fcBeans = new HashMap<String, Object>();
+		for (String beanName : beanFactory.getBeanDefinitionNames()) {
+			BeanDefinition beanDef = beanFactory.getBeanDefinition(beanName);
+			if (!(beanDef instanceof AbstractBeanDefinition) || !((AbstractBeanDefinition)beanDef).hasBeanClass()) {
+				continue;
+			}
+			Class<?> beanClass = ((AbstractBeanDefinition)beanDef).getBeanClass();
+			if (AnnotationUtils.findAnnotation(beanClass, FeatureConfiguration.class) != null) {
+				fcBeans.put(beanName, beanFactory.getBean(beanName));
+			}
+		}
+		return fcBeans;
 	}
 
 	private void checkForBeanMethods(final Class<?> featureConfigClass) {
@@ -268,7 +291,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			List<Object> beanArgs = new ArrayList<Object>();
 			Class<?>[] parameterTypes = featureMethod.getParameterTypes();
 			for (Class<?> paramType : parameterTypes) {
-				beanArgs.add(beanFactory.getBean(paramType));
+				beanArgs.add(createProxy(paramType, beanFactory));
 			}
 
 			// reflectively invoke that method
@@ -290,6 +313,11 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		} catch (Exception ex) {
 			throw new FeatureMethodExecutionException(ex);
 		}
+	}
+
+	private Object createProxy(Class<?> paramType, ConfigurableListableBeanFactory beanFactory) {
+		EarlyBeanReferenceProxyCreator proxyCreator = new EarlyBeanReferenceProxyCreator(beanFactory, this.earlyBeanReferenceProxyStatus);
+		return proxyCreator.createProxy(paramType);
 	}
 
 	private ExecutorContext createExecutorContext(ConfigurableListableBeanFactory beanFactory) {
