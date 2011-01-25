@@ -30,11 +30,15 @@ import org.springframework.transaction.annotation.TxAnnotationDrivenFeatureTests
  */
 @RunWith(Suite.class)
 @SuiteClasses({
+	EarlyBeanReferenceProxyTests.class,
+	SimpleFeatureMethodProcessingTests.class,
+	BeanFactoryAwareFeatureConfigurationTests.class,
+	FeatureMethodBeanReferenceTests.class,
 	FeatureConfigurationClassTests.class,
 	FeatureMethodEarlyBeanProxyTests.class,
 	ComponentScanFeatureTests.class,
 	TxAnnotationDrivenFeatureTests.class,
 })
-public class FeatureSpecificationTestSuite {
+public class FeatureTestSuite {
 
 }

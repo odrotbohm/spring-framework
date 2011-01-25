@@ -26,8 +26,10 @@ import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.Assert;
 
 class EarlyBeanReferenceProxyCreator {
 
@@ -39,64 +41,107 @@ class EarlyBeanReferenceProxyCreator {
 		this.earlyBeanReferenceProxyStatus = earlyBeanReferenceProxyStatus;
 	}
 
-	public Object createProxy(Class<?> paramType) {
+	@SuppressWarnings("unchecked")
+	public <T> T createProxy(Class<T> proxyType) {
 		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(paramType);
+		enhancer.setSuperclass(proxyType);
 		enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
 		enhancer.setCallbacks(new Callback[] {
 			new EarlyBeanReferenceProxyMethodInterceptor(this.beanFactory, this.earlyBeanReferenceProxyStatus),
-			new UnsupportedOperationInterceptor()
+			new ToStringInterceptor(),
+			new EqualsAndHashCodeInterceptor(),
+			new TargetBeanDelegatingMethodInterceptor(this.beanFactory)
 		});
 		enhancer.setCallbackFilter(new CallbackFilter() {
 			public int accept(Method method) {
-				return (AnnotationUtils.findAnnotation(method, Bean.class) != null ? 0 : 1);
-			}
-		});
-		return enhancer.create();
-	}
-
-}
-
-class UnsupportedOperationInterceptor implements MethodInterceptor {
-
-	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-		throw new UnsupportedOperationException();
-	}
-	
-}
-
-class EarlyBeanReferenceProxyMethodInterceptor implements MethodInterceptor {
-	
-	private final ConfigurableListableBeanFactory beanFactory;
-	private final EarlyBeanReferenceProxyStatus earlyBeanReferenceProxyStatus;
-
-	public EarlyBeanReferenceProxyMethodInterceptor(ConfigurableListableBeanFactory beanFactory, EarlyBeanReferenceProxyStatus earlyBeanReferenceProxyStatus) {
-		this.beanFactory = beanFactory;
-		this.earlyBeanReferenceProxyStatus = earlyBeanReferenceProxyStatus;
-	}
-
-	public Object intercept(Object obj, final Method beanMethod, Object[] args, MethodProxy proxy) throws Throwable {
-		final Class<?> returnType = beanMethod.getReturnType();
-		if (!returnType.isInterface()) {
-			//return new EarlyBeanReferenceProxyCreator(this.beanFactory).createProxy(beanMethod.getReturnType());
-			throw new ProxyCreationException(String.format(
-					"@Bean method %s.%s() is referenced from within a @Feature method, therefore " +
-					"its return type must be an interface in order to allow for an early bean reference " +
-					"proxy to be created. Either modify the return type accordingly, or do not reference " +
-					"this bean method within @Feature methods.", beanMethod.getDeclaringClass().getSimpleName(), beanMethod.getName()));
-		}
-		Object proxiedBean = Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] {returnType,EarlyBeanReferenceProxy.class}, new InvocationHandler() {
-			public Object invoke(Object proxiedBean, Method targetMethod, Object[] targetMethodArgs) throws Throwable {
-				if (targetMethod.getName().equals("toString")) {
-					return String.format("EarlyBeanReferenceProxy for %s object returned from @Bean method %s.%s()",
-							returnType.getSimpleName(), beanMethod.getDeclaringClass().getSimpleName(), beanMethod.getName());
+				if (AnnotationUtils.findAnnotation(method, Bean.class) != null) {
+					return 0;
 				}
-				earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = false;
-				Object actualBean = beanFactory.getBean(beanMethod.getName());
-				earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
-				return targetMethod.invoke(actualBean, targetMethodArgs);
+				if (method.getName().equals("toString")) {
+					return 1;
+				}
+				if (method.getName().equals("hashCode") || method.getName().equals("equals")) {
+					return 2;
+				}
+				return 3;
 			}
 		});
-		return proxiedBean;
+		return (T)enhancer.create();
 	}
+
+	static class ToStringInterceptor implements MethodInterceptor {
+
+		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+			return String.format("EarlyBeanReferenceProxy for bean of type %s", obj.getClass().getSuperclass().getSimpleName());
+		}
+
 	}
+
+	static class EqualsAndHashCodeInterceptor implements MethodInterceptor {
+
+		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+			throw new UnsupportedOperationException("equals() and hashCode() methods on [%s] should not be called as " +
+					"doing so will cause premature instantiation of the target bean object. This may have occurred " +
+					"because the proxied object was added to a collection.");
+		}
+
+	}
+
+	static class TargetBeanDelegatingMethodInterceptor implements MethodInterceptor {
+
+		private final BeanFactory beanFactory;
+
+		public TargetBeanDelegatingMethodInterceptor(BeanFactory beanFactory) {
+			this.beanFactory = beanFactory;
+		}
+
+		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+			/* TODO: logging?
+			System.out.printf("TargetBeanDelegatingMethodInterceptor.intercept(): attempting to retreive object of " +
+					"type %s and to delegate call to method %s() made against %s\n",
+					obj.getClass().getSuperclass(), method.getName(), this);
+			*/
+			return method.invoke(beanFactory.getBean(obj.getClass().getSuperclass()), args);
+		}
+
+	}
+
+	static class EarlyBeanReferenceProxyMethodInterceptor implements MethodInterceptor {
+
+		private final ConfigurableListableBeanFactory beanFactory;
+		private final EarlyBeanReferenceProxyStatus earlyBeanReferenceProxyStatus;
+
+		public EarlyBeanReferenceProxyMethodInterceptor(ConfigurableListableBeanFactory beanFactory, EarlyBeanReferenceProxyStatus earlyBeanReferenceProxyStatus) {
+			this.beanFactory = beanFactory;
+			this.earlyBeanReferenceProxyStatus = earlyBeanReferenceProxyStatus;
+		}
+
+		public Object intercept(Object obj, final Method beanMethod, Object[] args, MethodProxy proxy) throws Throwable {
+			Assert.state(earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies == true,
+					"EarlyBeanReferenceProxyStatus must be true when intercepting a method call");
+			final Class<?> returnType = beanMethod.getReturnType();
+			if (!returnType.isInterface()) {
+				//return new EarlyBeanReferenceProxyCreator(this.beanFactory).createProxy(beanMethod.getReturnType());
+				throw new ProxyCreationException(String.format(
+						"@Bean method %s.%s() is referenced from within a @Feature method, therefore " +
+						"its return type must be an interface in order to allow for an early bean reference " +
+						"proxy to be created. Either modify the return type accordingly, or do not reference " +
+						"this bean method within @Feature methods.", beanMethod.getDeclaringClass().getSimpleName(), beanMethod.getName()));
+			}
+			Object proxiedBean = Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] {returnType,EarlyBeanReferenceProxy.class}, new InvocationHandler() {
+				public Object invoke(Object proxiedBean, Method targetMethod, Object[] targetMethodArgs) throws Throwable {
+					if (targetMethod.getName().equals("toString")) {
+						return String.format("EarlyBeanReferenceProxy for %s object returned from @Bean method %s.%s()",
+								returnType.getSimpleName(), beanMethod.getDeclaringClass().getSimpleName(), beanMethod.getName());
+					}
+					earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = false;
+					Object actualBean = beanFactory.getBean(beanMethod.getName());
+					earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
+					return targetMethod.invoke(actualBean, targetMethodArgs);
+				}
+			});
+			return proxiedBean;
+		}
+	}
+}
+
