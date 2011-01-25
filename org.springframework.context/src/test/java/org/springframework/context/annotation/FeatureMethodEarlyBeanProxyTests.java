@@ -86,7 +86,7 @@ public class FeatureMethodEarlyBeanProxyTests {
 	@Test
 	public void earlyProxyBeansMustBeInterfaceBased() {
 		try {
-			new AnnotationConfigApplicationContext(InvalidFeatureConfig.class);
+			new AnnotationConfigApplicationContext(FeatureConfigReferencingNonInterfaceBeans.class);
 			fail("should have thrown");
 		} catch (FeatureMethodExecutionException ex) {
 			assertThat(ex.getCause(), instanceOf(InvocationTargetException.class));
@@ -107,6 +107,10 @@ class FeatureConfig implements BeanFactoryAware {
 
 	@Feature
 	public StubSpecification feature(TestBeanConfig beans) {
+
+		assertThat(
+				"The @Configuration class instance itself should be an early-ref proxy",
+				beans, instanceOf(EarlyBeanReferenceProxy.class));
 
 		// invocation of @Bean methods within @Feature methods should return proxies
 		ITestBean lazyHelperBean = beans.lazyHelperBean();
@@ -170,15 +174,19 @@ class TestBeanConfig {
 
 }
 
+
 @FeatureConfiguration
 @Import(NonInterfaceBeans.class)
-class InvalidFeatureConfig {
+class FeatureConfigReferencingNonInterfaceBeans {
 	@Feature
-	public FeatureSpecification feature(NonInterfaceBeans beans) throws Throwable {
-		// reference a non-interface returning @Bean method
-		// this will throw ProxyCreationException
+	public FeatureSpecification feature1(NonInterfaceBeans beans) throws Throwable {
 		beans.testBean();
-		return null; // will never be invoked
+		return new StubSpecification();
+	}
+
+	@Feature
+	public FeatureSpecification feature2(TestBean testBean) throws Throwable {
+		return new StubSpecification();
 	}
 }
 
