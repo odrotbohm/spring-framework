@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.TxAnnotationDrivenFeatureTests
 	FeatureMethodBeanReferenceTests.class,
 	FeatureConfigurationClassTests.class,
 	FeatureMethodEarlyBeanProxyTests.class,
+	FeatureConfigurationImportTests.class,
 	ComponentScanFeatureTests.class,
 	TxAnnotationDrivenFeatureTests.class,
 })

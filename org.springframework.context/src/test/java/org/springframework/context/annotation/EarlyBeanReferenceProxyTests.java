@@ -32,7 +32,15 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import test.beans.ITestBean;
 import test.beans.TestBean;
 
+/**
+ * Unit tests for {@link EarlyBeanReferenceProxyCreator}. Ensure that
+ * {@link EarlyBeanReferenceProxy} objects behave properly.
+ *
+ * @author Chris Beams
+ * @since 3.1
+ */
 public class EarlyBeanReferenceProxyTests {
+
 	private DefaultListableBeanFactory bf;
 	private EarlyBeanReferenceProxyStatus status;
 
