@@ -26,6 +26,7 @@ public class ComponentScanFeatureTests {
 	public void viaContextRegistration() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		ctx.register(ComponentScanFeatureConfig.class);
+		ctx.register(ComponentScanFeatureConfig.Features.class);
 		ctx.refresh();
 		ctx.getBean(ComponentScanFeatureConfig.class);
 		ctx.getBean(TestBean.class);
@@ -37,7 +38,7 @@ public class ComponentScanFeatureTests {
 }
 
 @Configuration
-@Import(ComponentScanFeatureConfig.Features.class)
+//@Import(ComponentScanFeatureConfig.Features.class)
 class ComponentScanFeatureConfig {
 	@FeatureConfiguration
 	static class Features {
