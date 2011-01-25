@@ -23,7 +23,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -41,15 +40,6 @@ public class EarlyBeanReferenceProxyTests {
 	public void setUp() {
 		bf = new DefaultListableBeanFactory();
 		status = new EarlyBeanReferenceProxyStatus();
-	}
-
-	@Ignore @Test
-	public void proxyStatusIsChecked() {
-		status.createEarlyBeanReferenceProxies = false;
-
-		EarlyBeanReferenceProxyCreator pc = new EarlyBeanReferenceProxyCreator(bf, status);
-		TestBean proxy = pc.createProxy(TestBean.class);
-		proxy.toString();
 	}
 
 	@Test

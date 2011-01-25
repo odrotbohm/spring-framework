@@ -45,7 +45,7 @@ import org.springframework.transaction.config.TxAnnotationDriven;
  */
 public class TxAnnotationDrivenFeatureTests {
 	@Test
-	public void isProxy() {
+	public void transactionProxyIsCreated() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		ctx.register(TxConfig.class);
 		ctx.refresh();
