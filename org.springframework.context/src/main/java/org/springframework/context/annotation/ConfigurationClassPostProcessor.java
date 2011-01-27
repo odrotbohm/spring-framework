@@ -210,26 +210,23 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 */
 	private void processFeatureConfigurationClasses(final ConfigurableListableBeanFactory beanFactory) {
 		this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
+
 		Map<String, Object> featureConfigBeans = getFeatureConfigurationBeans(beanFactory);
 		for (final Object featureConfigBean : featureConfigBeans.values()) {
 			checkForBeanMethods(featureConfigBean.getClass());
 		}
+
+		final EarlyBeanReferenceProxyCreator proxyCreator =
+			new EarlyBeanReferenceProxyCreator(beanFactory, this.earlyBeanReferenceProxyStatus);
+
 		for (final Object featureConfigBean : featureConfigBeans.values()) {
 			ReflectionUtils.doWithMethods(featureConfigBean.getClass(),
 					new ReflectionUtils.MethodCallback() {
 						public void doWith(Method featureMethod) throws IllegalArgumentException, IllegalAccessException {
-							processFeatureMethod(featureMethod, featureConfigBean, beanFactory);
+							processFeatureMethod(featureMethod, featureConfigBean, beanFactory, proxyCreator);
 						} },
 					new ReflectionUtils.MethodFilter() {
 						public boolean matches(Method candidateMethod) {
-							if (AnnotationUtils.findAnnotation(candidateMethod, Bean.class) != null) {
-								throw new FeatureMethodExecutionException(
-										format("@FeatureConfiguration classes must not contain @Bean-annotated methods. " +
-												"%s.%s() is annotated with @Bean and must be removed in order to proceed. " +
-												"Consider moving this method into a dedicated @Configuration class and " +
-												"injecting the bean as a parameter into any @Feature method(s) that need it.",
-												candidateMethod.getDeclaringClass().getSimpleName(), candidateMethod.getName()));
-							}
 							return candidateMethod.isAnnotationPresent(Feature.class);
 						} });
 		}
@@ -283,12 +280,14 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * @param beanFactory 
 	 * @throws SecurityException 
 	 */
-	private void processFeatureMethod(final Method featureMethod, Object configInstance, ConfigurableListableBeanFactory beanFactory) {
+	private void processFeatureMethod(final Method featureMethod, Object configInstance,
+			ConfigurableListableBeanFactory beanFactory, EarlyBeanReferenceProxyCreator proxyCreator) {
 		try {
 			// get the return type
 			if (!(FeatureSpecification.class.isAssignableFrom(featureMethod.getReturnType()))) {
 				// TODO: raise a Problem instead?
-				throw new IllegalArgumentException("return type from @Feature methods must be assignable to FeatureSpecification");
+				throw new IllegalArgumentException(
+						"return type from @Feature methods must be assignable to FeatureSpecification");
 			}
 
 			List<Object> beanArgs = new ArrayList<Object>();
@@ -296,7 +295,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			for (int i = 0; i < parameterTypes.length; i++) {
 				MethodParameter mp = new MethodParameter(featureMethod, i);
 				DependencyDescriptor dd = new DependencyDescriptor(mp, true, false);
-				beanArgs.add(createProxy(dd, beanFactory));
+				Object proxiedBean = proxyCreator.createProxy(dd);
+				beanArgs.add(proxiedBean);
 			}
 
 			// reflectively invoke that method
@@ -318,11 +318,6 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		} catch (Exception ex) {
 			throw new FeatureMethodExecutionException(ex);
 		}
-	}
-
-	private Object createProxy(DependencyDescriptor dd, ConfigurableListableBeanFactory beanFactory) {
-		EarlyBeanReferenceProxyCreator proxyCreator = new EarlyBeanReferenceProxyCreator(beanFactory, this.earlyBeanReferenceProxyStatus);
-		return proxyCreator.createProxy(dd);
 	}
 
 	private ExecutorContext createExecutorContext(ConfigurableListableBeanFactory beanFactory) {
