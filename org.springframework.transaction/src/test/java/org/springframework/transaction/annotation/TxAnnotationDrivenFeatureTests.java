@@ -28,7 +28,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Feature;
 import org.springframework.context.annotation.FeatureConfiguration;
-import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.CallCountingTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -47,17 +46,48 @@ public class TxAnnotationDrivenFeatureTests {
 	@Test
 	public void transactionProxyIsCreated() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(TxConfig.class);
+		ctx.register(TxFeatures.class, TxManagerConfig.class);
 		ctx.refresh();
 		TransactionalTestBean bean = ctx.getBean(TransactionalTestBean.class);
 		assertThat("testBean is not a proxy", AopUtils.isAopProxy(bean), is(true));
 		Map<?,?> services = ctx.getBeansWithAnnotation(Service.class);
 		assertThat("Stereotype annotation not visible", services.containsKey("testBean"), is(true));
 	}
+
+	@Test
+	public void txManagerIsResolvedOnInvocationOfTransactionalMethod() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(TxFeatures.class, TxManagerConfig.class);
+		ctx.refresh();
+		TransactionalTestBean bean = ctx.getBean(TransactionalTestBean.class);
+
+		// invoke a transactional method, causing the PlatformTransactionManager bean to be resolved.
+		bean.findAllFoos();
+	}
+
+	@Test
+	public void txManagerIsResolvedCorrectlyWhenMultipleManagersArePresent() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(TxFeatures.class, MultiTxManagerConfig.class);
+		ctx.refresh();
+		TransactionalTestBean bean = ctx.getBean(TransactionalTestBean.class);
+
+		// invoke a transactional method, causing the PlatformTransactionManager bean to be resolved.
+		bean.findAllFoos();
+	}
 }
 
+@FeatureConfiguration
+class TxFeatures {
+
+	@Feature
+	public TxAnnotationDriven tx(TxManagerConfig txManagerConfig) {
+		return new TxAnnotationDriven(txManagerConfig.txManager()).proxyTargetClass(false);
+	}
+
+}
 @Configuration
-class DataConfig {
+class TxManagerConfig {
 
 	@Bean
 	public TransactionalTestBean testBean() {
@@ -71,14 +101,13 @@ class DataConfig {
 
 }
 
+@Configuration
+class MultiTxManagerConfig extends TxManagerConfig {
 
-@FeatureConfiguration
-@Import(DataConfig.class)
-class TxConfig {
-
-	@Feature
-	public TxAnnotationDriven tx(DataConfig dataConfig) {
-		return new TxAnnotationDriven(dataConfig.txManager()).proxyTargetClass(false);
+	@Bean
+	public PlatformTransactionManager txManager2() {
+		return new CallCountingTransactionManager();
 	}
 
 }
+

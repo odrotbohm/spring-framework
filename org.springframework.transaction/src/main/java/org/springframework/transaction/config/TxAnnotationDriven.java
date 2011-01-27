@@ -28,7 +28,7 @@ public class TxAnnotationDriven extends AbstractFeatureSpecification implements 
 	private static final Class<? extends SpecificationExecutor> DEFAULT_EXECUTOR_TYPE = TxAnnotationDrivenExecutor.class;
 
 	private PlatformTransactionManager txManager;
-	private String txManagerName;
+	private String txManagerBeanName;
 
 	private Integer order = null;
 
@@ -36,9 +36,9 @@ public class TxAnnotationDriven extends AbstractFeatureSpecification implements 
 	private ProxyType proxyType = ProxyType.SPRINGAOP;
 	private Boolean exposeProxy = false;
 
-	public TxAnnotationDriven(String txManagerName) {
+	public TxAnnotationDriven(String txManagerBeanName) {
 		super(DEFAULT_EXECUTOR_TYPE);
-		this.txManagerName = txManagerName;
+		this.txManagerBeanName = txManagerBeanName;
 	}
 
 	public TxAnnotationDriven(PlatformTransactionManager txManager) {
@@ -46,8 +46,8 @@ public class TxAnnotationDriven extends AbstractFeatureSpecification implements 
 		this.txManager = txManager;
 	}
 
-	public String transactionManagerName() {
-		return this.txManagerName;
+	public String transactionManagerBeanName() {
+		return this.txManagerBeanName;
 	}
 
 	public PlatformTransactionManager transactionManager() {
