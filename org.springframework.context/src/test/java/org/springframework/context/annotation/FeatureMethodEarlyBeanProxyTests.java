@@ -21,9 +21,6 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.lang.reflect.InvocationTargetException;
 
 import org.junit.Test;
 import org.springframework.beans.BeansException;
@@ -84,14 +81,8 @@ public class FeatureMethodEarlyBeanProxyTests {
 
 
 	@Test
-	public void earlyProxyBeansMustBeInterfaceBased() {
-		try {
-			new AnnotationConfigApplicationContext(FeatureConfigReferencingNonInterfaceBeans.class);
-			fail("should have thrown");
-		} catch (FeatureMethodExecutionException ex) {
-			assertThat(ex.getCause(), instanceOf(InvocationTargetException.class));
-			assertThat(ex.getCause().getCause(), instanceOf(ProxyCreationException.class));
-		}
+	public void earlyProxyBeansMayBeInterfaceBasedOrConcrete() {
+		new AnnotationConfigApplicationContext(FeatureConfigReferencingNonInterfaceBeans.class);
 	}
 }
 
