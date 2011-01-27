@@ -42,5 +42,5 @@ import org.springframework.transaction.annotation.TxAnnotationDrivenFeatureTests
 	TxAnnotationDrivenFeatureTests.class,
 })
 public class FeatureTestSuite {
-	
+
 }
