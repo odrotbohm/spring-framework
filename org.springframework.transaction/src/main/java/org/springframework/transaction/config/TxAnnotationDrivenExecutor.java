@@ -78,7 +78,13 @@ class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxAnnotat
 	}
 
 	private static void registerTransactionManager(TxAnnotationDriven spec, BeanDefinition def) {
-		def.getPropertyValues().add("transactionManagerBeanName", spec.transactionManagerName());
+		if (spec.transactionManager() != null) {
+			def.getPropertyValues().add("transactionManager", spec.transactionManager());
+		} else if (spec.transactionManagerBeanName() != null) {
+			def.getPropertyValues().add("transactionManagerBeanName", spec.transactionManagerBeanName());
+		} else {
+			throw new IllegalStateException("transactionManager or transactionManagerBeanName must be specified");
+		}
 	}
 
 	/**
