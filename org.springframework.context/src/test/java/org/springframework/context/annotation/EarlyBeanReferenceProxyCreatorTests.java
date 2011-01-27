@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -139,6 +140,9 @@ public class EarlyBeanReferenceProxyCreatorTests {
 
 		ITestBean bean = proxy.aBeanMethod();
 		assertThat(bean, instanceOf(EarlyBeanReferenceProxy.class));
+		assertThat(
+				"objects returned from @Bean methods with an interface return type should be JDK-proxied",
+				java.lang.reflect.Proxy.isProxyClass(bean.getClass()), is(true));
 	}
 
 	@Test
@@ -150,6 +154,9 @@ public class EarlyBeanReferenceProxyCreatorTests {
 
 		TestBean bean = proxy.aBeanMethod();
 		assertThat(bean, instanceOf(EarlyBeanReferenceProxy.class));
+		assertThat(
+				"objects returned from @Bean methods with a non-interface return type should be CGLIB-proxied",
+				AopUtils.isCglibProxyClass(bean.getClass()), is(true));
 	}
 
 	private DependencyDescriptor descriptorFor(Class<?> paramType) throws Exception {
