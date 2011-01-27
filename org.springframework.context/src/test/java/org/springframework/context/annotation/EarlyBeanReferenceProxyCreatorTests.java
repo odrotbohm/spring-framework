@@ -37,13 +37,13 @@ import test.beans.ITestBean;
 import test.beans.TestBean;
 
 /**
- * Unit tests for {@link EarlyBeanReferenceProxyCreator}. Ensure that
+ * Unit tests for {@link EarlyBeanReferenceProxyCreator}, ensuring that
  * {@link EarlyBeanReferenceProxy} objects behave properly.
  *
  * @author Chris Beams
  * @since 3.1
  */
-public class EarlyBeanReferenceProxyTests {
+public class EarlyBeanReferenceProxyCreatorTests {
 
 	private DefaultListableBeanFactory bf;
 	private EarlyBeanReferenceProxyStatus status;
