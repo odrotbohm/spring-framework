@@ -24,4 +24,7 @@ package org.springframework.context.annotation;
  * @since 3.1
  */
 public interface EarlyBeanReferenceProxy {
+
+	Object dereferenceTargetBean();
+
 }

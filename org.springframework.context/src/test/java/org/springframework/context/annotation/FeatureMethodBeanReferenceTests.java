@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.springframework.context.FeatureSpecification;
 import org.springframework.context.annotation.configuration.StubSpecification;
 
+import test.beans.ITestBean;
 import test.beans.TestBean;
 
 /**
@@ -51,6 +52,7 @@ public class FeatureMethodBeanReferenceTests {
 		assertThat(proxiedBean.getSpouse(), is(registeredBean.getSpouse()));
 	}
 
+
 	@FeatureConfiguration
 	static class FeatureConfig {
 		TestBean testBean;
@@ -62,10 +64,11 @@ public class FeatureMethodBeanReferenceTests {
 		}
 	}
 
+
 	@Configuration
 	static class Config {
 		@Bean
-		public TestBean testBean() {
+		public ITestBean testBean() {
 			return new TestBean(new TestBean("mySpouse"));
 		}
 	}

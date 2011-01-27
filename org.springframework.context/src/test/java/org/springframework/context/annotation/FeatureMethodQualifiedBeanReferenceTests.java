@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.FeatureSpecification;
 import org.springframework.context.annotation.configuration.StubSpecification;
 
+import test.beans.ITestBean;
 import test.beans.TestBean;
 
 /**
@@ -46,7 +47,7 @@ public class FeatureMethodQualifiedBeanReferenceTests {
 	static class Features {
 
 		@Feature
-		public FeatureSpecification f(@Qualifier("testBean1") TestBean testBean) {
+		public FeatureSpecification f(@Qualifier("testBean1") ITestBean testBean) {
 			assertThat(testBean.getName(), equalTo("one"));
 			return new StubSpecification();
 		}
@@ -56,12 +57,12 @@ public class FeatureMethodQualifiedBeanReferenceTests {
 	@Configuration
 	static class TestBeans {
 		@Bean
-		public TestBean testBean1() {
+		public ITestBean testBean1() {
 			return new TestBean("one");
 		}
 
 		@Bean
-		public TestBean testBean2() {
+		public ITestBean testBean2() {
 			return new TestBean("two");
 		}
 	}
