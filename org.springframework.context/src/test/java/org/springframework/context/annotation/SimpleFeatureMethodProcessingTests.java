@@ -16,16 +16,20 @@
 
 package org.springframework.context.annotation;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
+import org.springframework.context.ExecutorContext;
 import org.springframework.context.FeatureSpecification;
-
-import test.beans.TestBean;
+import org.springframework.context.SpecificationExecutor;
+import org.springframework.context.annotation.configuration.StubSpecification;
+import org.springframework.util.Assert;
 
 /**
- * Simple tests to ensure that @Feature methods are processed.
+ * Simple tests to ensure that @Feature methods are invoked and that the
+ * resulting returned {@link FeatureSpecification} object is delegated to
+ * the correct {@link SpecificationExecutor}.
  *
  * @author Chris Beams
  * @since 3.1
@@ -35,16 +39,25 @@ public class SimpleFeatureMethodProcessingTests {
 	@Test
 	public void test() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(Config.class);
+		ctx.register(FeatureConfig.class);
+		assertThat(MySpecificationExecutor.executeMethodWasCalled, is(false));
 		ctx.refresh();
-		assertThat(ctx.getBean("testBean", TestBean.class).getName(), equalTo("foo"));
+		assertThat(MySpecificationExecutor.executeMethodWasCalled, is(true));
 	}
 
 	@FeatureConfiguration
-	static class Config {
+	static class FeatureConfig {
 		@Feature
 		public FeatureSpecification f() {
-			return new BeanRegisteringSpecification("testBean", new TestBean("foo"));
+			return new StubSpecification(MySpecificationExecutor.class);
+		}
+	}
+
+	static class MySpecificationExecutor implements SpecificationExecutor {
+		static boolean executeMethodWasCalled = false;
+		public void execute(FeatureSpecification spec, ExecutorContext executorContext) {
+			Assert.state(executeMethodWasCalled == false);
+			executeMethodWasCalled = true;
 		}
 	}
 
