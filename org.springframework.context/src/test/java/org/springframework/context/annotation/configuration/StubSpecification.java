@@ -23,11 +23,21 @@ import org.springframework.context.SpecificationExecutor;
 
 public class StubSpecification implements FeatureSpecification {
 
+	private final Class<? extends SpecificationExecutor> excecutorType;
+
+	public StubSpecification() {
+		this(StubSpecificationExecutor.class);
+	}
+
+	public StubSpecification(Class<? extends SpecificationExecutor> excecutorType) {
+		this.excecutorType = excecutorType;
+	}
+
 	public void validate() throws InvalidSpecificationException {
 	}
 
 	public Class<? extends SpecificationExecutor> getExecutorType() {
-		return StubSpecificationExecutor.class;
+		return this.excecutorType;
 	}
 
 }
