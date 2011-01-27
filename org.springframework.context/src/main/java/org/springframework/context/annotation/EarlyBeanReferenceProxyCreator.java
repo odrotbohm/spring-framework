@@ -26,8 +26,8 @@ import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 
@@ -41,16 +41,21 @@ class EarlyBeanReferenceProxyCreator {
 		this.earlyBeanReferenceProxyStatus = earlyBeanReferenceProxyStatus;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> T createProxy(Class<T> proxyType) {
+	public Object createProxy(DependencyDescriptor dd) {
+		Assert.notNull(dd, "DependencyDescriptor must not be null");
 		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(proxyType);
-		enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
+		if (dd.getDependencyType().isInterface()) {
+			enhancer.setInterfaces(new Class<?>[] {dd.getDependencyType(), EarlyBeanReferenceProxy.class});
+		} else {
+			enhancer.setSuperclass(dd.getDependencyType());
+			enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
+		}
 		enhancer.setCallbacks(new Callback[] {
 			new EarlyBeanReferenceProxyMethodInterceptor(this.beanFactory, this.earlyBeanReferenceProxyStatus),
 			new ToStringInterceptor(),
 			new EqualsAndHashCodeInterceptor(),
-			new TargetBeanDelegatingMethodInterceptor(this.beanFactory)
+			new DereferenceTargetBeanInterceptor(dd, this.earlyBeanReferenceProxyStatus, this.beanFactory),
+			new TargetBeanDelegatingMethodInterceptor()
 		});
 		enhancer.setCallbackFilter(new CallbackFilter() {
 			public int accept(Method method) {
@@ -63,10 +68,13 @@ class EarlyBeanReferenceProxyCreator {
 				if (method.getName().equals("hashCode") || method.getName().equals("equals")) {
 					return 2;
 				}
-				return 3;
+				if (method.getName().equals("dereferenceTargetBean")) {
+					return 3;
+				}
+				return 4;
 			}
 		});
-		return (T)enhancer.create();
+		return enhancer.create();
 	}
 
 	static class ToStringInterceptor implements MethodInterceptor {
@@ -87,13 +95,31 @@ class EarlyBeanReferenceProxyCreator {
 
 	}
 
-	static class TargetBeanDelegatingMethodInterceptor implements MethodInterceptor {
+	static class DereferenceTargetBeanInterceptor implements MethodInterceptor {
 
-		private final BeanFactory beanFactory;
+		private final DependencyDescriptor dd;
+		private final EarlyBeanReferenceProxyStatus status;
+		private final ConfigurableListableBeanFactory beanFactory;
 
-		public TargetBeanDelegatingMethodInterceptor(BeanFactory beanFactory) {
+		public DereferenceTargetBeanInterceptor(DependencyDescriptor dd, EarlyBeanReferenceProxyStatus status, ConfigurableListableBeanFactory beanFactory) {
+			this.dd = dd;
+			this.status = status;
 			this.beanFactory = beanFactory;
 		}
+
+		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+			try {
+				status.createEarlyBeanReferenceProxies = false;
+				return this.beanFactory.resolveDependency(dd, null); // TODO: is 'null' for beanName appropriate?
+			} finally {
+				status.createEarlyBeanReferenceProxies = true;
+			}
+		}
+
+	}
+
+
+	static class TargetBeanDelegatingMethodInterceptor implements MethodInterceptor {
 
 		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
 			/* TODO: logging?
@@ -101,7 +127,8 @@ class EarlyBeanReferenceProxyCreator {
 					"type %s and to delegate call to method %s() made against %s\n",
 					obj.getClass().getSuperclass(), method.getName(), this);
 			*/
-			return method.invoke(beanFactory.getBean(obj.getClass().getSuperclass()), args);
+			Object targetBean = ((EarlyBeanReferenceProxy)obj).dereferenceTargetBean();
+			return method.invoke(targetBean, args);
 		}
 
 	}
@@ -135,7 +162,7 @@ class EarlyBeanReferenceProxyCreator {
 								returnType.getSimpleName(), beanMethod.getDeclaringClass().getSimpleName(), beanMethod.getName());
 					}
 					earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = false;
-					Object actualBean = beanFactory.getBean(beanMethod.getName());
+					Object actualBean = beanFactory.getBean(beanMethod.getName()); // TODO: deal with aliases
 					earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
 					return targetMethod.invoke(actualBean, targetMethodArgs);
 				}
@@ -143,5 +170,6 @@ class EarlyBeanReferenceProxyCreator {
 			return proxiedBean;
 		}
 	}
+
 }
 

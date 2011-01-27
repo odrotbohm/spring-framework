@@ -33,10 +33,12 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.FailFastProblemReporter;
 import org.springframework.beans.factory.parsing.PassThroughSourceExtractor;
 import org.springframework.beans.factory.parsing.ProblemReporter;
@@ -50,6 +52,7 @@ import org.springframework.context.FeatureSpecification;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.SourceAwareSpecification;
 import org.springframework.context.SpecificationExecutor;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.Environment;
@@ -290,8 +293,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 			List<Object> beanArgs = new ArrayList<Object>();
 			Class<?>[] parameterTypes = featureMethod.getParameterTypes();
-			for (Class<?> paramType : parameterTypes) {
-				beanArgs.add(createProxy(paramType, beanFactory));
+			for (int i = 0; i < parameterTypes.length; i++) {
+				MethodParameter mp = new MethodParameter(featureMethod, i);
+				DependencyDescriptor dd = new DependencyDescriptor(mp, true, false);
+				beanArgs.add(createProxy(dd, beanFactory));
 			}
 
 			// reflectively invoke that method
@@ -315,9 +320,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 	}
 
-	private Object createProxy(Class<?> paramType, ConfigurableListableBeanFactory beanFactory) {
+	private Object createProxy(DependencyDescriptor dd, ConfigurableListableBeanFactory beanFactory) {
 		EarlyBeanReferenceProxyCreator proxyCreator = new EarlyBeanReferenceProxyCreator(beanFactory, this.earlyBeanReferenceProxyStatus);
-		return proxyCreator.createProxy(paramType);
+		return proxyCreator.createProxy(dd);
 	}
 
 	private ExecutorContext createExecutorContext(ConfigurableListableBeanFactory beanFactory) {
