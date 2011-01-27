@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.TxAnnotationDrivenFeatureTests
 	SimpleFeatureMethodProcessingTests.class,
 	BeanFactoryAwareFeatureConfigurationTests.class,
 	FeatureMethodBeanReferenceTests.class,
+	FeatureMethodQualifiedBeanReferenceTests.class,
 	FeatureConfigurationClassTests.class,
 	FeatureMethodEarlyBeanProxyTests.class,
 	FeatureConfigurationImportTests.class,
