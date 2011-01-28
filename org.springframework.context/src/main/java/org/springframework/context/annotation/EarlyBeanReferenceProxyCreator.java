@@ -63,18 +63,7 @@ class EarlyBeanReferenceProxyCreator {
 			enhancer.setSuperclass(Object.class);
 			enhancer.setInterfaces(new Class<?>[] {beanType, EarlyBeanReferenceProxy.class});
 		} else {
-			if ((beanType.getModifiers() & Modifier.FINAL) != 0) {
-				throw new ProxyCreationException(String.format(FINAL_CLASS_ERROR_MESSAGE, beanType.getName()));
-			}
-			try {
-				// attempt to retrieve the no-arg constructor for the class
-				Constructor<?> noArgCtor = beanType.getDeclaredConstructor();
-				if ((noArgCtor.getModifiers() & Modifier.PRIVATE) != 0) {
-					throw new ProxyCreationException(String.format(PRIVATE_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, beanType.getName()));
-				}
-			} catch (NoSuchMethodException ex) {
-				throw new ProxyCreationException(String.format(MISSING_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, beanType.getName()));
-			}
+			assertClassIsProxyCapable(beanType);
 			enhancer.setSuperclass(beanType);
 			enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
 		}
@@ -103,6 +92,21 @@ class EarlyBeanReferenceProxyCreator {
 			}
 		});
 		return enhancer.create();
+	}
+
+	private void assertClassIsProxyCapable(Class<?> beanType) {
+		if ((beanType.getModifiers() & Modifier.FINAL) != 0) {
+			throw new ProxyCreationException(String.format(FINAL_CLASS_ERROR_MESSAGE, beanType.getName()));
+		}
+		try {
+			// attempt to retrieve the no-arg constructor for the class
+			Constructor<?> noArgCtor = beanType.getDeclaredConstructor();
+			if ((noArgCtor.getModifiers() & Modifier.PRIVATE) != 0) {
+				throw new ProxyCreationException(String.format(PRIVATE_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, beanType.getName()));
+			}
+		} catch (NoSuchMethodException ex) {
+			throw new ProxyCreationException(String.format(MISSING_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, beanType.getName()));
+		}
 	}
 
 	static class ToStringInterceptor implements MethodInterceptor {
