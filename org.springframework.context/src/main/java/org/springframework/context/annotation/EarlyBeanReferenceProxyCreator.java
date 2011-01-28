@@ -57,12 +57,12 @@ class EarlyBeanReferenceProxyCreator {
 
 	public Object createProxy(DependencyDescriptor dd) {
 		Class<?> beanType = dd.getDependencyType();
-		MethodInterceptor interceptor = new DereferenceTargetBeanInterceptor(dd, this.earlyProxyStatus, this.beanFactory);
+		BeanLookupMethodInterceptor interceptor = new DereferenceTargetBeanInterceptor(dd, this.earlyProxyStatus, this.beanFactory);
 
 		return doCreateProxy(this.beanFactory, this.earlyProxyStatus, beanType, interceptor);
 	}
 
-	private static Object doCreateProxy(ConfigurableListableBeanFactory beanFactory, EarlyBeanReferenceProxyStatus earlyProxyStatus, Class<?> beanType, MethodInterceptor interceptor) {
+	private static Object doCreateProxy(ConfigurableListableBeanFactory beanFactory, EarlyBeanReferenceProxyStatus earlyProxyStatus, Class<?> beanType, BeanLookupMethodInterceptor interceptor) {
 		Enhancer enhancer = new Enhancer();
 		if (beanType.isInterface()) {
 			enhancer.setSuperclass(Object.class);
@@ -132,7 +132,7 @@ class EarlyBeanReferenceProxyCreator {
 
 	}
 
-	static class DereferenceTargetBeanInterceptor implements MethodInterceptor {
+	static class DereferenceTargetBeanInterceptor implements BeanLookupMethodInterceptor {
 
 		private final DependencyDescriptor dd;
 		private final EarlyBeanReferenceProxyStatus earlyProxyStatus;
@@ -156,7 +156,7 @@ class EarlyBeanReferenceProxyCreator {
 	}
 
 
-	static class GetBeanInterceptor implements MethodInterceptor {
+	static class GetBeanInterceptor implements BeanLookupMethodInterceptor {
 
 		private final String beanName;
 		private final EarlyBeanReferenceProxyStatus earlyProxyStatus;
@@ -210,7 +210,7 @@ class EarlyBeanReferenceProxyCreator {
 					"EarlyBeanReferenceProxyStatus must be true when intercepting a method call");
 
 			Class<?> returnType = beanMethod.getReturnType();
-			MethodInterceptor interceptor = new GetBeanInterceptor(beanMethod.getName(), this.earlyProxyStatus, this.beanFactory);
+			BeanLookupMethodInterceptor interceptor = new GetBeanInterceptor(beanMethod.getName(), this.earlyProxyStatus, this.beanFactory);
 			return doCreateProxy(this.beanFactory, this.earlyProxyStatus, returnType, interceptor);
 		}
 	}
@@ -221,5 +221,9 @@ class EarlyBeanReferenceProxyCreator {
 		boolean createEarlyProxies = true;
 
 	}
+
+	static interface BeanLookupMethodInterceptor extends MethodInterceptor {
+	}
+
 }
 
