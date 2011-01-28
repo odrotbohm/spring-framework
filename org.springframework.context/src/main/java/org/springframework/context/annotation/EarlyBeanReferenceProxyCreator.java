@@ -64,10 +64,18 @@ class EarlyBeanReferenceProxyCreator {
 	private final AutowireCapableBeanFactory beanFactory;
 
 
+	/**
+	 * Create a new proxy creator that will dereference proxy target beans against
+	 * the given bean factory.
+	 */
 	public EarlyBeanReferenceProxyCreator(AutowireCapableBeanFactory beanFactory) {
 		this.beanFactory = beanFactory;
 	}
 
+	/**
+	 * Create a proxy that will ultimately dereference its target object using
+	 * the given dependency descriptor.
+	 */
 	public Object createProxy(DependencyDescriptor descriptor) {
 		TargetBeanDereferencingInterceptor interceptor =
 			new ResolveDependencyTargetBeanDereferencingInterceptor(descriptor, this.beanFactory);
@@ -75,6 +83,9 @@ class EarlyBeanReferenceProxyCreator {
 		return doCreateProxy(interceptor);
 	}
 
+	/**
+	 * Create a proxy that looks up target beans using the given dereferencing interceptor.
+	 */
 	private Object doCreateProxy(TargetBeanDereferencingInterceptor targetBeanDereferencingInterceptor) {
 		Enhancer enhancer = new Enhancer();
 		Class<?> targetBeanType = targetBeanDereferencingInterceptor.getTargetBeanType();
