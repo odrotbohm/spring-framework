@@ -262,7 +262,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					} },
 				new ReflectionUtils.MethodFilter() {
 					public boolean matches(Method candidateMethod) {
-						return (AnnotationUtils.findAnnotation(candidateMethod, Bean.class) != null);
+						return BeanAnnotationHelper.isBeanAnnotated(candidateMethod);
 					} });
 	}
 
@@ -271,7 +271,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * consider introducing some kind of check to see if we're in a tooling context and make guesses
 	 * based on return type rather than actually invoking the method and processing the the specification
 	 * object that returns.
-	 * @param beanFactory 
+	 * @param beanFactory
 	 * @throws SecurityException 
 	 */
 	private void processFeatureMethod(final Method featureMethod, Object configInstance,

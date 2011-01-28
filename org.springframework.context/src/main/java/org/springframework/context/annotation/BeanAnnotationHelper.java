@@ -28,6 +28,13 @@ import org.springframework.core.annotation.AnnotationUtils;
  */
 class BeanAnnotationHelper {
 
+	/**
+	 * Return whether the given method is annotated directly or indirectly with @Bean.
+	 */
+	public static boolean isBeanAnnotated(Method method) {
+		return AnnotationUtils.findAnnotation(method, Bean.class) != null;
+	}
+
 	public static String determineBeanNameFor(Method beanMethod) {
 		// by default the bean name is the name of the @Bean-annotated method
 		String beanName = beanMethod.getName();

@@ -29,7 +29,6 @@ import net.sf.cglib.proxy.MethodProxy;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -88,14 +87,14 @@ class EarlyBeanReferenceProxyCreator {
 			enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
 		}
 		enhancer.setCallbacks(new Callback[] {
-			new BeanMethodInterceptor(this, this.beanFactory),
+			new BeanMethodInterceptor(this),
 			new ObjectMethodsInterceptor(),
 			targetBeanDereferencingInterceptor,
 			new TargetBeanDelegatingMethodInterceptor()
 		});
 		enhancer.setCallbackFilter(new CallbackFilter() {
 			public int accept(Method method) {
-				if (AnnotationUtils.findAnnotation(method, Bean.class) != null) {
+				if (BeanAnnotationHelper.isBeanAnnotated(method)) {
 					return 0;
 				}
 				if (ReflectionUtils.isObjectMethod(method)) {
@@ -139,16 +138,14 @@ class EarlyBeanReferenceProxyCreator {
 	private static class BeanMethodInterceptor implements MethodInterceptor {
 
 		private final EarlyBeanReferenceProxyCreator proxyCreator;
-		private final BeanFactory beanFactory;
 
-		public BeanMethodInterceptor(EarlyBeanReferenceProxyCreator proxyCreator, BeanFactory beanFactory) {
+		public BeanMethodInterceptor(EarlyBeanReferenceProxyCreator proxyCreator) {
 			this.proxyCreator = proxyCreator;
-			this.beanFactory = beanFactory;
 		}
 
 		public Object intercept(Object obj, final Method beanMethod, Object[] args, MethodProxy proxy) throws Throwable {
 			TargetBeanDereferencingInterceptor interceptor =
-				new ByNameLookupTargetBeanDereferencingInterceptor(beanMethod, this.beanFactory);
+				new ByNameLookupTargetBeanDereferencingInterceptor(beanMethod, proxyCreator.beanFactory);
 			return proxyCreator.doCreateProxy(interceptor);
 		}
 
