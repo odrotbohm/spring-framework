@@ -98,7 +98,7 @@ class EarlyBeanReferenceProxyCreator {
 			enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
 		}
 		enhancer.setCallbacks(new Callback[] {
-			new BeanMethodInterceptor(this),
+			new BeanMethodInterceptor(),
 			new ObjectMethodsInterceptor(),
 			targetBeanDereferencingInterceptor,
 			new TargetBeanDelegatingMethodInterceptor()
@@ -146,18 +146,12 @@ class EarlyBeanReferenceProxyCreator {
 	 * causes an eager bean lookup, but in the case of @Bean methods, it is important to return
 	 * a proxy.
 	 */
-	private static class BeanMethodInterceptor implements MethodInterceptor {
-
-		private final EarlyBeanReferenceProxyCreator proxyCreator;
-
-		public BeanMethodInterceptor(EarlyBeanReferenceProxyCreator proxyCreator) {
-			this.proxyCreator = proxyCreator;
-		}
+	private class BeanMethodInterceptor implements MethodInterceptor {
 
 		public Object intercept(Object obj, final Method beanMethod, Object[] args, MethodProxy proxy) throws Throwable {
 			TargetBeanDereferencingInterceptor interceptor =
-				new ByNameLookupTargetBeanDereferencingInterceptor(beanMethod, proxyCreator.beanFactory);
-			return proxyCreator.doCreateProxy(interceptor);
+				new ByNameLookupTargetBeanDereferencingInterceptor(beanMethod, beanFactory);
+			return doCreateProxy(interceptor);
 		}
 
 	}
