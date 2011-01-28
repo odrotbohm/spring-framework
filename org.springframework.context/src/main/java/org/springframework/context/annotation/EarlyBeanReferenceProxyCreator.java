@@ -46,13 +46,13 @@ class EarlyBeanReferenceProxyCreator {
 		"Increase the visibility of the no-arg constructor or attempt to inject the bean by interface rather " +
 		"than by concrete class.";
 
+
 	private final ConfigurableListableBeanFactory beanFactory;
-	private final EarlyBeanReferenceProxyStatus earlyBeanReferenceProxyStatus;
+	private final EarlyBeanReferenceProxyStatus earlyProxyStatus = new EarlyBeanReferenceProxyStatus();
+
 
 	public EarlyBeanReferenceProxyCreator(ConfigurableListableBeanFactory beanFactory) {
 		this.beanFactory = beanFactory;
-		this.earlyBeanReferenceProxyStatus = new EarlyBeanReferenceProxyStatus();
-		this.earlyBeanReferenceProxyStatus.createEarlyProxies = true;
 	}
 
 	public Object createProxy(DependencyDescriptor dd) {
@@ -79,10 +79,10 @@ class EarlyBeanReferenceProxyCreator {
 			enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
 		}
 		enhancer.setCallbacks(new Callback[] {
-			new EarlyBeanReferenceProxyMethodInterceptor(this.beanFactory, this.earlyBeanReferenceProxyStatus),
+			new EarlyBeanReferenceProxyMethodInterceptor(this.beanFactory, this.earlyProxyStatus),
 			new ToStringInterceptor(),
 			new EqualsAndHashCodeInterceptor(),
-			new DereferenceTargetBeanInterceptor(dd, this.earlyBeanReferenceProxyStatus, this.beanFactory),
+			new DereferenceTargetBeanInterceptor(dd, this.earlyProxyStatus, this.beanFactory),
 			new TargetBeanDelegatingMethodInterceptor()
 		});
 		enhancer.setCallbackFilter(new CallbackFilter() {
@@ -126,21 +126,21 @@ class EarlyBeanReferenceProxyCreator {
 	static class DereferenceTargetBeanInterceptor implements MethodInterceptor {
 
 		private final DependencyDescriptor dd;
-		private final EarlyBeanReferenceProxyStatus status;
+		private final EarlyBeanReferenceProxyStatus earlyProxyStatus;
 		private final ConfigurableListableBeanFactory beanFactory;
 
 		public DereferenceTargetBeanInterceptor(DependencyDescriptor dd, EarlyBeanReferenceProxyStatus status, ConfigurableListableBeanFactory beanFactory) {
 			this.dd = dd;
-			this.status = status;
+			this.earlyProxyStatus = status;
 			this.beanFactory = beanFactory;
 		}
 
 		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
 			try {
-				status.createEarlyProxies = false;
+				earlyProxyStatus.createEarlyProxies = false;
 				return this.beanFactory.resolveDependency(dd, null); // TODO: is 'null' for beanName appropriate?
 			} finally {
-				status.createEarlyProxies = true;
+				earlyProxyStatus.createEarlyProxies = true;
 			}
 		}
 
@@ -150,21 +150,21 @@ class EarlyBeanReferenceProxyCreator {
 	static class GetBeanInterceptor implements MethodInterceptor {
 
 		private final String beanName;
-		private final EarlyBeanReferenceProxyStatus status;
+		private final EarlyBeanReferenceProxyStatus earlyProxyStatus;
 		private final ConfigurableListableBeanFactory beanFactory;
 
 		public GetBeanInterceptor(String beanName, EarlyBeanReferenceProxyStatus status, ConfigurableListableBeanFactory beanFactory) {
 			this.beanName = beanName;
-			this.status = status;
+			this.earlyProxyStatus = status;
 			this.beanFactory = beanFactory;
 		}
 
 		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
 			try {
-				status.createEarlyProxies = false;
+				earlyProxyStatus.createEarlyProxies = false;
 				return this.beanFactory.getBean(beanName); // TODO: deal with aliases / alternate bean name
 			} finally {
-				status.createEarlyProxies = true;
+				earlyProxyStatus.createEarlyProxies = true;
 			}
 		}
 
@@ -189,15 +189,15 @@ class EarlyBeanReferenceProxyCreator {
 	static class EarlyBeanReferenceProxyMethodInterceptor implements MethodInterceptor {
 
 		private final ConfigurableListableBeanFactory beanFactory;
-		private final EarlyBeanReferenceProxyStatus earlyBeanReferenceProxyStatus;
+		private final EarlyBeanReferenceProxyStatus earlyProxyStatus;
 
 		public EarlyBeanReferenceProxyMethodInterceptor(ConfigurableListableBeanFactory beanFactory, EarlyBeanReferenceProxyStatus earlyBeanReferenceProxyStatus) {
 			this.beanFactory = beanFactory;
-			this.earlyBeanReferenceProxyStatus = earlyBeanReferenceProxyStatus;
+			this.earlyProxyStatus = earlyBeanReferenceProxyStatus;
 		}
 
 		public Object intercept(Object obj, final Method beanMethod, Object[] args, MethodProxy proxy) throws Throwable {
-			Assert.state(earlyBeanReferenceProxyStatus.createEarlyProxies == true,
+			Assert.state(earlyProxyStatus.createEarlyProxies == true,
 					"EarlyBeanReferenceProxyStatus must be true when intercepting a method call");
 
 			Enhancer enhancer = new Enhancer();
@@ -209,10 +209,10 @@ class EarlyBeanReferenceProxyCreator {
 				enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
 			}
 			enhancer.setCallbacks(new Callback[] {
-				new EarlyBeanReferenceProxyMethodInterceptor(this.beanFactory, this.earlyBeanReferenceProxyStatus),
+				new EarlyBeanReferenceProxyMethodInterceptor(this.beanFactory, this.earlyProxyStatus),
 				new ToStringInterceptor(),
 				new EqualsAndHashCodeInterceptor(),
-				new GetBeanInterceptor(beanMethod.getName(), this.earlyBeanReferenceProxyStatus, this.beanFactory),
+				new GetBeanInterceptor(beanMethod.getName(), this.earlyProxyStatus, this.beanFactory),
 				new TargetBeanDelegatingMethodInterceptor()
 			});
 			enhancer.setCallbackFilter(new CallbackFilter() {
@@ -239,7 +239,7 @@ class EarlyBeanReferenceProxyCreator {
 
 	static class EarlyBeanReferenceProxyStatus {
 
-		boolean createEarlyProxies = false;
+		boolean createEarlyProxies = true;
 
 	}
 }
