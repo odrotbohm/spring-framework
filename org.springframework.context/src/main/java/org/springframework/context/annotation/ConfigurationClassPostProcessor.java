@@ -111,8 +111,6 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 	private ConfigurationClassBeanDefinitionReader reader;
 
-	private EarlyBeanReferenceProxyStatus earlyBeanReferenceProxyStatus = new EarlyBeanReferenceProxyStatus();
-
 
 	/**
 	 * Set the {@link SourceExtractor} to use for generated bean definitions
@@ -209,30 +207,24 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * Process any @FeatureConfiguration classes
 	 */
 	private void processFeatureConfigurationClasses(final ConfigurableListableBeanFactory beanFactory) {
-		try {
-			this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
+		Map<String, Object> featureConfigBeans = getFeatureConfigurationBeans(beanFactory);
+		for (final Object featureConfigBean : featureConfigBeans.values()) {
+			checkForBeanMethods(featureConfigBean.getClass());
+		}
 
-			Map<String, Object> featureConfigBeans = getFeatureConfigurationBeans(beanFactory);
-			for (final Object featureConfigBean : featureConfigBeans.values()) {
-				checkForBeanMethods(featureConfigBean.getClass());
-			}
+		final EarlyBeanReferenceProxyCreator proxyCreator =
+			new EarlyBeanReferenceProxyCreator(beanFactory);
 
-			final EarlyBeanReferenceProxyCreator proxyCreator =
-				new EarlyBeanReferenceProxyCreator(beanFactory, this.earlyBeanReferenceProxyStatus);
-
-			for (final Object featureConfigBean : featureConfigBeans.values()) {
-				ReflectionUtils.doWithMethods(featureConfigBean.getClass(),
-						new ReflectionUtils.MethodCallback() {
-							public void doWith(Method featureMethod) throws IllegalArgumentException, IllegalAccessException {
-								processFeatureMethod(featureMethod, featureConfigBean, beanFactory, proxyCreator);
-							} },
-						new ReflectionUtils.MethodFilter() {
-							public boolean matches(Method candidateMethod) {
-								return candidateMethod.isAnnotationPresent(Feature.class);
-							} });
-			}
-		} finally {
-			this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = false;
+		for (final Object featureConfigBean : featureConfigBeans.values()) {
+			ReflectionUtils.doWithMethods(featureConfigBean.getClass(),
+					new ReflectionUtils.MethodCallback() {
+						public void doWith(Method featureMethod) throws IllegalArgumentException, IllegalAccessException {
+							processFeatureMethod(featureMethod, featureConfigBean, beanFactory, proxyCreator);
+						} },
+					new ReflectionUtils.MethodFilter() {
+						public boolean matches(Method candidateMethod) {
+							return candidateMethod.isAnnotationPresent(Feature.class);
+						} });
 		}
 	}
 
