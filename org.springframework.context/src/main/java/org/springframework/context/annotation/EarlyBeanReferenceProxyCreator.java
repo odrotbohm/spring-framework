@@ -30,8 +30,23 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
+/**
+ * Creates proxies for beans referenced from within @Feature methods.
+ *
+ * TODO documentation:
+ * - discuss why proxies are important (avoiding side effects of early instantiation)
+ * - discuss benefits of interface-based proxies over concrete proxies
+ * - make it clear that both of the above are possible
+ * - discuss invocation of @Bean methods and how they too return proxies.
+ *   this 'proxy returning a proxy' approach can be confusing at first, but the
+ *   implementation should help in making it clear.
+ *
+ * @author Chris Beams
+ * @since 3.1
+ */
 class EarlyBeanReferenceProxyCreator {
 
 	static final String FINAL_CLASS_ERROR_MESSAGE =
@@ -46,7 +61,6 @@ class EarlyBeanReferenceProxyCreator {
 		"Cannot create subclass proxy for bean type %s because its no-arg constructor is private. " +
 		"Increase the visibility of the no-arg constructor or attempt to inject the bean by interface rather " +
 		"than by concrete class.";
-
 
 	private final AutowireCapableBeanFactory beanFactory;
 
@@ -96,19 +110,48 @@ class EarlyBeanReferenceProxyCreator {
 		return enhancer.create();
 	}
 
-	private static void assertClassIsProxyCapable(Class<?> beanType) {
-		if ((beanType.getModifiers() & Modifier.FINAL) != 0) {
-			throw new ProxyCreationException(String.format(FINAL_CLASS_ERROR_MESSAGE, beanType.getName()));
+	/**
+	 * Return whether the given class is capable of being subclass proxied by CGLIB.
+	 */
+	private static void assertClassIsProxyCapable(Class<?> clazz) {
+		Assert.isTrue(!clazz.isInterface(), "class parameter must be a concrete type");
+		if ((clazz.getModifiers() & Modifier.FINAL) != 0) {
+			throw new ProxyCreationException(String.format(FINAL_CLASS_ERROR_MESSAGE, clazz.getName()));
 		}
 		try {
 			// attempt to retrieve the no-arg constructor for the class
-			Constructor<?> noArgCtor = beanType.getDeclaredConstructor();
+			Constructor<?> noArgCtor = clazz.getDeclaredConstructor();
 			if ((noArgCtor.getModifiers() & Modifier.PRIVATE) != 0) {
-				throw new ProxyCreationException(String.format(PRIVATE_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, beanType.getName()));
+				throw new ProxyCreationException(String.format(PRIVATE_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, clazz.getName()));
 			}
 		} catch (NoSuchMethodException ex) {
-			throw new ProxyCreationException(String.format(MISSING_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, beanType.getName()));
+			throw new ProxyCreationException(String.format(MISSING_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, clazz.getName()));
 		}
+	}
+
+
+	/**
+	 * Interceptor for @Bean-annotated methods called from early-proxied bean instances, such as
+	 * @Configuration class instances. Invoking instance methods on early-proxied beans usually
+	 * causes an eager bean lookup, but in the case of @Bean methods, it is important to return
+	 * a proxy.
+	 */
+	private static class BeanMethodInterceptor implements MethodInterceptor {
+
+		private final EarlyBeanReferenceProxyCreator proxyCreator;
+		private final BeanFactory beanFactory;
+
+		public BeanMethodInterceptor(EarlyBeanReferenceProxyCreator proxyCreator, BeanFactory beanFactory) {
+			this.proxyCreator = proxyCreator;
+			this.beanFactory = beanFactory;
+		}
+
+		public Object intercept(Object obj, final Method beanMethod, Object[] args, MethodProxy proxy) throws Throwable {
+			TargetBeanDereferencingInterceptor interceptor =
+				new ByNameLookupTargetBeanDereferencingInterceptor(beanMethod, this.beanFactory);
+			return proxyCreator.doCreateProxy(interceptor);
+		}
+
 	}
 
 
@@ -131,12 +174,23 @@ class EarlyBeanReferenceProxyCreator {
 
 	}
 
+
+	/**
+	 * Strategy interface allowing for various approaches to dereferencing (i.e. 'looking up')
+	 * the target bean for an early bean reference proxy.
+	 */
+	private static interface TargetBeanDereferencingInterceptor extends MethodInterceptor {
+		Class<?> getTargetBeanType();
+	}
+
+
 	/**
 	 * Interceptor that dereferences the target bean for the proxy by calling
 	 * {@link AutowireCapableBeanFactory#resolveDependency(DependencyDescriptor, String)}.
 	 * @see EarlyBeanReferenceProxy#dereferenceTargetBean()
 	 */
 	private static class ResolveDependencyTargetBeanDereferencingInterceptor implements TargetBeanDereferencingInterceptor {
+
 		private final DependencyDescriptor descriptor;
 		private final AutowireCapableBeanFactory beanFactory;
 
@@ -160,11 +214,12 @@ class EarlyBeanReferenceProxyCreator {
 	 * Interceptor that dereferences the target bean for the proxy by calling {@link BeanFactory#getBean(String)}.
 	 * @see EarlyBeanReferenceProxy#dereferenceTargetBean()
 	 */
-	private static class ByNameLookupTargetBeanInterceptor implements TargetBeanDereferencingInterceptor {
+	private static class ByNameLookupTargetBeanDereferencingInterceptor implements TargetBeanDereferencingInterceptor {
+
 		private final Method beanMethod;
 		private final BeanFactory beanFactory;
 
-		public ByNameLookupTargetBeanInterceptor(Method beanMethod, BeanFactory beanFactory) {
+		public ByNameLookupTargetBeanDereferencingInterceptor(Method beanMethod, BeanFactory beanFactory) {
 			this.beanMethod = beanMethod;
 			this.beanFactory = beanFactory;
 		}
@@ -188,39 +243,9 @@ class EarlyBeanReferenceProxyCreator {
 	private static class TargetBeanDelegatingMethodInterceptor implements MethodInterceptor {
 
 		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-			/* TODO: logging?
-			System.out.printf("TargetBeanDelegatingMethodInterceptor.intercept(): attempting to retreive object of " +
-					"type %s and to delegate call to method %s() made against %s\n",
-					obj.getClass().getSuperclass(), method.getName(), this);
-			*/
 			Object targetBean = ((EarlyBeanReferenceProxy)obj).dereferenceTargetBean();
 			return method.invoke(targetBean, args);
 		}
-
-	}
-
-
-	private static class BeanMethodInterceptor implements MethodInterceptor {
-
-		private final EarlyBeanReferenceProxyCreator proxyCreator;
-		private final BeanFactory beanFactory;
-
-		public BeanMethodInterceptor(EarlyBeanReferenceProxyCreator proxyCreator, BeanFactory beanFactory) {
-			this.proxyCreator = proxyCreator;
-			this.beanFactory = beanFactory;
-		}
-
-		public Object intercept(Object obj, final Method beanMethod, Object[] args, MethodProxy proxy) throws Throwable {
-			TargetBeanDereferencingInterceptor interceptor =
-				new ByNameLookupTargetBeanInterceptor(beanMethod, this.beanFactory);
-			return proxyCreator.doCreateProxy(interceptor);
-		}
-	}
-
-
-	private static interface TargetBeanDereferencingInterceptor extends MethodInterceptor {
-
-		Class<?> getTargetBeanType();
 
 	}
 
