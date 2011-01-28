@@ -225,7 +225,7 @@ class EarlyBeanReferenceProxyCreator {
 		}
 
 		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-			return beanFactory.getBean(beanMethod.getName()); // TODO: deal with aliases / alternate bean name
+			return beanFactory.getBean(BeanAnnotationHelper.determineBeanNameFor(beanMethod));
 		}
 
 		public Class<?> getTargetBeanType() {

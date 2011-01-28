@@ -173,14 +173,7 @@ class ConfigurationClassEnhancer {
 		public Object intercept(Object enhancedConfigInstance, Method beanMethod, Object[] beanMethodArgs,
 					MethodProxy cglibMethodProxy) throws ProxyCreationException, Throwable {
 
-			// by default the bean name is the name of the @Bean-annotated method
-			String beanName = beanMethod.getName();
-
-			// check to see if the user has explicitly set the bean name
-			Bean bean = AnnotationUtils.findAnnotation(beanMethod, Bean.class);
-			if (bean != null && bean.name().length > 0) {
-				beanName = bean.name()[0];
-			}
+			String beanName = BeanAnnotationHelper.determineBeanNameFor(beanMethod);
 
 			// determine whether this bean is a scoped-proxy
 			Scope scope = AnnotationUtils.findAnnotation(beanMethod, Scope.class);
