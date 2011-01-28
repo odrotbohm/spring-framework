@@ -51,77 +51,64 @@ class EarlyBeanReferenceProxyCreator {
 	private final AutowireCapableBeanFactory beanFactory;
 	private final ProxyStatus proxyStatus = new ProxyStatus();
 
-	private final InternalProxyCreator internalProxyCreator;
-
 
 	public EarlyBeanReferenceProxyCreator(AutowireCapableBeanFactory beanFactory) {
 		this.beanFactory = beanFactory;
-		this.internalProxyCreator = new InternalProxyCreator(this.beanFactory, this.proxyStatus);
 	}
 
 	public Object createProxy(DependencyDescriptor descriptor) {
 		TargetBeanDereferencingInterceptor interceptor =
 			new ResolveDependencyTargetBeanDereferencingInterceptor(descriptor, this.proxyStatus, this.beanFactory);
 
-		return this.internalProxyCreator.doCreateProxy(interceptor);
+		return doCreateProxy(interceptor);
 	}
 
-	static class InternalProxyCreator {
-		private final ProxyStatus proxyStatus;
-		private final BeanFactory beanFactory;
-
-		public InternalProxyCreator(BeanFactory beanFactory, ProxyStatus proxyStatus) {
-			this.beanFactory = beanFactory;
-			this.proxyStatus = proxyStatus;
+	private Object doCreateProxy(TargetBeanDereferencingInterceptor targetBeanDereferencingInterceptor) {
+		Enhancer enhancer = new Enhancer();
+		Class<?> targetBeanType = targetBeanDereferencingInterceptor.getTargetBeanType();
+		if (targetBeanType.isInterface()) {
+			enhancer.setSuperclass(Object.class);
+			enhancer.setInterfaces(new Class<?>[] {targetBeanType, EarlyBeanReferenceProxy.class});
+		} else {
+			assertClassIsProxyCapable(targetBeanType);
+			enhancer.setSuperclass(targetBeanType);
+			enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
 		}
-
-		public Object doCreateProxy(TargetBeanDereferencingInterceptor targetBeanDereferencingInterceptor) {
-			Enhancer enhancer = new Enhancer();
-			Class<?> targetBeanType = targetBeanDereferencingInterceptor.getTargetBeanType();
-			if (targetBeanType.isInterface()) {
-				enhancer.setSuperclass(Object.class);
-				enhancer.setInterfaces(new Class<?>[] {targetBeanType, EarlyBeanReferenceProxy.class});
-			} else {
-				assertClassIsProxyCapable(targetBeanType);
-				enhancer.setSuperclass(targetBeanType);
-				enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
-			}
-			enhancer.setCallbacks(new Callback[] {
-				new BeanMethodInterceptor(this, this.proxyStatus, this.beanFactory),
-				new ObjectMethodsInterceptor(),
-				targetBeanDereferencingInterceptor,
-				new TargetBeanDelegatingMethodInterceptor()
-			});
-			enhancer.setCallbackFilter(new CallbackFilter() {
-				public int accept(Method method) {
-					if (AnnotationUtils.findAnnotation(method, Bean.class) != null) {
-						return 0;
-					}
-					if (ReflectionUtils.isObjectMethod(method)) {
-						return 1;
-					}
-					if (method.getName().equals("dereferenceTargetBean")) {
-						return 2;
-					}
-					return 3;
+		enhancer.setCallbacks(new Callback[] {
+			new BeanMethodInterceptor(this, this.proxyStatus, this.beanFactory),
+			new ObjectMethodsInterceptor(),
+			targetBeanDereferencingInterceptor,
+			new TargetBeanDelegatingMethodInterceptor()
+		});
+		enhancer.setCallbackFilter(new CallbackFilter() {
+			public int accept(Method method) {
+				if (AnnotationUtils.findAnnotation(method, Bean.class) != null) {
+					return 0;
 				}
-			});
-			return enhancer.create();
+				if (ReflectionUtils.isObjectMethod(method)) {
+					return 1;
+				}
+				if (method.getName().equals("dereferenceTargetBean")) {
+					return 2;
+				}
+				return 3;
+			}
+		});
+		return enhancer.create();
+	}
+
+	private static void assertClassIsProxyCapable(Class<?> beanType) {
+		if ((beanType.getModifiers() & Modifier.FINAL) != 0) {
+			throw new ProxyCreationException(String.format(FINAL_CLASS_ERROR_MESSAGE, beanType.getName()));
 		}
-
-		private static void assertClassIsProxyCapable(Class<?> beanType) {
-			if ((beanType.getModifiers() & Modifier.FINAL) != 0) {
-				throw new ProxyCreationException(String.format(FINAL_CLASS_ERROR_MESSAGE, beanType.getName()));
+		try {
+			// attempt to retrieve the no-arg constructor for the class
+			Constructor<?> noArgCtor = beanType.getDeclaredConstructor();
+			if ((noArgCtor.getModifiers() & Modifier.PRIVATE) != 0) {
+				throw new ProxyCreationException(String.format(PRIVATE_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, beanType.getName()));
 			}
-			try {
-				// attempt to retrieve the no-arg constructor for the class
-				Constructor<?> noArgCtor = beanType.getDeclaredConstructor();
-				if ((noArgCtor.getModifiers() & Modifier.PRIVATE) != 0) {
-					throw new ProxyCreationException(String.format(PRIVATE_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, beanType.getName()));
-				}
-			} catch (NoSuchMethodException ex) {
-				throw new ProxyCreationException(String.format(MISSING_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, beanType.getName()));
-			}
+		} catch (NoSuchMethodException ex) {
+			throw new ProxyCreationException(String.format(MISSING_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, beanType.getName()));
 		}
 	}
 
@@ -129,7 +116,7 @@ class EarlyBeanReferenceProxyCreator {
 	/**
 	 * Interceptor for methods declared by java.lang.Object()
 	 */
-	static class ObjectMethodsInterceptor implements MethodInterceptor {
+	private static class ObjectMethodsInterceptor implements MethodInterceptor {
 
 		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
 			if (method.getName().equals("toString")) {
@@ -150,7 +137,7 @@ class EarlyBeanReferenceProxyCreator {
 	 * {@link AutowireCapableBeanFactory#resolveDependency(DependencyDescriptor, String)}.
 	 * @see EarlyBeanReferenceProxy#dereferenceTargetBean()
 	 */
-	static class ResolveDependencyTargetBeanDereferencingInterceptor implements TargetBeanDereferencingInterceptor {
+	private static class ResolveDependencyTargetBeanDereferencingInterceptor implements TargetBeanDereferencingInterceptor {
 		private final DependencyDescriptor descriptor;
 		private final ProxyStatus proxyStatus;
 		private final AutowireCapableBeanFactory beanFactory;
@@ -182,7 +169,7 @@ class EarlyBeanReferenceProxyCreator {
 	 * Interceptor that dereferences the target bean for the proxy by calling {@link BeanFactory#getBean(String)}.
 	 * @see EarlyBeanReferenceProxy#dereferenceTargetBean()
 	 */
-	static class ByNameLookupTargetBeanInterceptor implements TargetBeanDereferencingInterceptor {
+	private static class ByNameLookupTargetBeanInterceptor implements TargetBeanDereferencingInterceptor {
 		private final Method beanMethod;
 		private final ProxyStatus proxyStatus;
 		private final BeanFactory beanFactory;
@@ -214,7 +201,7 @@ class EarlyBeanReferenceProxyCreator {
 	 * current method call to it.
 	 * @see TargetBeanDereferencingInterceptor
 	 */
-	static class TargetBeanDelegatingMethodInterceptor implements MethodInterceptor {
+	private static class TargetBeanDelegatingMethodInterceptor implements MethodInterceptor {
 
 		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
 			/* TODO: logging?
@@ -229,33 +216,37 @@ class EarlyBeanReferenceProxyCreator {
 	}
 
 
-	static class BeanMethodInterceptor implements MethodInterceptor {
+	private static class BeanMethodInterceptor implements MethodInterceptor {
 
-		private final InternalProxyCreator internalProxyCreator;
+		private final EarlyBeanReferenceProxyCreator proxyCreator;
 		private final ProxyStatus proxyStatus;
 		private final BeanFactory beanFactory;
 
-		public BeanMethodInterceptor(InternalProxyCreator internalProxyCreator, ProxyStatus proxyStatus, BeanFactory beanFactory) {
-			this.internalProxyCreator = internalProxyCreator;
+		public BeanMethodInterceptor(EarlyBeanReferenceProxyCreator proxyCreator, ProxyStatus proxyStatus, BeanFactory beanFactory) {
+			this.proxyCreator = proxyCreator;
 			this.proxyStatus = proxyStatus;
 			this.beanFactory = beanFactory;
 		}
 
 		public Object intercept(Object obj, final Method beanMethod, Object[] args, MethodProxy proxy) throws Throwable {
-			TargetBeanDereferencingInterceptor interceptor = new ByNameLookupTargetBeanInterceptor(beanMethod, this.proxyStatus, this.beanFactory);
-			return this.internalProxyCreator.doCreateProxy(interceptor);
+			TargetBeanDereferencingInterceptor interceptor =
+				new ByNameLookupTargetBeanInterceptor(beanMethod, this.proxyStatus, this.beanFactory);
+			return proxyCreator.doCreateProxy(interceptor);
 		}
 	}
 
 
-	static class ProxyStatus {
+	private static class ProxyStatus {
 
 		boolean createProxies = true;
 
 	}
 
-	static interface TargetBeanDereferencingInterceptor extends MethodInterceptor {
+
+	private static interface TargetBeanDereferencingInterceptor extends MethodInterceptor {
+
 		Class<?> getTargetBeanType();
+
 	}
 
 }
