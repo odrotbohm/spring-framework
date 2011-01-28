@@ -74,7 +74,7 @@ class ConfigurationClassEnhancer {
 		// handling a @Bean-annotated method; otherwise, return index of the NoOp callback.
 		callbackFilter = new CallbackFilter() {
 			public int accept(Method candidateMethod) {
-				return (AnnotationUtils.findAnnotation(candidateMethod, Bean.class) != null ? 0 : 1);
+				return (BeanAnnotationHelper.isBeanAnnotated(candidateMethod) ? 0 : 1);
 			}
 		};
 	}
