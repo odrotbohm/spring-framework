@@ -75,6 +75,7 @@ public class TxAnnotationDrivenFeatureTests {
 		// invoke a transactional method, causing the PlatformTransactionManager bean to be resolved.
 		bean.findAllFoos();
 	}
+
 }
 
 @FeatureConfiguration

@@ -16,8 +16,10 @@
 
 package org.springframework.context.annotation;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 
 import net.sf.cglib.proxy.Callback;
@@ -33,6 +35,19 @@ import org.springframework.util.Assert;
 
 class EarlyBeanReferenceProxyCreator {
 
+	static final String FINAL_CLASS_ERROR_MESSAGE =
+		"Cannot create subclass proxy for bean type %s because it is a final class. " +
+		"Make the class non-final or inject the bean by interface rather than by concrete class.";
+
+	static final String MISSING_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE =
+		"Cannot create subclass proxy for bean type %s because it does not have a no-arg constructor. " +
+		"Add a no-arg constructor or attempt to inject the bean by interface rather than by concrete class.";
+
+	static final String PRIVATE_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE =
+		"Cannot create subclass proxy for bean type %s because its no-arg constructor is private. " +
+		"Increase the visibility of the no-arg constructor or attempt to inject the bean by interface rather " +
+		"than by concrete class.";
+
 	private final ConfigurableListableBeanFactory beanFactory;
 	private final EarlyBeanReferenceProxyStatus earlyBeanReferenceProxyStatus;
 
@@ -42,12 +57,26 @@ class EarlyBeanReferenceProxyCreator {
 	}
 
 	public Object createProxy(DependencyDescriptor dd) {
-		Assert.notNull(dd, "DependencyDescriptor must not be null");
+		Class<?> beanType = dd.getDependencyType();
+
 		Enhancer enhancer = new Enhancer();
-		if (dd.getDependencyType().isInterface()) {
-			enhancer.setInterfaces(new Class<?>[] {dd.getDependencyType(), EarlyBeanReferenceProxy.class});
+		if (beanType.isInterface()) {
+			enhancer.setSuperclass(Object.class);
+			enhancer.setInterfaces(new Class<?>[] {beanType, EarlyBeanReferenceProxy.class});
 		} else {
-			enhancer.setSuperclass(dd.getDependencyType());
+			if ((beanType.getModifiers() & Modifier.FINAL) != 0) {
+				throw new ProxyCreationException(String.format(FINAL_CLASS_ERROR_MESSAGE, beanType.getName()));
+			}
+			try {
+				// attempt to retrieve the no-arg constructor for the class
+				Constructor<?> noArgCtor = beanType.getDeclaredConstructor();
+				if ((noArgCtor.getModifiers() & Modifier.PRIVATE) != 0) {
+					throw new ProxyCreationException(String.format(PRIVATE_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, beanType.getName()));
+				}
+			} catch (NoSuchMethodException ex) {
+				throw new ProxyCreationException(String.format(MISSING_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, beanType.getName()));
+			}
+			enhancer.setSuperclass(beanType);
 			enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
 		}
 		enhancer.setCallbacks(new Callback[] {
@@ -171,23 +200,19 @@ class EarlyBeanReferenceProxyCreator {
 			Assert.state(earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies == true,
 					"EarlyBeanReferenceProxyStatus must be true when intercepting a method call");
 			final Class<?> returnType = beanMethod.getReturnType();
-			if (!returnType.isInterface()) {
-				//return new EarlyBeanReferenceProxyCreator(this.beanFactory).createProxy(beanMethod.getReturnType());
-				throw new ProxyCreationException(String.format(
-						"@Bean method %s.%s() is referenced from within a @Feature method, therefore " +
-						"its return type must be an interface in order to allow for an early bean reference " +
-						"proxy to be created. Either modify the return type accordingly, or do not reference " +
-						"this bean method within @Feature methods.", beanMethod.getDeclaringClass().getSimpleName(), beanMethod.getName()));
-			}
 			Object proxiedBean = Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] {returnType,EarlyBeanReferenceProxy.class}, new InvocationHandler() {
 				public Object invoke(Object proxiedBean, Method targetMethod, Object[] targetMethodArgs) throws Throwable {
 					if (targetMethod.getName().equals("toString")) {
 						return String.format("EarlyBeanReferenceProxy for %s object returned from @Bean method %s.%s()",
 								returnType.getSimpleName(), beanMethod.getDeclaringClass().getSimpleName(), beanMethod.getName());
 					}
-					earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = false;
-					Object actualBean = beanFactory.getBean(beanMethod.getName()); // TODO: deal with aliases
-					earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
+					Object actualBean;
+					try {
+						earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = false;
+						actualBean = beanFactory.getBean(beanMethod.getName()); // TODO: deal with aliases
+					} finally {
+						earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
+					}
 					return targetMethod.invoke(actualBean, targetMethodArgs);
 				}
 			});

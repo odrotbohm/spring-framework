@@ -16,11 +16,17 @@
 
 package org.springframework.context.annotation;
 
+import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.springframework.context.annotation.EarlyBeanReferenceProxyCreator.FINAL_CLASS_ERROR_MESSAGE;
+import static org.springframework.context.annotation.EarlyBeanReferenceProxyCreator.MISSING_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE;
+import static org.springframework.context.annotation.EarlyBeanReferenceProxyCreator.PRIVATE_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE;
 
 import java.lang.reflect.Method;
 
@@ -132,7 +138,31 @@ public class EarlyBeanReferenceProxyCreatorTests {
 	}
 
 	@Test
-	public void beanAnnotatedMethodsWithInterfaceReturnTypeAreAllowed() throws Exception {
+	public void interfaceBeansAreProxied() throws Exception {
+		EarlyBeanReferenceProxyCreator pc = new EarlyBeanReferenceProxyCreator(bf, status);
+		ITestBean proxy = (ITestBean) pc.createProxy(descriptorFor(ITestBean.class));
+
+		assertThat(proxy, instanceOf(EarlyBeanReferenceProxy.class));
+		assertThat(AopUtils.isCglibProxyClass(proxy.getClass()), is(true));
+		assertEquals(
+				"interface-based bean proxies should have Object as superclass",
+				proxy.getClass().getSuperclass(), Object.class);
+	}
+
+	@Test
+	public void concreteBeansAreProxied() throws Exception {
+		EarlyBeanReferenceProxyCreator pc = new EarlyBeanReferenceProxyCreator(bf, status);
+		TestBean proxy = (TestBean) pc.createProxy(descriptorFor(TestBean.class));
+
+		assertThat(proxy, instanceOf(EarlyBeanReferenceProxy.class));
+		assertThat(AopUtils.isCglibProxyClass(proxy.getClass()), is(true));
+		assertEquals(
+				"concrete bean proxies should have the bean class as superclass",
+				proxy.getClass().getSuperclass(), TestBean.class);
+	}
+
+	@Test
+	public void beanAnnotatedMethodsWithInterfaceReturnTypeAreProxied() throws Exception {
 		bf.registerBeanDefinition("componentWithInterfaceBeanMethod", new RootBeanDefinition(ComponentWithInterfaceBeanMethod.class));
 		EarlyBeanReferenceProxyCreator pc = new EarlyBeanReferenceProxyCreator(bf, status);
 		ComponentWithInterfaceBeanMethod proxy = (ComponentWithInterfaceBeanMethod) pc.createProxy(descriptorFor(ComponentWithInterfaceBeanMethod.class));
@@ -140,13 +170,14 @@ public class EarlyBeanReferenceProxyCreatorTests {
 
 		ITestBean bean = proxy.aBeanMethod();
 		assertThat(bean, instanceOf(EarlyBeanReferenceProxy.class));
-		assertThat(
-				"objects returned from @Bean methods with an interface return type should be JDK-proxied",
-				java.lang.reflect.Proxy.isProxyClass(bean.getClass()), is(true));
+		assertThat(AopUtils.isCglibProxyClass(bean.getClass()), is(true));
+		assertEquals(
+				"interface-based bean proxies should have Object as superclass",
+				bean.getClass().getSuperclass(), Object.class);
 	}
 
 	@Test
-	public void beanAnnotatedMethodsWithConcreteReturnTypeAreAllowed() throws Exception {
+	public void beanAnnotatedMethodsWithConcreteReturnTypeAreProxied() throws Exception {
 		bf.registerBeanDefinition("componentWithConcreteBeanMethod", new RootBeanDefinition(ComponentWithConcreteBeanMethod.class));
 		EarlyBeanReferenceProxyCreator pc = new EarlyBeanReferenceProxyCreator(bf, status);
 		ComponentWithConcreteBeanMethod proxy = (ComponentWithConcreteBeanMethod) pc.createProxy(descriptorFor(ComponentWithConcreteBeanMethod.class));
@@ -154,15 +185,56 @@ public class EarlyBeanReferenceProxyCreatorTests {
 
 		TestBean bean = proxy.aBeanMethod();
 		assertThat(bean, instanceOf(EarlyBeanReferenceProxy.class));
-		assertThat(
-				"objects returned from @Bean methods with a non-interface return type should be CGLIB-proxied",
-				AopUtils.isCglibProxyClass(bean.getClass()), is(true));
+		assertThat(AopUtils.isCglibProxyClass(bean.getClass()), is(true));
+		assertEquals(
+				"concrete bean proxies should have the bean class as superclass",
+				bean.getClass().getSuperclass(), TestBean.class);
+	}
+
+	@Test
+	public void attemptToProxyClassMissingnNoArgConstructorFailsGracefully() throws Exception {
+		EarlyBeanReferenceProxyCreator pc = new EarlyBeanReferenceProxyCreator(bf, status);
+		try {
+			pc.createProxy(descriptorFor(BeanMissingNoArgConstructor.class));
+			fail("expected ProxyCreationException");
+		} catch(ProxyCreationException ex) {
+			assertThat(ex.getMessage(),
+					equalTo(format(MISSING_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, BeanMissingNoArgConstructor.class.getName())));
+		}
+	}
+
+	@Test
+	public void attemptToProxyClassWithPrivateNoArgConstructorFailsGracefully() throws Exception {
+		EarlyBeanReferenceProxyCreator pc = new EarlyBeanReferenceProxyCreator(bf, status);
+		try {
+			pc.createProxy(descriptorFor(BeanWithPrivateNoArgConstructor.class));
+			fail("expected ProxyCreationException");
+		} catch(ProxyCreationException ex) {
+			assertThat(ex.getMessage(),
+					equalTo(format(PRIVATE_NO_ARG_CONSTRUCTOR_ERROR_MESSAGE, BeanWithPrivateNoArgConstructor.class.getName())));
+		}
+	}
+
+	@Test
+	public void attemptToProxyFinalClassFailsGracefully() throws Exception {
+		EarlyBeanReferenceProxyCreator pc = new EarlyBeanReferenceProxyCreator(bf, status);
+		try {
+			pc.createProxy(descriptorFor(FinalBean.class));
+			fail("expected ProxyCreationException");
+		} catch(ProxyCreationException ex) {
+			assertThat(ex.getMessage(),
+					equalTo(format(FINAL_CLASS_ERROR_MESSAGE, FinalBean.class.getName())));
+		}
 	}
 
 	private DependencyDescriptor descriptorFor(Class<?> paramType) throws Exception {
 		@SuppressWarnings("unused")
 		class C {
+			void m(ITestBean p) { }
 			void m(TestBean p) { }
+			void m(BeanMissingNoArgConstructor p) { }
+			void m(BeanWithPrivateNoArgConstructor p) { }
+			void m(FinalBean p) { }
 			void m(ComponentWithConcreteBeanMethod p) { }
 			void m(ComponentWithInterfaceBeanMethod p) { }
 		}
@@ -171,6 +243,20 @@ public class EarlyBeanReferenceProxyCreatorTests {
 		MethodParameter mp = new MethodParameter(targetMethod, 0);
 		DependencyDescriptor dd = new DependencyDescriptor(mp, true, false);
 		return dd;
+	}
+
+
+	static class BeanMissingNoArgConstructor {
+		BeanMissingNoArgConstructor(Object o) { }
+	}
+
+
+	static class BeanWithPrivateNoArgConstructor {
+		private BeanWithPrivateNoArgConstructor() { }
+	}
+
+
+	static final class FinalBean {
 	}
 
 

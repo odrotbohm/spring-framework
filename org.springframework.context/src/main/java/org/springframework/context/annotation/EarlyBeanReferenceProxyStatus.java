@@ -17,5 +17,7 @@
 package org.springframework.context.annotation;
 
 class EarlyBeanReferenceProxyStatus {
+
 	boolean createEarlyBeanReferenceProxies = false;
+
 }

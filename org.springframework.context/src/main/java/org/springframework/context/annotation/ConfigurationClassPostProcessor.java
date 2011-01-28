@@ -209,28 +209,31 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * Process any @FeatureConfiguration classes
 	 */
 	private void processFeatureConfigurationClasses(final ConfigurableListableBeanFactory beanFactory) {
-		this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
+		try {
+			this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = true;
 
-		Map<String, Object> featureConfigBeans = getFeatureConfigurationBeans(beanFactory);
-		for (final Object featureConfigBean : featureConfigBeans.values()) {
-			checkForBeanMethods(featureConfigBean.getClass());
+			Map<String, Object> featureConfigBeans = getFeatureConfigurationBeans(beanFactory);
+			for (final Object featureConfigBean : featureConfigBeans.values()) {
+				checkForBeanMethods(featureConfigBean.getClass());
+			}
+
+			final EarlyBeanReferenceProxyCreator proxyCreator =
+				new EarlyBeanReferenceProxyCreator(beanFactory, this.earlyBeanReferenceProxyStatus);
+
+			for (final Object featureConfigBean : featureConfigBeans.values()) {
+				ReflectionUtils.doWithMethods(featureConfigBean.getClass(),
+						new ReflectionUtils.MethodCallback() {
+							public void doWith(Method featureMethod) throws IllegalArgumentException, IllegalAccessException {
+								processFeatureMethod(featureMethod, featureConfigBean, beanFactory, proxyCreator);
+							} },
+						new ReflectionUtils.MethodFilter() {
+							public boolean matches(Method candidateMethod) {
+								return candidateMethod.isAnnotationPresent(Feature.class);
+							} });
+			}
+		} finally {
+			this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = false;
 		}
-
-		final EarlyBeanReferenceProxyCreator proxyCreator =
-			new EarlyBeanReferenceProxyCreator(beanFactory, this.earlyBeanReferenceProxyStatus);
-
-		for (final Object featureConfigBean : featureConfigBeans.values()) {
-			ReflectionUtils.doWithMethods(featureConfigBean.getClass(),
-					new ReflectionUtils.MethodCallback() {
-						public void doWith(Method featureMethod) throws IllegalArgumentException, IllegalAccessException {
-							processFeatureMethod(featureMethod, featureConfigBean, beanFactory, proxyCreator);
-						} },
-					new ReflectionUtils.MethodFilter() {
-						public boolean matches(Method candidateMethod) {
-							return candidateMethod.isAnnotationPresent(Feature.class);
-						} });
-		}
-		this.earlyBeanReferenceProxyStatus.createEarlyBeanReferenceProxies = false;
 	}
 
 	/**
@@ -405,7 +408,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					"Either add CGLIB to the classpath or remove the following @Configuration bean definitions: " +
 					configBeanDefs.keySet());
 		}
-		ConfigurationClassEnhancer enhancer = new ConfigurationClassEnhancer(beanFactory, this.earlyBeanReferenceProxyStatus);
+		ConfigurationClassEnhancer enhancer = new ConfigurationClassEnhancer(beanFactory);
 		for (Map.Entry<String, AbstractBeanDefinition> entry : configBeanDefs.entrySet()) {
 			AbstractBeanDefinition beanDef = entry.getValue();
 			try {
