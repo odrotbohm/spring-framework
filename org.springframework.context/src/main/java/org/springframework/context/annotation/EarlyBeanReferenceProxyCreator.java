@@ -57,7 +57,12 @@ class EarlyBeanReferenceProxyCreator {
 
 	public Object createProxy(DependencyDescriptor dd) {
 		Class<?> beanType = dd.getDependencyType();
+		MethodInterceptor interceptor = new DereferenceTargetBeanInterceptor(dd, this.earlyProxyStatus, this.beanFactory);
 
+		return doCreateProxy(this.beanFactory, this.earlyProxyStatus, beanType, interceptor);
+	}
+
+	private static Object doCreateProxy(ConfigurableListableBeanFactory beanFactory, EarlyBeanReferenceProxyStatus earlyProxyStatus, Class<?> beanType, MethodInterceptor interceptor) {
 		Enhancer enhancer = new Enhancer();
 		if (beanType.isInterface()) {
 			enhancer.setSuperclass(Object.class);
@@ -68,10 +73,10 @@ class EarlyBeanReferenceProxyCreator {
 			enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
 		}
 		enhancer.setCallbacks(new Callback[] {
-			new EarlyBeanReferenceProxyMethodInterceptor(this.beanFactory, this.earlyProxyStatus),
+			new EarlyBeanReferenceProxyMethodInterceptor(beanFactory, earlyProxyStatus),
 			new ToStringInterceptor(),
 			new EqualsAndHashCodeInterceptor(),
-			new DereferenceTargetBeanInterceptor(dd, this.earlyProxyStatus, this.beanFactory),
+			interceptor,
 			new TargetBeanDelegatingMethodInterceptor()
 		});
 		enhancer.setCallbackFilter(new CallbackFilter() {
@@ -94,7 +99,7 @@ class EarlyBeanReferenceProxyCreator {
 		return enhancer.create();
 	}
 
-	private void assertClassIsProxyCapable(Class<?> beanType) {
+	private static void assertClassIsProxyCapable(Class<?> beanType) {
 		if ((beanType.getModifiers() & Modifier.FINAL) != 0) {
 			throw new ProxyCreationException(String.format(FINAL_CLASS_ERROR_MESSAGE, beanType.getName()));
 		}
@@ -204,39 +209,9 @@ class EarlyBeanReferenceProxyCreator {
 			Assert.state(earlyProxyStatus.createEarlyProxies == true,
 					"EarlyBeanReferenceProxyStatus must be true when intercepting a method call");
 
-			Enhancer enhancer = new Enhancer();
 			Class<?> returnType = beanMethod.getReturnType();
-			if (returnType.isInterface()) {
-				enhancer.setInterfaces(new Class<?>[] {returnType, EarlyBeanReferenceProxy.class});
-			} else {
-				enhancer.setSuperclass(returnType);
-				enhancer.setInterfaces(new Class<?>[] {EarlyBeanReferenceProxy.class});
-			}
-			enhancer.setCallbacks(new Callback[] {
-				new EarlyBeanReferenceProxyMethodInterceptor(this.beanFactory, this.earlyProxyStatus),
-				new ToStringInterceptor(),
-				new EqualsAndHashCodeInterceptor(),
-				new GetBeanInterceptor(beanMethod.getName(), this.earlyProxyStatus, this.beanFactory),
-				new TargetBeanDelegatingMethodInterceptor()
-			});
-			enhancer.setCallbackFilter(new CallbackFilter() {
-				public int accept(Method method) {
-					if (AnnotationUtils.findAnnotation(method, Bean.class) != null) {
-						return 0;
-					}
-					if (method.getName().equals("toString")) {
-						return 1;
-					}
-					if (method.getName().equals("hashCode") || method.getName().equals("equals")) {
-						return 2;
-					}
-					if (method.getName().equals("dereferenceTargetBean")) {
-						return 3;
-					}
-					return 4;
-				}
-			});
-			return enhancer.create();
+			MethodInterceptor interceptor = new GetBeanInterceptor(beanMethod.getName(), this.earlyProxyStatus, this.beanFactory);
+			return doCreateProxy(this.beanFactory, this.earlyProxyStatus, returnType, interceptor);
 		}
 	}
 
