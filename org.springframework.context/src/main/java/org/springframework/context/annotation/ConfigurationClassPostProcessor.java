@@ -212,8 +212,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			checkForBeanMethods(featureConfigBean.getClass());
 		}
 
-		final EarlyBeanReferenceProxyCreator proxyCreator =
-			new EarlyBeanReferenceProxyCreator(beanFactory);
+		final EarlyBeanReferenceProxyCreator proxyCreator = new EarlyBeanReferenceProxyCreator(beanFactory);
 
 		for (final Object featureConfigBean : featureConfigBeans.values()) {
 			ReflectionUtils.doWithMethods(featureConfigBean.getClass(),
