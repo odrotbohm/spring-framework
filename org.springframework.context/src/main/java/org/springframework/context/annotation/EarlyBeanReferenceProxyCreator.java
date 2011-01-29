@@ -164,14 +164,19 @@ class EarlyBeanReferenceProxyCreator {
 
 		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
 			if (method.getName().equals("toString")) {
-				return String.format("EarlyBeanReferenceProxy for bean of type %s", obj.getClass().getSuperclass().getSimpleName());
+				return String.format("EarlyBeanReferenceProxy for bean of type %s",
+						obj.getClass().getSuperclass().getSimpleName());
 			}
-			if (method.getName().equals("hashCode") || method.getName().equals("equals")) {
-				throw new UnsupportedOperationException("equals() and hashCode() methods on [%s] should not be called as " +
-						"doing so will cause premature instantiation of the target bean object. This may have occurred " +
-						"because the proxied object was added to a collection.");
+			if (method.getName().equals("hashCode")) {
+				return System.identityHashCode(obj);
 			}
-			return method.invoke(obj, args);
+			if (method.getName().equals("equals")) {
+				return obj == args[0];
+			}
+			if (method.getName().equals("finalize")) {
+				return null;
+			}
+			return proxy.invokeSuper(obj, args);
 		}
 
 	}

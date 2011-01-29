@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -76,30 +77,40 @@ public class EarlyBeanReferenceProxyCreatorTests {
 		proxy.getName();
 	}
 
-	@Test(expected=UnsupportedOperationException.class)
-	public void proxyHashCodeMethodThrowsUnsupportedOperationException() throws Exception {
+	@Test
+	public void proxyHashCodeAvoidsEagerInstantiation() throws Exception {
 		EarlyBeanReferenceProxyCreator pc = new EarlyBeanReferenceProxyCreator(bf);
 		TestBean proxy = (TestBean) pc.createProxy(descriptorFor(TestBean.class));
 
-		try {
-			proxy.hashCode();
-		} catch (UnsupportedOperationException ex) {
-			assertThat(ex.getMessage().startsWith("equals() and hashCode() methods on"), is(true));
-			throw ex;
-		}
+		assertThat(proxy.hashCode(), equalTo(System.identityHashCode(proxy)));
 	}
 
-	@Test(expected=UnsupportedOperationException.class)
-	public void proxyEqualsMethodThrowsUnsupportedOperationException() throws Exception {
+	@Test
+	public void proxyEqualsAvoidsEagerInstantiation() throws Exception {
 		EarlyBeanReferenceProxyCreator pc = new EarlyBeanReferenceProxyCreator(bf);
+
 		TestBean proxy = (TestBean) pc.createProxy(descriptorFor(TestBean.class));
 
-		try {
-			proxy.equals(new Object());
-		} catch (UnsupportedOperationException ex) {
-			assertThat(ex.getMessage().startsWith("equals() and hashCode() methods on"), is(true));
-			throw ex;
-		}
+		assertThat(proxy.equals(new Object()), is(false));
+		assertThat(proxy.equals(proxy), is(true));
+
+		TestBean proxy2 = (TestBean) pc.createProxy(descriptorFor(TestBean.class));
+
+		assertThat(proxy, not(sameInstance(proxy2)));
+		assertThat(proxy.equals(proxy2), is(false));
+		assertThat(proxy2.equals(proxy), is(false));
+		assertThat(proxy2.equals(proxy2), is(true));
+	}
+
+	@Test
+	public void proxyFinalizeAvoidsEagerInstantiation() throws Exception {
+		EarlyBeanReferenceProxyCreator pc = new EarlyBeanReferenceProxyCreator(bf);
+
+		BeanWithFinalizer proxy = (BeanWithFinalizer) pc.createProxy(descriptorFor(BeanWithFinalizer.class));
+
+		assertThat(BeanWithFinalizer.finalizerWasCalled, is(false));
+		BeanWithFinalizer.class.getDeclaredMethod("finalize").invoke(proxy);
+		assertThat(BeanWithFinalizer.finalizerWasCalled, is(false));
 	}
 
 	@Test
@@ -244,6 +255,7 @@ public class EarlyBeanReferenceProxyCreatorTests {
 			void m(BeanMissingNoArgConstructor p) { }
 			void m(BeanWithPrivateNoArgConstructor p) { }
 			void m(FinalBean p) { }
+			void m(BeanWithFinalizer p) { }
 			void m(ComponentWithConcreteBeanMethod p) { }
 			void m(ComponentWithInterfaceBeanMethod p) { }
 		}
@@ -266,6 +278,16 @@ public class EarlyBeanReferenceProxyCreatorTests {
 
 
 	static final class FinalBean {
+	}
+
+
+	static class BeanWithFinalizer {
+		static Boolean finalizerWasCalled = false;
+
+		@Override
+		protected void finalize() throws Throwable {
+			finalizerWasCalled = true;
+		}
 	}
 
 
