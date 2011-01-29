@@ -16,18 +16,22 @@
 
 package org.springframework.transaction.annotation;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.CannotLoadBeanClassException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Feature;
 import org.springframework.context.annotation.FeatureConfiguration;
+import org.springframework.context.annotation.ProxyType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.CallCountingTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -46,7 +50,7 @@ public class TxAnnotationDrivenFeatureTests {
 	@Test
 	public void transactionProxyIsCreated() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(TxFeatures.class, TxManagerConfig.class);
+		ctx.register(TxFeature.class, TxManagerConfig.class);
 		ctx.refresh();
 		TransactionalTestBean bean = ctx.getBean(TransactionalTestBean.class);
 		assertThat("testBean is not a proxy", AopUtils.isAopProxy(bean), is(true));
@@ -57,7 +61,7 @@ public class TxAnnotationDrivenFeatureTests {
 	@Test
 	public void txManagerIsResolvedOnInvocationOfTransactionalMethod() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(TxFeatures.class, TxManagerConfig.class);
+		ctx.register(TxFeature.class, TxManagerConfig.class);
 		ctx.refresh();
 		TransactionalTestBean bean = ctx.getBean(TransactionalTestBean.class);
 
@@ -68,7 +72,7 @@ public class TxAnnotationDrivenFeatureTests {
 	@Test
 	public void txManagerIsResolvedCorrectlyWhenMultipleManagersArePresent() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(TxFeatures.class, MultiTxManagerConfig.class);
+		ctx.register(TxFeature.class, MultiTxManagerConfig.class);
 		ctx.refresh();
 		TransactionalTestBean bean = ctx.getBean(TransactionalTestBean.class);
 
@@ -76,17 +80,45 @@ public class TxAnnotationDrivenFeatureTests {
 		bean.findAllFoos();
 	}
 
-}
-
-@FeatureConfiguration
-class TxFeatures {
-
-	@Feature
-	public TxAnnotationDriven tx(TxManagerConfig txManagerConfig) {
-		return new TxAnnotationDriven(txManagerConfig.txManager()).proxyTargetClass(false);
+	/**
+	 * A cheap test just to prove that in ASPECTJ mode, the AnnotationTransactionAspect does indeed
+	 * get loaded -- or in this case, attempted to be loaded at which point the test fails.
+	 */
+	@Test
+	public void proxyTypeAspectJCausesRegistrationOfAnnotationTransactionAspect() {
+		try {
+			new AnnotationConfigApplicationContext(TxWithAspectJFeature.class, TxManagerConfig.class);
+			fail("should have thrown CNFE when trying to load AnnotationTransactionAspect. " +
+					"Do you actually have org.springframework.aspects on the classpath?");
+		} catch (CannotLoadBeanClassException ex) {
+			ClassNotFoundException cause = (ClassNotFoundException) ex.getCause();
+			assertThat(cause.getMessage(), equalTo("org.springframework.transaction.aspectj.AnnotationTransactionAspect"));
+		}
 	}
 
 }
+
+@FeatureConfiguration
+class TxFeature {
+
+	@Feature
+	public TxAnnotationDriven tx(TxManagerConfig txManagerConfig) {
+		return new TxAnnotationDriven(txManagerConfig.txManager());
+	}
+}
+
+
+@FeatureConfiguration
+class TxWithAspectJFeature {
+
+	@Feature
+	public TxAnnotationDriven tx(TxManagerConfig txManagerConfig) {
+		return new TxAnnotationDriven(txManagerConfig.txManager()).proxyType(ProxyType.ASPECTJ);
+	}
+
+}
+
+
 @Configuration
 class TxManagerConfig {
 
@@ -101,6 +133,7 @@ class TxManagerConfig {
 	}
 
 }
+
 
 @Configuration
 class MultiTxManagerConfig extends TxManagerConfig {

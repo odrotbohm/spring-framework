@@ -29,6 +29,7 @@ import org.springframework.context.ExecutorContext;
 import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
 import org.springframework.transaction.interceptor.BeanFactoryTransactionAttributeSourceAdvisor;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
+import org.springframework.util.Assert;
 
 class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxAnnotationDriven> {
 
@@ -78,12 +79,12 @@ class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxAnnotat
 	}
 
 	private static void registerTransactionManager(TxAnnotationDriven spec, BeanDefinition def) {
-		if (spec.transactionManager() != null) {
-			def.getPropertyValues().add("transactionManager", spec.transactionManager());
-		} else if (spec.transactionManagerBeanName() != null) {
-			def.getPropertyValues().add("transactionManagerBeanName", spec.transactionManagerBeanName());
+		Object txManager = spec.transactionManager();
+		Assert.notNull(txManager, "transactionManager must be specified");
+		if (txManager instanceof String) {
+			def.getPropertyValues().add("transactionManagerBeanName", txManager);
 		} else {
-			throw new IllegalStateException("transactionManager or transactionManagerBeanName must be specified");
+			def.getPropertyValues().add("transactionManager", txManager);
 		}
 	}
 
