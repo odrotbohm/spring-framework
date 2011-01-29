@@ -55,6 +55,8 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 			TxAnnotationDrivenExecutor.TRANSACTION_ASPECT_BEAN_NAME;
 
 
+	private static final String TRANSACTION_MANAGER_ATTRIBUTE = "transaction-manager";
+
 	private static final String PROXY_TYPE_ATTRIBUTE = "mode";
 
 	private static final String EXPOSE_PROXY_ATTRIBUTE = "expose-proxy";
@@ -77,7 +79,7 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 	}
 
 	protected TxAnnotationDriven createSpecification(Element element, ParserContext parserContext) {
-		TxAnnotationDriven spec = new TxAnnotationDriven(TxNamespaceHandler.getTransactionManagerName(element))
+		TxAnnotationDriven spec = new TxAnnotationDriven(element.getAttribute(TRANSACTION_MANAGER_ATTRIBUTE))
 			.proxyType(element.getAttribute(PROXY_TYPE_ATTRIBUTE).equals("aspectj") ?
 					ProxyType.ASPECTJ :
 					ProxyType.SPRINGAOP)
