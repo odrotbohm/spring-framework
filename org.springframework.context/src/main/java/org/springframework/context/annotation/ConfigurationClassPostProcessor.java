@@ -208,8 +208,19 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 */
 	private void processFeatureConfigurationClasses(final ConfigurableListableBeanFactory beanFactory) {
 		Map<String, Object> featureConfigBeans = getFeatureConfigurationBeans(beanFactory);
+
+		if (featureConfigBeans.size() == 0) {
+			return;
+		}
+
 		for (final Object featureConfigBean : featureConfigBeans.values()) {
 			checkForBeanMethods(featureConfigBean.getClass());
+		}
+
+		if (!cglibAvailable) {
+			throw new IllegalStateException("CGLIB is required to process @FeatureConfiguration classes. " +
+					"Either add CGLIB to the classpath or remove the following @FeatureConfiguration bean definitions: " +
+					featureConfigBeans.keySet());
 		}
 
 		final EarlyBeanReferenceProxyCreator proxyCreator = new EarlyBeanReferenceProxyCreator(beanFactory);
