@@ -26,7 +26,6 @@ import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.util.Assert;
@@ -77,14 +76,13 @@ class EarlyBeanReferenceProxyCreator {
 	 * the given dependency descriptor.
 	 */
 	public Object createProxy(DependencyDescriptor descriptor) {
-		TargetBeanDereferencingInterceptor interceptor =
-			new ResolveDependencyTargetBeanDereferencingInterceptor(descriptor, this.beanFactory);
-
-		return doCreateProxy(interceptor);
+		return doCreateProxy(new ResolveDependencyTargetBeanDereferencingInterceptor(descriptor));
 	}
 
 	/**
 	 * Create a proxy that looks up target beans using the given dereferencing interceptor.
+	 *
+	 * @see EarlyBeanReferenceProxy#dereferenceTargetBean()
 	 */
 	private Object doCreateProxy(TargetBeanDereferencingInterceptor targetBeanDereferencingInterceptor) {
 		Enhancer enhancer = new Enhancer();
@@ -149,9 +147,7 @@ class EarlyBeanReferenceProxyCreator {
 	private class BeanMethodInterceptor implements MethodInterceptor {
 
 		public Object intercept(Object obj, final Method beanMethod, Object[] args, MethodProxy proxy) throws Throwable {
-			TargetBeanDereferencingInterceptor interceptor =
-				new ByNameLookupTargetBeanDereferencingInterceptor(beanMethod, beanFactory);
-			return doCreateProxy(interceptor);
+			return doCreateProxy(new ByNameLookupTargetBeanDereferencingInterceptor(beanMethod));
 		}
 
 	}
@@ -185,8 +181,10 @@ class EarlyBeanReferenceProxyCreator {
 	/**
 	 * Strategy interface allowing for various approaches to dereferencing (i.e. 'looking up')
 	 * the target bean for an early bean reference proxy.
+	 *
+	 * @see EarlyBeanReferenceProxy#dereferenceTargetBean()
 	 */
-	private static interface TargetBeanDereferencingInterceptor extends MethodInterceptor {
+	private interface TargetBeanDereferencingInterceptor extends MethodInterceptor {
 		Class<?> getTargetBeanType();
 	}
 
@@ -194,20 +192,19 @@ class EarlyBeanReferenceProxyCreator {
 	/**
 	 * Interceptor that dereferences the target bean for the proxy by calling
 	 * {@link AutowireCapableBeanFactory#resolveDependency(DependencyDescriptor, String)}.
+	 *
 	 * @see EarlyBeanReferenceProxy#dereferenceTargetBean()
 	 */
-	private static class ResolveDependencyTargetBeanDereferencingInterceptor implements TargetBeanDereferencingInterceptor {
+	private class ResolveDependencyTargetBeanDereferencingInterceptor implements TargetBeanDereferencingInterceptor {
 
 		private final DependencyDescriptor descriptor;
-		private final AutowireCapableBeanFactory beanFactory;
 
-		public ResolveDependencyTargetBeanDereferencingInterceptor(DependencyDescriptor descriptor, AutowireCapableBeanFactory beanFactory) {
+		public ResolveDependencyTargetBeanDereferencingInterceptor(DependencyDescriptor descriptor) {
 			this.descriptor = descriptor;
-			this.beanFactory = beanFactory;
 		}
 
 		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-			return beanFactory.resolveDependency(descriptor, null); // TODO: is 'null' for beanName appropriate?
+			return beanFactory.resolveDependency(descriptor, null);
 		}
 
 		public Class<?> getTargetBeanType() {
@@ -218,17 +215,16 @@ class EarlyBeanReferenceProxyCreator {
 
 
 	/**
-	 * Interceptor that dereferences the target bean for the proxy by calling {@link BeanFactory#getBean(String)}.
+	 * Interceptor that dereferences the target bean for the proxy by calling BeanFactory#getBean(String).
+	 *
 	 * @see EarlyBeanReferenceProxy#dereferenceTargetBean()
 	 */
-	private static class ByNameLookupTargetBeanDereferencingInterceptor implements TargetBeanDereferencingInterceptor {
+	private class ByNameLookupTargetBeanDereferencingInterceptor implements TargetBeanDereferencingInterceptor {
 
 		private final Method beanMethod;
-		private final BeanFactory beanFactory;
 
-		public ByNameLookupTargetBeanDereferencingInterceptor(Method beanMethod, BeanFactory beanFactory) {
+		public ByNameLookupTargetBeanDereferencingInterceptor(Method beanMethod) {
 			this.beanMethod = beanMethod;
-			this.beanFactory = beanFactory;
 		}
 
 		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
