@@ -19,7 +19,10 @@ package org.springframework.context.annotation;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
+import org.springframework.transaction.TxNamespaceHandlerTests;
+import org.springframework.transaction.annotation.AnnotationTransactionNamespaceHandlerTests;
 import org.springframework.transaction.annotation.TxAnnotationDrivenFeatureTests;
+import org.springframework.transaction.config.AnnotationDrivenTests;
 
 /**
  * Tests directly or indirectly related to {@link FeatureConfiguration} class and
@@ -38,8 +41,15 @@ import org.springframework.transaction.annotation.TxAnnotationDrivenFeatureTests
 	FeatureConfigurationClassTests.class,
 	FeatureMethodEarlyBeanProxyTests.class,
 	FeatureConfigurationImportTests.class,
+
+	// context:component-scan related
 	ComponentScanFeatureTests.class,
+
+	// tx-related
 	TxAnnotationDrivenFeatureTests.class,
+	TxNamespaceHandlerTests.class,
+	AnnotationTransactionNamespaceHandlerTests.class,
+	AnnotationDrivenTests.class,
 })
 public class FeatureTestSuite {
 

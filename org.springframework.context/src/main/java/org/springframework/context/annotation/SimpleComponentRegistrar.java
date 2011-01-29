@@ -36,7 +36,8 @@ public class SimpleComponentRegistrar implements ComponentRegistrar {
 	}
 
 	public void registerBeanComponent(BeanComponentDefinition component) {
-		// no-op
+		BeanDefinitionReaderUtils.registerBeanDefinition(component, this.registry);
+		registerComponent(component);
 	}
 
 	public void registerComponent(ComponentDefinition component) {

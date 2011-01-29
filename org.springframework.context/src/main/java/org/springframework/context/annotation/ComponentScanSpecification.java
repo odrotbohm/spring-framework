@@ -56,6 +56,13 @@ public class ComponentScanSpecification extends AbstractFeatureSpecification {
 	private TypeFilter[] includeFilters = null;
 	private TypeFilter[] excludeFilters = null;
 
+	/**
+	 * Package-visible constructor for use by {@link ComponentScanBeanDefinitionParser}.
+	 * End users should always call String... or Class<?>... constructors to specify
+	 * base packages.
+	 *
+	 * @see #validate()
+	 */
 	ComponentScanSpecification() {
 		super(DEFAULT_EXECUTOR_TYPE);
 	}
