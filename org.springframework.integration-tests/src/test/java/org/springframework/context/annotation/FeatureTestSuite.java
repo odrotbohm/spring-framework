@@ -16,13 +16,6 @@
 
 package org.springframework.context.annotation;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
-import org.springframework.transaction.TxNamespaceHandlerTests;
-import org.springframework.transaction.annotation.AnnotationTransactionNamespaceHandlerTests;
-import org.springframework.transaction.annotation.TxAnnotationDrivenFeatureTests;
-import org.springframework.transaction.config.AnnotationDrivenTests;
 
 /**
  * Tests directly or indirectly related to {@link FeatureConfiguration} class and
@@ -31,6 +24,12 @@ import org.springframework.transaction.config.AnnotationDrivenTests;
  * @author Chris Beams
  * @since 3.1
  */
+/*
+ * commented due to classpath visibility differences between Eclipse
+ * and Ant/Ivy at the command line.  Eclipse can see classes across
+ * project test folders, Ant/Ivy are not configured to do so. Uncomment
+ * as necessary when doing @Feature-related work.
+ * 
 @RunWith(Suite.class)
 @SuiteClasses({
 	EarlyBeanReferenceProxyCreatorTests.class,
@@ -52,6 +51,7 @@ import org.springframework.transaction.config.AnnotationDrivenTests;
 	AnnotationTransactionNamespaceHandlerTests.class,
 	AnnotationDrivenTests.class,
 })
+*/
 public class FeatureTestSuite {
 
 }
