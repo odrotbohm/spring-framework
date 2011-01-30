@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor;
@@ -43,6 +44,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ExecutorContext;
+import org.springframework.context.SpecificationExecutor;
 import org.springframework.core.Conventions;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
@@ -89,8 +91,6 @@ class ConfigurationClassBeanDefinitionReader {
 
 	private final ComponentScanAnnotationSpecificationCreator componentScanSpecCreator;
 
-	private final ComponentScanExecutor componentScanSpecExecutor;
-
 	private ExecutorContext executorContext;
 
 	/**
@@ -108,7 +108,6 @@ class ConfigurationClassBeanDefinitionReader {
 		this.problemReporter = problemReporter;
 		this.metadataReaderFactory = metadataReaderFactory;
 		this.componentScanSpecCreator = new ComponentScanAnnotationSpecificationCreator(this.problemReporter);
-		this.componentScanSpecExecutor = new ComponentScanExecutor();
 		this.executorContext = new ExecutorContext();
 		this.executorContext.setRegistry(this.registry);
 		this.executorContext.setRegistrar(new SimpleComponentRegistrar(this.registry));
@@ -134,7 +133,8 @@ class ConfigurationClassBeanDefinitionReader {
 	private void loadBeanDefinitionsForConfigurationClass(ConfigurationClass configClass) {
 		if (this.componentScanSpecCreator.accepts(configClass.getMetadata())) {
 			ComponentScanSpecification spec = this.componentScanSpecCreator.createFrom(configClass.getMetadata());
-			this.componentScanSpecExecutor.execute(spec, this.executorContext);
+			SpecificationExecutor specExecutor = BeanUtils.instantiateClass(spec.getExecutorType(), SpecificationExecutor.class);
+			specExecutor.execute(spec, this.executorContext);
 		}
 		doLoadBeanDefinitionForConfigurationClassIfNecessary(configClass);
 		for (ConfigurationClassMethod beanMethod : configClass.getMethods()) {
