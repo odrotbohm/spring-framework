@@ -41,6 +41,7 @@ import org.springframework.transaction.config.AnnotationDrivenTests;
 	FeatureConfigurationClassTests.class,
 	FeatureMethodEarlyBeanProxyTests.class,
 	FeatureConfigurationImportTests.class,
+	FeatureConfigurationImportResourceTests.class,
 
 	// context:component-scan related
 	ComponentScanFeatureTests.class,
