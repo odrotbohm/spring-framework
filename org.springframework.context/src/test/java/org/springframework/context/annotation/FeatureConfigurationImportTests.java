@@ -25,13 +25,14 @@ import org.springframework.context.FeatureSpecification;
 import org.springframework.context.annotation.configuration.StubSpecification;
 
 /**
- * Tests proving that @FeatureConfiguration classes may be @Import'ed
- * from @Configuratian classes, and vice versa.
+ * Tests proving that @Configuration classes may @Import @FeatureConfiguration
+ * classes, and vice versa.
  *
  * @author Chris Beams
  * @since 3.1
  */
 public class FeatureConfigurationImportTests {
+
 	@Test
 	public void importFeatureConfigurationFromConfiguration() {
 		ConfigurableApplicationContext ctx =
@@ -100,4 +101,5 @@ public class FeatureConfigurationImportTests {
 			return new StubSpecification();
 		}
 	}
+
 }

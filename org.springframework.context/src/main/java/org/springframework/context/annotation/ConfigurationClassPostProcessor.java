@@ -58,8 +58,11 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
+import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
+import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -173,7 +176,6 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 		this.postProcessBeanDefinitionRegistryCalled = true;
 		processConfigurationClasses(registry);
-		processFeatureConfigurationClasses((ConfigurableListableBeanFactory) registry);
 	}
 
 	/**
@@ -188,9 +190,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		this.postProcessBeanFactoryCalled = true;
 		if (!this.postProcessBeanDefinitionRegistryCalled) {
 			// BeanDefinitionRegistryPostProcessor hook apparently not supported...
-			// Simply call processConfigClasses lazily at this point then.
+			// Simply call processConfigurationClasses lazily at this point then.
 			processConfigurationClasses((BeanDefinitionRegistry)beanFactory);
-			processFeatureConfigurationClasses(beanFactory);
 		}
 	}
 
@@ -201,13 +202,14 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		ConfigurationClassBeanDefinitionReader reader = getConfigurationClassBeanDefinitionReader(registry);
 		processConfigBeanDefinitions(registry, reader);
 		enhanceConfigurationClasses((ConfigurableListableBeanFactory)registry);
+		processFeatureConfigurationClasses((ConfigurableListableBeanFactory) registry);
 	}
 
 	/**
 	 * Process any @FeatureConfiguration classes
 	 */
 	private void processFeatureConfigurationClasses(final ConfigurableListableBeanFactory beanFactory) {
-		Map<String, Object> featureConfigBeans = getFeatureConfigurationBeans(beanFactory);
+		Map<String, Object> featureConfigBeans = retrieveFeatureConfigurationBeans(beanFactory);
 
 		if (featureConfigBeans.size() == 0) {
 			return;
@@ -224,12 +226,13 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 
 		final EarlyBeanReferenceProxyCreator proxyCreator = new EarlyBeanReferenceProxyCreator(beanFactory);
+		final ExecutorContext executorContext = createExecutorContext(beanFactory);
 
 		for (final Object featureConfigBean : featureConfigBeans.values()) {
 			ReflectionUtils.doWithMethods(featureConfigBean.getClass(),
 					new ReflectionUtils.MethodCallback() {
 						public void doWith(Method featureMethod) throws IllegalArgumentException, IllegalAccessException {
-							processFeatureMethod(featureMethod, featureConfigBean, beanFactory, proxyCreator);
+							processFeatureMethod(featureMethod, featureConfigBean, executorContext, proxyCreator);
 						} },
 					new ReflectionUtils.MethodFilter() {
 						public boolean matches(Method candidateMethod) {
@@ -245,19 +248,47 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * at this early phase of the container would cause all @Bean methods to be invoked, as they
 	 * are ultimately FactoryBeans underneath.
 	 */
-	private Map<String, Object> getFeatureConfigurationBeans(ConfigurableListableBeanFactory beanFactory) {
+	private Map<String, Object> retrieveFeatureConfigurationBeans(ConfigurableListableBeanFactory beanFactory) {
 		Map<String, Object> fcBeans = new HashMap<String, Object>();
 		for (String beanName : beanFactory.getBeanDefinitionNames()) {
 			BeanDefinition beanDef = beanFactory.getBeanDefinition(beanName);
-			if (!(beanDef instanceof AbstractBeanDefinition) || !((AbstractBeanDefinition)beanDef).hasBeanClass()) {
-				continue;
-			}
-			Class<?> beanClass = ((AbstractBeanDefinition)beanDef).getBeanClass();
-			if (AnnotationUtils.findAnnotation(beanClass, FeatureConfiguration.class) != null) {
+			if (isFeatureConfiguration(beanDef)) {
 				fcBeans.put(beanName, beanFactory.getBean(beanName));
 			}
 		}
 		return fcBeans;
+	}
+
+	private boolean isFeatureConfiguration(BeanDefinition candidate) {
+		if (!(candidate instanceof AbstractBeanDefinition) || (candidate.getBeanClassName() == null)) {
+			return false;
+		}
+		AbstractBeanDefinition beanDef = (AbstractBeanDefinition) candidate;
+		if (beanDef.hasBeanClass()) {
+			Class<?> beanClass = beanDef.getBeanClass();
+			if (AnnotationUtils.findAnnotation(beanClass, FeatureConfiguration.class) != null) {
+				return true;
+			}
+		}
+		else {
+			// in the case of @FeatureConfiguration classes included with @Import the bean class name
+			// will still be in String form.  Since we don't know whether the current bean definition
+			// is a @FeatureConfiguration or not, carefully check for the annotation using ASM instead
+			// eager classloading.
+			String className = null;
+			try {
+				className = beanDef.getBeanClassName();
+				MetadataReader metadataReader = new SimpleMetadataReaderFactory().getMetadataReader(className);
+				AnnotationMetadata annotationMetadata = metadataReader.getAnnotationMetadata();
+				if (annotationMetadata.isAnnotated(FeatureConfiguration.class.getName())) {
+					return true;
+				}
+			}
+			catch (IOException ex) {
+				throw new IllegalStateException("Could not create MetadataReader for class " + className, ex);
+			}
+		}
+		return false;
 	}
 
 	private void checkForBeanMethods(final Class<?> featureConfigClass) {
@@ -286,7 +317,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * @throws SecurityException 
 	 */
 	private void processFeatureMethod(final Method featureMethod, Object configInstance,
-			ConfigurableListableBeanFactory beanFactory, EarlyBeanReferenceProxyCreator proxyCreator) {
+			ExecutorContext executorContext, EarlyBeanReferenceProxyCreator proxyCreator) {
 		try {
 			// get the return type
 			if (!(FeatureSpecification.class.isAssignableFrom(featureMethod.getReturnType()))) {
@@ -319,7 +350,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				((SourceAwareSpecification)spec).setSource(featureMethod);
 				((SourceAwareSpecification)spec).setSourceName(featureMethod.getName());
 			}
-			executor.execute(spec, createExecutorContext(beanFactory));
+			executor.execute(spec, executorContext);
 		} catch (Exception ex) {
 			throw new FeatureMethodExecutionException(ex);
 		}
