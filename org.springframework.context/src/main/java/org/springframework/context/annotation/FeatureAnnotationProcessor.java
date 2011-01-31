@@ -40,8 +40,8 @@ import org.springframework.core.type.AnnotationMetadata;
  *
  * <p>Implementations must be instantiable via a no-arg constructor.
  *
- * TODO SPR-7194: documentation (clean up)
- * TODO SPR-7194: rework so annotations declare their creator.
+ * TODO SPR-7420: documentation (clean up)
+ * TODO SPR-7420: rework so annotations declare their creator.
  *
  *
  * @author Chris Beams
