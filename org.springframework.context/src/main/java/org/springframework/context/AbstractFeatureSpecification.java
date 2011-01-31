@@ -16,6 +16,12 @@
 
 package org.springframework.context;
 
+/**
+ * TODO SPR-7420: document
+ *
+ * @author Chris Beams
+ * @since 3.1
+ */
 public abstract class AbstractFeatureSpecification implements SourceAwareSpecification {
 
 	private static final Object DUMMY_SOURCE = new Object();
