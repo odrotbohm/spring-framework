@@ -20,11 +20,11 @@ import java.lang.annotation.Annotation;
 import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.parsing.FailFastProblemReporter;
 import org.springframework.beans.factory.parsing.Location;
 import org.springframework.beans.factory.parsing.Problem;
 import org.springframework.beans.factory.parsing.ProblemReporter;
 import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.context.SpecificationCreator;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.core.io.DescriptiveResource;
 import org.springframework.core.type.AnnotationMetadata;
@@ -35,20 +35,25 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
- * {@link SpecificationCreator} implementation that reads attributes from a
+ * {@link FeatureAnnotationProcessor} implementation that reads attributes from a
  * {@link ComponentScan @ComponentScan} annotation into a {@link ComponentScanSpecification}
  * which can in turn be executed by {@link ComponentScanExecutor}.
  * {@link ComponentScanBeanDefinitionParser} serves the same role for
  * the {@code <context:component-scan>} XML element.
  *
+ * <p>Note that {@link ComponentScanSpecification} objects may be directly
+ * instantiated and returned from {@link Feature @Feature} methods as an
+ * alternative to using the {@link ComponentScan @ComponentScan} annotation.
+ *
  * @author Chris Beams
  * @since 3.1
  * @see ComponentScan
- * @see ConfigurationClassBeanDefinitionReader
+ * @see ComponentScanSpecification
  * @see ComponentScanExecutor
  * @see ComponentScanBeanDefinitionParser
+ * @see ConfigurationClassBeanDefinitionReader
  */
-class ComponentScanAnnotationSpecificationCreator implements AnnotationSpecificationCreator {
+class ComponentScanAnnotationProcessor implements FeatureAnnotationProcessor {
 
 	private static final String BASE_PACKAGES_ATTRIBUTE = "basePackages";
 
@@ -70,12 +75,14 @@ class ComponentScanAnnotationSpecificationCreator implements AnnotationSpecifica
 
 	private static final String INCLUDE_FILTER_ATTRIBUTE = "includeFilters";
 
-	private final ProblemReporter problemReporter;
+	private final ProblemReporter problemReporter = new FailFastProblemReporter(); // TODO SPR-7420: accept this with a context in the process() method
 
 
-	public ComponentScanAnnotationSpecificationCreator(ProblemReporter problemReporter) {
+	/*
+	public ComponentScanAnnotationProcessor(ProblemReporter problemReporter) {
 		this.problemReporter = problemReporter;
 	}
+	*/
 
 	/**
 	 * Return whether the given metadata includes {@link ComponentScan} information.
@@ -90,7 +97,7 @@ class ComponentScanAnnotationSpecificationCreator implements AnnotationSpecifica
 	 * @throws IllegalArgumentException if ComponentScan attributes are not present in metadata
 	 * @see #accepts(AnnotationMetadata)
 	 */
-	public ComponentScanSpecification createFrom(AnnotationMetadata metadata) {
+	public ComponentScanSpecification process(AnnotationMetadata metadata) {
 		Map<String, Object> componentScanAttributes =
 			metadata.getAnnotationAttributes(ComponentScan.class.getName(), true);
 

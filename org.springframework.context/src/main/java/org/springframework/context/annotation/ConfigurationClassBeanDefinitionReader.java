@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.beans.factory.parsing.Location;
 import org.springframework.beans.factory.parsing.Problem;
 import org.springframework.beans.factory.parsing.ProblemReporter;
@@ -44,6 +45,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ExecutorContext;
+import org.springframework.context.FeatureSpecification;
 import org.springframework.context.SpecificationExecutor;
 import org.springframework.core.Conventions;
 import org.springframework.core.env.Environment;
@@ -54,6 +56,7 @@ import org.springframework.core.type.MethodMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
+import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -89,8 +92,6 @@ class ConfigurationClassBeanDefinitionReader {
 
 	private final MetadataReaderFactory metadataReaderFactory;
 
-	private final ComponentScanAnnotationSpecificationCreator componentScanSpecCreator;
-
 	private ExecutorContext executorContext;
 
 	/**
@@ -107,7 +108,6 @@ class ConfigurationClassBeanDefinitionReader {
 		this.sourceExtractor = sourceExtractor;
 		this.problemReporter = problemReporter;
 		this.metadataReaderFactory = metadataReaderFactory;
-		this.componentScanSpecCreator = new ComponentScanAnnotationSpecificationCreator(this.problemReporter);
 		this.executorContext = new ExecutorContext();
 		this.executorContext.setRegistry(this.registry);
 		this.executorContext.setRegistrar(new SimpleComponentRegistrar(this.registry));
@@ -131,16 +131,35 @@ class ConfigurationClassBeanDefinitionReader {
 	 * class itself, all its {@link Bean} methods
 	 */
 	private void loadBeanDefinitionsForConfigurationClass(ConfigurationClass configClass) {
-		if (this.componentScanSpecCreator.accepts(configClass.getMetadata())) {
-			ComponentScanSpecification spec = this.componentScanSpecCreator.createFrom(configClass.getMetadata());
-			SpecificationExecutor specExecutor = BeanUtils.instantiateClass(spec.getExecutorType(), SpecificationExecutor.class);
-			specExecutor.execute(spec, this.executorContext);
-		}
+		AnnotationMetadata metadata = configClass.getMetadata();
+		processFeatureAnnotations(metadata);
 		doLoadBeanDefinitionForConfigurationClassIfNecessary(configClass);
 		for (ConfigurationClassMethod beanMethod : configClass.getMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+	}
+
+	private void processFeatureAnnotations(AnnotationMetadata metadata) {
+		try {
+			for (String annotationType : metadata.getAnnotationTypes()) {
+				MetadataReader metadataReader = new SimpleMetadataReaderFactory().getMetadataReader(annotationType);
+				if (metadataReader.getAnnotationMetadata().isAnnotated(FeatureAnnotation.class.getName())) {
+					Map<String, Object> annotationAttributes = metadataReader.getAnnotationMetadata().getAnnotationAttributes(FeatureAnnotation.class.getName(), true);
+					// TODO SPR-7420: this is where we can catch user-defined types and avoid instantiating them for STS purposes
+					FeatureAnnotationProcessor processor = (FeatureAnnotationProcessor) BeanUtils.instantiateClass(Class.forName((String)annotationAttributes.get("processor")));
+					FeatureSpecification spec = processor.process(metadata);
+					SpecificationExecutor specExecutor = BeanUtils.instantiateClass(spec.getExecutorType(), SpecificationExecutor.class);
+					specExecutor.execute(spec, this.executorContext);
+				}
+			}
+		} catch (BeanDefinitionParsingException ex) {
+			throw ex;
+		}
+		catch (Exception ex) {
+			// TODO SPR-7420: what exception to throw?
+			throw new RuntimeException(ex);
+		}
 	}
 
 	/**

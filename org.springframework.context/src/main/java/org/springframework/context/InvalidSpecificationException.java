@@ -18,8 +18,8 @@ package org.springframework.context;
 
 
 /**
- * TODO SPR-7194: document
- * TODO SPR-7194: consider adapting to the existing org.springframework.validation package
+ * TODO SPR-7420: document
+ * TODO SPR-7420: consider adapting to the existing org.springframework.validation package
  *                e.g. could extend a generic InvalidObjectException...
  * 
  * @author Chris Beams
