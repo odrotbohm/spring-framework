@@ -36,19 +36,19 @@ import org.springframework.util.ClassUtils;
 
 /**
  * {@link FeatureAnnotationProcessor} implementation that reads attributes from a
- * {@link ComponentScan @ComponentScan} annotation into a {@link ComponentScanSpecification}
+ * {@link ComponentScan @ComponentScan} annotation into a {@link ComponentScanSpec}
  * which can in turn be executed by {@link ComponentScanExecutor}.
  * {@link ComponentScanBeanDefinitionParser} serves the same role for
  * the {@code <context:component-scan>} XML element.
  *
- * <p>Note that {@link ComponentScanSpecification} objects may be directly
+ * <p>Note that {@link ComponentScanSpec} objects may be directly
  * instantiated and returned from {@link Feature @Feature} methods as an
  * alternative to using the {@link ComponentScan @ComponentScan} annotation.
  *
  * @author Chris Beams
  * @since 3.1
  * @see ComponentScan
- * @see ComponentScanSpecification
+ * @see ComponentScanSpec
  * @see ComponentScanExecutor
  * @see ComponentScanBeanDefinitionParser
  * @see ConfigurationClassBeanDefinitionReader
@@ -92,12 +92,12 @@ class ComponentScanAnnotationProcessor implements FeatureAnnotationProcessor {
 	}
 
 	/**
-	 * Create and return a new {@link ComponentScanSpecification} from the given
+	 * Create and return a new {@link ComponentScanSpec} from the given
 	 * {@link ComponentScan} annotation metadata.
 	 * @throws IllegalArgumentException if ComponentScan attributes are not present in metadata
 	 * @see #accepts(AnnotationMetadata)
 	 */
-	public ComponentScanSpecification process(AnnotationMetadata metadata) {
+	public ComponentScanSpec process(AnnotationMetadata metadata) {
 		Map<String, Object> componentScanAttributes =
 			metadata.getAnnotationAttributes(ComponentScan.class.getName(), true);
 
@@ -106,7 +106,7 @@ class ComponentScanAnnotationProcessor implements FeatureAnnotationProcessor {
 						"metadata for class [%s]. Use accepts(metadata) before " +
 						"calling parse(metadata)", metadata.getClassName()));
 
-		ComponentScanSpecification spec = new ComponentScanSpecification();
+		ComponentScanSpec spec = new ComponentScanSpec();
 
 		String[] basePackageClasses = (String[])componentScanAttributes.get(PACKAGE_OF_ATTRIBUTE);
 		String[] basePackages = (String[])componentScanAttributes.get(BASE_PACKAGES_ATTRIBUTE);

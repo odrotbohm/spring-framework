@@ -35,7 +35,7 @@ import org.springframework.core.type.filter.TypeFilter;
  * @author Chris Beams
  * @since 3.1
  */
-class ComponentScanExecutor extends AbstractSpecificationExecutor<ComponentScanSpecification> {
+class ComponentScanExecutor extends AbstractSpecificationExecutor<ComponentScanSpec> {
 
 	private BeanDefinitionDefaults beanDefinitionDefaults;
 	private String[] autowireCandidatePatterns;
@@ -62,7 +62,7 @@ class ComponentScanExecutor extends AbstractSpecificationExecutor<ComponentScanS
 	 * the given specification and perform actual scanning and bean definition
 	 * registration.
 	 */
-	public void doExecute(ComponentScanSpecification spec, ExecutorContext executorContext) {
+	public void doExecute(ComponentScanSpec spec, ExecutorContext executorContext) {
 		BeanDefinitionRegistry registry = executorContext.getRegistry();
 		ResourceLoader resourceLoader = executorContext.getResourceLoader();
 		Environment environment = executorContext.getEnvironment();

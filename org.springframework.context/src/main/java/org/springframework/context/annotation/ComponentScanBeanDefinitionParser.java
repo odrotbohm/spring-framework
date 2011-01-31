@@ -40,7 +40,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * Parser for the &lt;context:component-scan/&gt; element. Parsed metadata is
- * used to populate a {@link ComponentScanSpecification} object which is in turn
+ * used to populate a {@link ComponentScanSpec} object which is in turn
  * delegated to a {@link ComponentScanExecutor} for actual scanning and
  * bean definition registration.
  * 
@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
  * @author Chris Beams
  * @since 2.5
  * @see ComponentScan
- * @see ComponentScanSpecification
+ * @see ComponentScanSpec
  * @see ComponentScanExecutor
  */
 public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
@@ -79,7 +79,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 
 
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
-		ComponentScanSpecification spec = createSpecification(element, parserContext);
+		ComponentScanSpec spec = createSpecification(element, parserContext);
 
 		ComponentScanExecutor specExecutor = new ComponentScanExecutor();
 		specExecutor.setBeanDefinitionDefaults(parserContext.getDelegate().getBeanDefinitionDefaults());
@@ -90,10 +90,10 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		return null;
 	}
 
-	protected ComponentScanSpecification createSpecification(Element element, ParserContext parserContext) {
+	protected ComponentScanSpec createSpecification(Element element, ParserContext parserContext) {
 		XmlReaderContext readerContext = parserContext.getReaderContext();
 
-		ComponentScanSpecification spec = ComponentScanSpecification.withBasePackages(
+		ComponentScanSpec spec = ComponentScanSpec.withBasePackages(
 				StringUtils.tokenizeToStringArray(element.getAttribute(BASE_PACKAGE_ATTRIBUTE),
 						ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS));
 

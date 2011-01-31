@@ -43,8 +43,8 @@ class ComponentScanFeatureConfig {
 	@FeatureConfiguration
 	static class Features {
 		@Feature
-		public ComponentScanSpecification componentScan() {
-			return new ComponentScanSpecification(example.scannable._package.class);
+		public ComponentScanSpec componentScan() {
+			return new ComponentScanSpec(example.scannable._package.class);
 		}
 	}
 

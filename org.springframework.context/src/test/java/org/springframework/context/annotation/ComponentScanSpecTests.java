@@ -21,10 +21,17 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.springframework.context.InvalidSpecificationException;
 
-public class ComponentScanSpecificationTests {
+/**
+ * Unit tests for {@link ComponentScanSpec}.
+ * 
+ * @author Chris Beams
+ * @since 3.1
+ */
+public class ComponentScanSpecTests {
+
 	@Test
 	public void verificationFailsWithoutBasePackages() {
-		ComponentScanSpecification spec = new ComponentScanSpecification();
+		ComponentScanSpec spec = new ComponentScanSpec();
 		try {
 			spec.validate();
 			fail("expected exception on verification");
@@ -35,4 +42,5 @@ public class ComponentScanSpecificationTests {
 		spec.addBasePackage("org.some.pkg");
 		spec.validate(); // success
 	}
+
 }
