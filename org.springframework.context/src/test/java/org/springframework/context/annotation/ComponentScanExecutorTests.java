@@ -21,10 +21,6 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.parsing.BeanComponentDefinition;
-import org.springframework.beans.factory.parsing.ComponentDefinition;
-import org.springframework.beans.factory.parsing.ComponentRegistrar;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ExecutorContext;
 import org.springframework.context.InvalidSpecificationException;
@@ -35,8 +31,10 @@ import org.springframework.mock.env.MockEnvironment;
  * Unit tests for {@link ComponentScanExecutor}.
  * 
  * @author Chris Beams
+ * @since 3.1
  */
-public class ComponentScanSpecificationExecutorTests {
+public class ComponentScanExecutorTests {
+
 	private ComponentScanExecutor executor;
 	private ExecutorContext executorContext;
 	private DefaultListableBeanFactory bf;
@@ -54,7 +52,7 @@ public class ComponentScanSpecificationExecutorTests {
 
 	@Test
 	public void validSpec() {
-		ComponentScanSpecification spec = new ComponentScanSpecification("example.scannable");
+		ComponentScanSpec spec = new ComponentScanSpec("example.scannable");
 
 		this.executor.execute(spec, this.executorContext);
 
@@ -63,7 +61,7 @@ public class ComponentScanSpecificationExecutorTests {
 
 	@Test(expected=InvalidSpecificationException.class)
 	public void invalidSpec() {
-		ComponentScanSpecification spec = new ComponentScanSpecification();
+		ComponentScanSpec spec = new ComponentScanSpec();
 		this.executor.execute(spec, this.executorContext);
 	}
 
