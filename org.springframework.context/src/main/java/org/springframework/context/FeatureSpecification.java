@@ -17,38 +17,91 @@
 package org.springframework.context;
 
 /**
- * A value object specifying instructions for configuring a particular feature of the Spring
- * container e.g., component-scanning, JMX MBean exporting, AspectJ auto-proxying, etc.
+ * Interface to be implemented by objects that specify the configuration of a particular feature
+ * of the Spring container e.g., component-scanning, JMX MBean exporting, AspectJ auto-proxying,
+ * annotation-driven transaction management, and so on.
  *
  * <p>Many features of the Spring container can be configured using either XML or annotations.
  * As one example, Spring's <em>component scanning</em> feature may be configured using
- * either the {@code <context:component-scan>} XML element or the {@code @ComponentScan}
- * annotation. These two options are equivalent to one another, and users may choose between
- * them as a matter of convention or preference. Fundamentally, both are declarative mechanisms
- * for <em>specifying</em> how the Spring container should be configured.  A {@code FeatureSpecification}
- * object, then, is a way of representing this configuration information independent of its
- * original source format, be it XML, annotations, or otherwise.
- *
- * <p>A {@link FeatureSpecificationExecutor} is used to read and act upon the {@code FeatureSpecification};
- * this is where the real work happens. In the case of component scanning as above, it is within a
- * {@code FeatureSpecificationExecutor} that a bean definition scanner is created, configured and invoked
- * against the base packages specified.
+ * either the {@code <context:component-scan>} XML element or (as of Spring 3.1) the
+ * {@code @ComponentScan} annotation. These two options are equivalent to one another, and users may
+ * choose between them as a matter of convention or preference. Fundamentally, both are declarative
+ * mechanisms for <em>specifying</em> how the Spring container should be configured.  A {@code
+ * FeatureSpecification} object, then, is a way of representing this configuration information independent
+ * of its original source format be it XML, annotations, or otherwise.
  *
  * <p>A {@code FeatureSpecification} is responsible for {@linkplain #validate validating itself}.
  * For example, a component-scanning specification would check that at least one base package has
- * been specified, and otherwise throw an {@link InvalidSpecificationException}.
+ * been specified, and otherwise throw an {@link InvalidSpecificationException}. Validation is done
+ * as part of the feature-processing lifecycle, and this method should not usually be a concern of end
+ * users.
  *
- * <p>The primary purpose of the {@code FeatureSpecification} and {@code FeatureSpecificationExecutor}
- * abstractions is to decouple XML and annotation parsing logic from container configuration logic.
- * This separates concerns and helps avoid duplication between XML and annotation parsers. These
- * interfaces and their implementations are not not intended for direct use by everyday application
- * developers, but rather by those creating new Spring XML namespaces or annotations i.e., framework
- * developers.
+ * <p>A {@link FeatureSpecificationExecutor} is used to carry out the instructions within a populated
+ * {@code FeatureSpecification}; this is where the "real work" happens. In the case of component scanning
+ * as above, it is within a {@code FeatureSpecificationExecutor} that a bean definition scanner is created,
+ * configured and invoked against the base packages specified.
+ *
+ * <p>{@code FeatureSpecification} objects may be populated and executed by Spring XML namespace element
+ * parsers on order to separate the concerns of XML parsing from Spring bean definition creation and
+ * registration. This type of use is mostly a framework-internal matter. More interesting to end users is
+ * the use of {@code FeatureSpecification} objects within {@code @FeatureConfiguration} classes and their
+ * {@code @Feature} methods. This functionality is new in Spring 3.1 and is the logical evolution of Spring's
+ * Java-based configuration support first released in Spring 3.0 (see {@code @Configuration} classes and
+ * {@code @Bean} methods). The primary goal of {@code Feature}-related support is to round out this
+ * Java-based support and allow users to configure all aspects of the Spring-container without requiring
+ * the use of XML. See "design notes" below for an example of this kind of use.
+ *
+ * <h2>Notes on designing {@code FeatureSpecification} implementations</h2>
+ *
+ * <p>The public API of a {@code FeatureSpecification} should be designed for maximum ease of use
+ * within {@code @Feature} methods. Traditional JavaBean-style getters and setters should be dropped
+ * for a more fluent style that allows for method chaining. Consider the following example of a
+ * {@code @Feature} method:
+ *
+ * <pre>
+ * &#64;Feature
+ * public TxAnnotationDriven tx(PlatformTransactionManager txManager) {
+ *    return new TxAnnotationDriven(txManager).proxyTargetClass(true);
+ * }
+ * </pre>
+ *
+ * Notice how the creation and configuration of the {@code TxAnnotationDriven} specification is
+ * concise and reads well. This is facilitated by mutator methods that always return the
+ * specification object's 'this' reference, allowing for method chaining. A secondary design goal
+ * of this approach is that the resulting code tends to mirror corresponding XML namespace
+ * declarations, which most Spring users are already familiar with. For example, compare the
+ * code above with its XML counterpart:
+ *
+ * <p>{@code <tx:annotation-driven transaction-manager="txManager" proxy-target-class="true"/>}
+ *
+ * <p>Typically, a user will call only the constructor and 'mutator' methods of a specification
+ * object. The accessor/getter methods, however, are typically called only by the specification's
+ * {@linkplain FeatureSpecificationExecutor executor} for the purpose of populating and registering
+ * bean definitions with the Spring container.
+ *
+ * <p>A {@code FeatureSpecification} is responsible for declaring its executor class via the
+ * {@link #getExecutorType()} method. Implementations may choose to make this mutable, usually
+ * via a {@code setExecutorType()} method or possibly via a constructor.
+ * {@link AbstractSpecificationExecutor} implementations get this functionality out of the box.
+ *
+ * <p>Implementations should take care to allow for use string-based bean names, placeholder
+ * (<code>"${...}"</code>) and SpEL (<code>"#{...}</code>) expressions wherever they may be useful.
+ * While it is generally desirable to refer to dependent beans in pure Java, in certain cases a
+ * user may wish or need to refer by bean name.  For example, the {@code TxAnnotationDriven} specification
+ * referenced above allows for specifying its transaction-manager reference by {@code String} or by
+ * {@code PlatformTransactionManager} reference.  Such strings should always be candidates for placeholder
+ * replacement and SpEL evaluation for maximum configurability as well as parity with the featureset
+ * available in Spring XML.
+ *
+ * <p>See the Javadoc for {@code @FeatureConfiguration} classes and {@code @Feature} methods for
+ * information on their lifecycle and semantics.
  *
  * @author Chris Beams
  * @since 3.1
  * @see FeatureSpecificationExecutor
+ * @see AbstractSpecificationExecutor
  * @see org.springframework.context.annotation.Feature
+ * @see org.springframework.context.annotation.FeatureConfiguration
  */
 public interface FeatureSpecification {
 
