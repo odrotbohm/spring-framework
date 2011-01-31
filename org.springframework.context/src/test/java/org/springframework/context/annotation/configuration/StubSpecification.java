@@ -19,30 +19,30 @@ package org.springframework.context.annotation.configuration;
 import org.springframework.context.ExecutorContext;
 import org.springframework.context.FeatureSpecification;
 import org.springframework.context.InvalidSpecificationException;
-import org.springframework.context.SpecificationExecutor;
+import org.springframework.context.FeatureSpecificationExecutor;
 
 public class StubSpecification implements FeatureSpecification {
 
-	private final Class<? extends SpecificationExecutor> excecutorType;
+	private final Class<? extends FeatureSpecificationExecutor> excecutorType;
 
 	public StubSpecification() {
 		this(StubSpecificationExecutor.class);
 	}
 
-	public StubSpecification(Class<? extends SpecificationExecutor> excecutorType) {
+	public StubSpecification(Class<? extends FeatureSpecificationExecutor> excecutorType) {
 		this.excecutorType = excecutorType;
 	}
 
 	public void validate() throws InvalidSpecificationException {
 	}
 
-	public Class<? extends SpecificationExecutor> getExecutorType() {
+	public Class<? extends FeatureSpecificationExecutor> getExecutorType() {
 		return this.excecutorType;
 	}
 
 }
 
-class StubSpecificationExecutor implements SpecificationExecutor {
+class StubSpecificationExecutor implements FeatureSpecificationExecutor {
 
 	public void execute(FeatureSpecification spec, ExecutorContext executorContext) {
 	}

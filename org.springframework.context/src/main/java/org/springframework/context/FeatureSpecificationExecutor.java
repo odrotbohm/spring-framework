@@ -30,7 +30,7 @@ package org.springframework.context;
  * @see org.springframework.context.annotation.FeatureAnnotationProcessor
  * @see org.springframework.context.annotation.ComponentScanExecutor
  */
-public interface SpecificationExecutor {
+public interface FeatureSpecificationExecutor {
 
 	/**
 	 * Execute the given specification, usually resulting in registration

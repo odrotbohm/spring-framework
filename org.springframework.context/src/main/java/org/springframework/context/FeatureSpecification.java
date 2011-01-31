@@ -29,16 +29,16 @@ package org.springframework.context;
  * object, then, is a way of representing this configuration information independent of its
  * original source format, be it XML, annotations, or otherwise.
  *
- * <p>A {@link SpecificationExecutor} is used to read and act upon the {@code FeatureSpecification};
+ * <p>A {@link FeatureSpecificationExecutor} is used to read and act upon the {@code FeatureSpecification};
  * this is where the real work happens. In the case of component scanning as above, it is within a
- * {@code SpecificationExecutor} that a bean definition scanner is created, configured and invoked
+ * {@code FeatureSpecificationExecutor} that a bean definition scanner is created, configured and invoked
  * against the base packages specified.
  *
  * <p>A {@code FeatureSpecification} is responsible for {@linkplain #validate validating itself}.
  * For example, a component-scanning specification would check that at least one base package has
  * been specified, and otherwise throw an {@link InvalidSpecificationException}.
  *
- * <p>The primary purpose of the {@code FeatureSpecification} and {@code SpecificationExecutor}
+ * <p>The primary purpose of the {@code FeatureSpecification} and {@code FeatureSpecificationExecutor}
  * abstractions is to decouple XML and annotation parsing logic from container configuration logic.
  * This separates concerns and helps avoid duplication between XML and annotation parsers. These
  * interfaces and their implementations are not not intended for direct use by everyday application
@@ -47,7 +47,7 @@ package org.springframework.context;
  *
  * @author Chris Beams
  * @since 3.1
- * @see SpecificationExecutor
+ * @see FeatureSpecificationExecutor
  * @see org.springframework.context.annotation.Feature
  */
 public interface FeatureSpecification {
@@ -62,9 +62,9 @@ public interface FeatureSpecification {
 	void validate() throws InvalidSpecificationException;
 
 	/**
-	 * The type of {@link SpecificationExecutor} that executes this specification.
+	 * The type of {@link FeatureSpecificationExecutor} that executes this specification.
 	 * Implementations may choose to make this property mutable.
 	 */
-	Class<? extends SpecificationExecutor> getExecutorType();
+	Class<? extends FeatureSpecificationExecutor> getExecutorType();
 
 }

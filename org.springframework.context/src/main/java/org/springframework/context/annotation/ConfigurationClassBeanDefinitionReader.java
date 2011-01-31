@@ -46,7 +46,7 @@ import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ExecutorContext;
 import org.springframework.context.FeatureSpecification;
-import org.springframework.context.SpecificationExecutor;
+import org.springframework.context.FeatureSpecificationExecutor;
 import org.springframework.core.Conventions;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
@@ -149,7 +149,7 @@ class ConfigurationClassBeanDefinitionReader {
 					// TODO SPR-7420: this is where we can catch user-defined types and avoid instantiating them for STS purposes
 					FeatureAnnotationProcessor processor = (FeatureAnnotationProcessor) BeanUtils.instantiateClass(Class.forName((String)annotationAttributes.get("processor")));
 					FeatureSpecification spec = processor.process(metadata);
-					SpecificationExecutor specExecutor = BeanUtils.instantiateClass(spec.getExecutorType(), SpecificationExecutor.class);
+					FeatureSpecificationExecutor specExecutor = BeanUtils.instantiateClass(spec.getExecutorType(), FeatureSpecificationExecutor.class);
 					specExecutor.execute(spec, this.executorContext);
 				}
 			}

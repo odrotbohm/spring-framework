@@ -19,7 +19,7 @@ package org.springframework.transaction.config;
 import org.springframework.aop.config.ProxySpecification;
 import org.springframework.context.AbstractFeatureSpecification;
 import org.springframework.context.InvalidSpecificationException;
-import org.springframework.context.SpecificationExecutor;
+import org.springframework.context.FeatureSpecificationExecutor;
 import org.springframework.context.annotation.ProxyType;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
  */
 public class TxAnnotationDriven extends AbstractFeatureSpecification implements ProxySpecification {
 
-	private static final Class<? extends SpecificationExecutor> DEFAULT_EXECUTOR_TYPE = TxAnnotationDrivenExecutor.class;
+	private static final Class<? extends FeatureSpecificationExecutor> DEFAULT_EXECUTOR_TYPE = TxAnnotationDrivenExecutor.class;
 
 	private Object txManager;
 

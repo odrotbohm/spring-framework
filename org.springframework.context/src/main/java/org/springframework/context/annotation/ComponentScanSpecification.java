@@ -22,7 +22,7 @@ import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.AbstractFeatureSpecification;
 import org.springframework.context.FeatureSpecification;
 import org.springframework.context.InvalidSpecificationException;
-import org.springframework.context.SpecificationExecutor;
+import org.springframework.context.FeatureSpecificationExecutor;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -46,7 +46,7 @@ import org.springframework.util.StringUtils;
  */
 public class ComponentScanSpecification extends AbstractFeatureSpecification {
 
-	private static final Class<? extends SpecificationExecutor> DEFAULT_EXECUTOR_TYPE = ComponentScanExecutor.class;
+	private static final Class<? extends FeatureSpecificationExecutor> DEFAULT_EXECUTOR_TYPE = ComponentScanExecutor.class;
 
 	private Boolean includeAnnotationConfig = null;
 	private String resourcePattern = null;

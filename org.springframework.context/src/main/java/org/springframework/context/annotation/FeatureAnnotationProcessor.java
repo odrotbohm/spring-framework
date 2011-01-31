@@ -17,13 +17,13 @@
 package org.springframework.context.annotation;
 
 import org.springframework.context.FeatureSpecification;
-import org.springframework.context.SpecificationExecutor;
+import org.springframework.context.FeatureSpecificationExecutor;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
  * Interface for parsing {@link AnnotationMetadata} from a {@link FeatureAnnotation}
  * into a {@link FeatureSpecification} object. Used in conjunction with a
- * {@link SpecificationExecutor} to provide a source-agnostic approach to
+ * {@link FeatureSpecificationExecutor} to provide a source-agnostic approach to
  * handling configuration metadata.
  *
  * <p>For example, Spring's component-scanning can be configured via XML using
@@ -48,7 +48,7 @@ import org.springframework.core.type.AnnotationMetadata;
  * @since 3.1
  * @see FeatureAnnotation#processor()
  * @see FeatureSpecification
- * @see SpecificationExecutor
+ * @see FeatureSpecificationExecutor
  */
 public interface FeatureAnnotationProcessor {
 
@@ -61,7 +61,7 @@ public interface FeatureAnnotationProcessor {
 
 	/**
 	 * Parse the given annotation metadata and populate a {@link FeatureSpecification}
-	 * object suitable for execution by a {@link SpecificationExecutor}.
+	 * object suitable for execution by a {@link FeatureSpecificationExecutor}.
 	 */
 	FeatureSpecification process(AnnotationMetadata metadata);
 

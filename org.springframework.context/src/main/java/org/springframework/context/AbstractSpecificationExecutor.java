@@ -25,7 +25,7 @@ import org.springframework.util.Assert;
  * @author Chris Beams
  * @since 3.1
  */
-public abstract class AbstractSpecificationExecutor<S extends FeatureSpecification> implements SpecificationExecutor {
+public abstract class AbstractSpecificationExecutor<S extends FeatureSpecification> implements FeatureSpecificationExecutor {
 
 	/**
 	 * {@inheritDoc}
