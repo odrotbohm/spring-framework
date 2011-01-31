@@ -22,14 +22,14 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 import org.springframework.context.ExecutorContext;
 import org.springframework.context.FeatureSpecification;
-import org.springframework.context.SpecificationExecutor;
+import org.springframework.context.FeatureSpecificationExecutor;
 import org.springframework.context.annotation.configuration.StubSpecification;
 import org.springframework.util.Assert;
 
 /**
  * Simple tests to ensure that @Feature methods are invoked and that the
  * resulting returned {@link FeatureSpecification} object is delegated to
- * the correct {@link SpecificationExecutor}.
+ * the correct {@link FeatureSpecificationExecutor}.
  *
  * @author Chris Beams
  * @since 3.1
@@ -53,7 +53,7 @@ public class SimpleFeatureMethodProcessingTests {
 		}
 	}
 
-	static class MySpecificationExecutor implements SpecificationExecutor {
+	static class MySpecificationExecutor implements FeatureSpecificationExecutor {
 		static boolean executeMethodWasCalled = false;
 		public void execute(FeatureSpecification spec, ExecutorContext executorContext) {
 			Assert.state(executeMethodWasCalled == false);

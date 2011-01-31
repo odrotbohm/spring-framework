@@ -21,20 +21,20 @@ public abstract class AbstractFeatureSpecification implements SourceAwareSpecifi
 	private static final Object DUMMY_SOURCE = new Object();
 	private static final String DUMMY_SOURCE_NAME = "dummySource";
 
-	private Class<? extends SpecificationExecutor> executorType;
+	private Class<? extends FeatureSpecificationExecutor> executorType;
 
 	private Object source = DUMMY_SOURCE;
 	private String sourceName = DUMMY_SOURCE_NAME;
 
-	protected AbstractFeatureSpecification(Class<? extends SpecificationExecutor> executorType) {
+	protected AbstractFeatureSpecification(Class<? extends FeatureSpecificationExecutor> executorType) {
 		this.executorType = executorType;
 	}
 
-	public Class<? extends SpecificationExecutor> getExecutorType() {
+	public Class<? extends FeatureSpecificationExecutor> getExecutorType() {
 		return executorType;
 	}
 
-	public void setExecutorType(Class<? extends SpecificationExecutor> executorType) {
+	public void setExecutorType(Class<? extends FeatureSpecificationExecutor> executorType) {
 		this.executorType = executorType;
 	}
 

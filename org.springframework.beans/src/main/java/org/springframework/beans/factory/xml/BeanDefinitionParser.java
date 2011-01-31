@@ -32,8 +32,8 @@ import org.springframework.beans.factory.config.BeanDefinition;
  *
  * <p>Implementations are encouraged to decouple XML parsing from bean registration by
  * parsing element(s) into a {@link org.springframework.context.Specification Specification}
- * object and delegating it to a {@link org.springframework.context.SpecificationExecutor
- * SpecificationExecutor} implementation. This allows for maximum reuse between XML-based and
+ * object and delegating it to a {@link org.springframework.context.FeatureSpecificationExecutor
+ * FeatureSpecificationExecutor} implementation. This allows for maximum reuse between XML-based and
  * annotation-based configuration options.
  *
  * @author Rob Harrop
@@ -41,7 +41,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
  * @see NamespaceHandler
  * @see AbstractBeanDefinitionParser
  * @see org.springframework.beans.factory.xml.BeanDefinitionDecorator
- * @see org.springframework.context.Specification
+ * @see org.springframework.context.FeatureSpecification
  * @see org.springframework.context.AbstractSpecificationExecutor
  */
 public interface BeanDefinitionParser {
