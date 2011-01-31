@@ -310,6 +310,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 	/**
 	 * TODO SPR-7420: this method invokes user-supplied code, which is not going to fly for STS
+	 * 
 	 * consider introducing some kind of check to see if we're in a tooling context and make guesses
 	 * based on return type rather than actually invoking the method and processing the the specification
 	 * object that returns.
@@ -321,7 +322,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		try {
 			// get the return type
 			if (!(FeatureSpecification.class.isAssignableFrom(featureMethod.getReturnType()))) {
-				// TODO: raise a Problem instead?
+				// TODO SPR-7420: raise a Problem instead?
 				throw new IllegalArgumentException(
 						"return type from @Feature methods must be assignable to FeatureSpecification");
 			}

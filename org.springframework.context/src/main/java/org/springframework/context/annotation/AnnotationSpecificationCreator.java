@@ -22,8 +22,6 @@ import org.springframework.context.SpecificationExecutor;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
- * TODO SPR-7194: documentation (clean up)
- *
  * Interface for parsing {@link AnnotationMetadata} into a more generic
  * {@link FeatureSpecification} object. Used in conjunction with a
  * {@link SpecificationExecutor} to provide a source-agnostic approach to
@@ -40,6 +38,10 @@ import org.springframework.core.type.AnnotationMetadata;
  * which understands how to configure a {@link ClassPathBeanDefinitionScanner},
  * perform actual scanning, and register actual bean definitions against the
  * container.
+ *
+ * TODO SPR-7194: documentation (clean up)
+ * TODO SPR-7194: rework so annotations declare their creator.
+ *
  *
  * @author Chris Beams
  * @since 3.1

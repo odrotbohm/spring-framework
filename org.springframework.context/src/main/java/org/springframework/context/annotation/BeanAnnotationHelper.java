@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 import org.springframework.core.annotation.AnnotationUtils;
 
 /**
- * Utilities for working with {@link Bean}-annotated methods.
+ * Utilities for processing {@link Bean}-annotated methods.
  *
  * @author Chris Beams
  * @since 3.1
