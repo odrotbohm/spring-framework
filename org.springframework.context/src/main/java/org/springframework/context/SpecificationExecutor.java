@@ -27,7 +27,7 @@ package org.springframework.context;
  * @since 3.1
  * @see AbstractSpecificationExecutor
  * @see org.springframework.beans.factory.xml.BeanDefinitionParser
- * @see org.springframework.context.annotation.AnnotationSpecificationCreator
+ * @see org.springframework.context.annotation.FeatureAnnotationProcessor
  * @see org.springframework.context.annotation.ComponentScanExecutor
  */
 public interface SpecificationExecutor {

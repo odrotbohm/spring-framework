@@ -14,16 +14,26 @@
  * limitations under the License.
  */
 
-package org.springframework.context;
+package org.springframework.context.annotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.springframework.context.FeatureSpecification;
 
 /**
- * TODO SPR-7194: document
+ * Meta-annotation indicating that an annotation should be processed
+ * to produce a {@link FeatureSpecification}.
  *
  * @author Chris Beams
  * @since 3.1
  */
-public interface SpecificationCreator<S> {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface FeatureAnnotation {
 
-	FeatureSpecification createFrom(S source);
+	Class<? extends FeatureAnnotationProcessor> processor();
 
 }

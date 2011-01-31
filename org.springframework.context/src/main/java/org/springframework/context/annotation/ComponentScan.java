@@ -43,6 +43,7 @@ import org.springframework.core.type.filter.TypeFilter;
  * @author Chris Beams
  * @since 3.1
  */
+@FeatureAnnotation(processor=ComponentScanAnnotationProcessor.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface ComponentScan {

@@ -23,31 +23,30 @@ package org.springframework.context;
  * <p>Many features of the Spring container can be configured using either XML or annotations.
  * As one example, Spring's <em>component scanning</em> feature may be configured using
  * either the {@code <context:component-scan>} XML element or the {@code @ComponentScan}
- * annotation. These two options are equivalent to one another, and users choose between
+ * annotation. These two options are equivalent to one another, and users may choose between
  * them as a matter of convention or preference. Fundamentally, both are declarative mechanisms
- * for <em>specifying</em> how the Spring container should be configured.  A {@code Specification}
+ * for <em>specifying</em> how the Spring container should be configured.  A {@code FeatureSpecification}
  * object, then, is a way of representing this configuration information independent of its
  * original source format, be it XML, annotations, or otherwise.
  *
- * <p>A {@link SpecificationCreator} may be used to read from the original XML or annotation
- * source and create a {@code Specification} object out of it. A {@link SpecificationExecutor}
- * is used to read and act upon the {@code Specification}; this is where the real work happens.
- * In the case of component scanning as above, it is within a {@code SpecificationExecutor} that
- * a bean definition scanner is created, configured and invoked against the base packages specified.
+ * <p>A {@link SpecificationExecutor} is used to read and act upon the {@code FeatureSpecification};
+ * this is where the real work happens. In the case of component scanning as above, it is within a
+ * {@code SpecificationExecutor} that a bean definition scanner is created, configured and invoked
+ * against the base packages specified.
  *
- * <p>A {@code Specification} is responsible for {@linkplain #validate validating itself}.
+ * <p>A {@code FeatureSpecification} is responsible for {@linkplain #validate validating itself}.
  * For example, a component-scanning specification would check that at least one base package has
  * been specified, and otherwise throw an {@link InvalidSpecificationException}.
  *
- * <p>The primary purpose of the {@code Specification} abstraction and its {@code Creator}/{@code Executor}
- * pairs is to decouple XML and annotation parsing logic from container configuration logic. This separates
- * concerns and helps avoid duplication between XML and annotation parsers. These interfaces and their
- * implementations are not not intended for direct use by everyday application developers, but rather by
- * those creating new Spring XML namespaces or annotations i.e., framework developers.
+ * <p>The primary purpose of the {@code FeatureSpecification} and {@code SpecificationExecutor}
+ * abstractions is to decouple XML and annotation parsing logic from container configuration logic.
+ * This separates concerns and helps avoid duplication between XML and annotation parsers. These
+ * interfaces and their implementations are not not intended for direct use by everyday application
+ * developers, but rather by those creating new Spring XML namespaces or annotations i.e., framework
+ * developers.
  *
  * @author Chris Beams
  * @since 3.1
- * @see SpecificationCreator
  * @see SpecificationExecutor
  * @see org.springframework.context.annotation.Feature
  */

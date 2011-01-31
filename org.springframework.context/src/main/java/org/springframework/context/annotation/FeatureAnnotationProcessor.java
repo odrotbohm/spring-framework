@@ -17,13 +17,12 @@
 package org.springframework.context.annotation;
 
 import org.springframework.context.FeatureSpecification;
-import org.springframework.context.SpecificationCreator;
 import org.springframework.context.SpecificationExecutor;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
- * Interface for parsing {@link AnnotationMetadata} into a more generic
- * {@link FeatureSpecification} object. Used in conjunction with a
+ * Interface for parsing {@link AnnotationMetadata} from a {@link FeatureAnnotation}
+ * into a {@link FeatureSpecification} object. Used in conjunction with a
  * {@link SpecificationExecutor} to provide a source-agnostic approach to
  * handling configuration metadata.
  *
@@ -32,12 +31,14 @@ import org.springframework.core.type.AnnotationMetadata;
  * annotation. In either case, the metadata is the same -- only the source
  * format differs.  {@link ComponentScanBeanDefinitionParser} is used to create
  * a specification from the {@code <context:component-scan>} XML element, while
- * {@link ComponentScanAnnotationSpecificationCreator} creates a specification from the
+ * {@link ComponentScanAnnotationProcessor} creates a specification from the
  * the annotation style. They both produce a {@link ComponentScanSpecification}
  * object that is ultimately delegated to a {@link ComponentScanExecutor}
  * which understands how to configure a {@link ClassPathBeanDefinitionScanner},
  * perform actual scanning, and register actual bean definitions against the
  * container.
+ *
+ * <p>Implementations must be instantiable via a no-arg constructor.
  *
  * TODO SPR-7194: documentation (clean up)
  * TODO SPR-7194: rework so annotations declare their creator.
@@ -45,10 +46,11 @@ import org.springframework.core.type.AnnotationMetadata;
  *
  * @author Chris Beams
  * @since 3.1
+ * @see FeatureAnnotation#processor()
  * @see FeatureSpecification
  * @see SpecificationExecutor
  */
-public interface AnnotationSpecificationCreator extends SpecificationCreator<AnnotationMetadata> {
+public interface FeatureAnnotationProcessor {
 
 	/**
 	 * Whether this writer is capable of handling the metadata in question
@@ -58,13 +60,9 @@ public interface AnnotationSpecificationCreator extends SpecificationCreator<Ann
 	boolean accepts(AnnotationMetadata metadata);
 
 	/**
-	 * Parse the given annotation metadata into a more general
-	 * {@link FeatureSpecification} object.
-	 * @param metadata the annotation metadata to parse
-	 * @return the metadata definition, suitable for reading by
-	 * a {@link SpecificationExecutor}.
-	 * @see AnnotationSpecificationCreator
+	 * Parse the given annotation metadata and populate a {@link FeatureSpecification}
+	 * object suitable for execution by a {@link SpecificationExecutor}.
 	 */
-	FeatureSpecification createFrom(AnnotationMetadata metadata);
+	FeatureSpecification process(AnnotationMetadata metadata);
 
 }

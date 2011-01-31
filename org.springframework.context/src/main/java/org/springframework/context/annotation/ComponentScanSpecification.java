@@ -40,7 +40,7 @@ import org.springframework.util.StringUtils;
  * @author Chris Beams
  * @since 3.1
  * @see ComponentScan
- * @see ComponentScanAnnotationSpecificationCreator
+ * @see ComponentScanAnnotationProcessor
  * @see ComponentScanBeanDefinitionParser
  * @see ComponentScanExecutor
  */
