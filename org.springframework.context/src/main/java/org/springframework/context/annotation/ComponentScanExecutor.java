@@ -30,7 +30,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
 
 /**
- * TODO SPR-7194: document
+ * TODO SPR-7420: document
  *
  * @author Chris Beams
  * @since 3.1

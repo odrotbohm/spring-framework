@@ -165,7 +165,7 @@ class ComponentScanAnnotationProcessor implements FeatureAnnotationProcessor {
 	}
 
 	/**
-	 * TODO SPR-7194: duplicated from {@link ComponentScanBeanDefinitionParser}
+	 * TODO SPR-7420: duplicated from {@link ComponentScanBeanDefinitionParser}
 	 */
 	@SuppressWarnings("unchecked")
 	private <T> T instantiateUserDefinedStrategy(String className, Class<T> strategyType, ClassLoader classLoader) {

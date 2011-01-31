@@ -21,7 +21,7 @@ package org.springframework.context;
  * a generic mechanism for handling container configuration metadata regardless of
  * origin in XML, annotations, or other source format.
  *
- * TODO SPR-7194: document (clean up)
+ * TODO SPR-7420: document (clean up)
  *
  * @author Chris Beams
  * @since 3.1

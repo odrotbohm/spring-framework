@@ -20,7 +20,7 @@ import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.Assert;
 
 /**
- * TODO SPR-7194: document
+ * TODO SPR-7420: document
  *
  * @author Chris Beams
  * @since 3.1
