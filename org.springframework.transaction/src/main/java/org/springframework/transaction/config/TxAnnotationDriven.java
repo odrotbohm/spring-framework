@@ -25,6 +25,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+/**
+ * TODO SPR-7420: document
+ *
+ * @author Chris Beams
+ * @since 3.1
+ */
 public class TxAnnotationDriven extends AbstractFeatureSpecification implements ProxySpecification {
 
 	private static final Class<? extends SpecificationExecutor> DEFAULT_EXECUTOR_TYPE = TxAnnotationDrivenExecutor.class;

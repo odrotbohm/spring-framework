@@ -17,11 +17,11 @@
 package org.springframework.context;
 
 /**
- * TODO SPR-7194: document (clean up)
- *
  * Interface for executing a populated {@link FeatureSpecification}. Provides
  * a generic mechanism for handling container configuration metadata regardless of
  * origin in XML, annotations, or other source format.
+ *
+ * TODO SPR-7194: document (clean up)
  *
  * @author Chris Beams
  * @since 3.1

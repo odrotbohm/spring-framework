@@ -31,6 +31,12 @@ import org.springframework.transaction.interceptor.BeanFactoryTransactionAttribu
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.util.Assert;
 
+/**
+ * TODO SPR-7420: document
+ *
+ * @author Chris Beams
+ * @since 3.1
+ */
 class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxAnnotationDriven> {
 
 	/**

@@ -35,6 +35,8 @@ import org.springframework.util.StringUtils;
  * or annotation parser, it may be read by {@link ComponentScanExecutor}
  * which is responsible for actual scanning and bean definition registration.
  *
+ * TODO SPR-7420: rename
+ *
  * @author Chris Beams
  * @since 3.1
  * @see ComponentScan

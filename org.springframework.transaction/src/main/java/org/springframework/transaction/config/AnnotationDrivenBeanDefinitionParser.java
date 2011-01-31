@@ -25,9 +25,10 @@ import org.springframework.context.annotation.ProxyType;
 import org.w3c.dom.Element;
 
 /**
- * {@link org.springframework.beans.factory.xml.BeanDefinitionParser}
- * implementation that allows users to easily configure all the infrastructure
- * beans required to enable annotation-driven transaction demarcation.
+ * {@link org.springframework.beans.factory.xml.BeanDefinitionParser
+ * BeanDefinitionParser} implementation that allows users to easily configure
+ * all the infrastructure beans required to enable annotation-driven transaction
+ * demarcation.
  *
  * <p>By default, all proxies are created as JDK proxies. This may cause some
  * problems if you are injecting objects as concrete classes rather than
@@ -39,6 +40,7 @@ import org.w3c.dom.Element;
  * @author Rob Harrop
  * @author Chris Beams
  * @since 2.0
+ * @see TxAnnotationDriven
  */
 class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 
@@ -100,7 +102,8 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 	/**
 	 * Adapt the given ParserContext instance into an ExecutorContext.
 	 *
-	 * TODO: consider unifying the two through a superinterface.
+	 * TODO SPR-7420: consider unifying the two through a superinterface.
+	 * TODO SPR-7420: create a common ParserContext-to-ExecutorContext adapter util
 	 */
 	private ExecutorContext createExecutorContext(ParserContext parserContext) {
 		ExecutorContext executorContext = new ExecutorContext();

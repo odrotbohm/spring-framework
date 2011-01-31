@@ -34,7 +34,7 @@ import org.springframework.util.ReflectionUtils;
 /**
  * Creates proxies for beans referenced from within @Feature methods.
  *
- * TODO documentation:
+ * TODO SPR-7420: document
  * - discuss why proxies are important (avoiding side effects of early instantiation)
  * - discuss benefits of interface-based proxies over concrete proxies
  * - make it clear that both of the above are possible
