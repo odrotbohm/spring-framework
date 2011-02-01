@@ -12,4 +12,7 @@
 		</mvc:message-converters>
 	</mvc:annotation-driven>
 
+	<bean id="messageCodesResolver" 
+		class="org.springframework.web.servlet.config.TestMessageCodesResolver"/>
+
 </beans>
