@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.springframework.context;
+package org.springframework.context.config;
+
 
 /**
  * TODO SPR-7420: document
@@ -27,7 +28,7 @@ public abstract class AbstractFeatureSpecification implements SourceAwareSpecifi
 	private static final Object DUMMY_SOURCE = new Object();
 	private static final String DUMMY_SOURCE_NAME = "dummySource";
 
-	private Class<? extends FeatureSpecificationExecutor> executorType;
+	protected Class<? extends FeatureSpecificationExecutor> executorType;
 
 	private Object source = DUMMY_SOURCE;
 	private String sourceName = DUMMY_SOURCE_NAME;
@@ -36,12 +37,8 @@ public abstract class AbstractFeatureSpecification implements SourceAwareSpecifi
 		this.executorType = executorType;
 	}
 
-	public Class<? extends FeatureSpecificationExecutor> getExecutorType() {
+	public Class<? extends FeatureSpecificationExecutor> executorType() {
 		return executorType;
-	}
-
-	public void setExecutorType(Class<? extends FeatureSpecificationExecutor> executorType) {
-		this.executorType = executorType;
 	}
 
 	public void setSource(Object source) {

@@ -21,8 +21,8 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.FeatureSpecification;
 import org.springframework.context.annotation.configuration.StubSpecification;
+import org.springframework.context.config.FeatureSpecification;
 
 /**
  * Tests proving that @Configuration classes may @Import @FeatureConfiguration

@@ -38,6 +38,7 @@ import org.springframework.transaction.config.AnnotationDrivenTests;
  * project test folders, Ant/Ivy are not configured to do so. Uncomment
  * as necessary when doing @Feature-related work.
  * 
+ */
 @RunWith(Suite.class)
 @SuiteClasses({
 	EarlyBeanReferenceProxyCreatorTests.class,
@@ -59,7 +60,6 @@ import org.springframework.transaction.config.AnnotationDrivenTests;
 	AnnotationTransactionNamespaceHandlerTests.class,
 	AnnotationDrivenTests.class,
 })
- */
 public class FeatureTestSuite {
 
 }

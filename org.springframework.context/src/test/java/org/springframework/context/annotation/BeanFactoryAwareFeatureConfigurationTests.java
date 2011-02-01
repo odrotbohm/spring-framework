@@ -24,8 +24,8 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.FeatureSpecification;
 import org.springframework.context.annotation.configuration.StubSpecification;
+import org.springframework.context.config.FeatureSpecification;
 
 /**
  * Tests that @FeatureConfiguration classes may implement Aware interfaces,

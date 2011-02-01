@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package org.springframework.context;
+package org.springframework.context.config;
 
-public interface SourceAwareSpecification extends FeatureSpecification {
-
-	public abstract String getSourceName();
-
-	public abstract void setSourceName(String sourceName);
-
-	public abstract Object getSource();
-
-	public abstract void setSource(Object source);
-
+/**
+ * TODO SPR-7420: document
+ *
+ * @author Chris Beams
+ * @since 3.1
+ */
+public enum AdviceMode {
+	PROXY,
+	ASPECTJ
 }

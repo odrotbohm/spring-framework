@@ -16,11 +16,10 @@
 
 package org.springframework.transaction.config;
 
-import org.springframework.aop.config.ProxySpecification;
-import org.springframework.context.AbstractFeatureSpecification;
-import org.springframework.context.InvalidSpecificationException;
-import org.springframework.context.FeatureSpecificationExecutor;
-import org.springframework.context.annotation.ProxyType;
+import org.springframework.context.config.AbstractFeatureSpecification;
+import org.springframework.context.config.AdviceMode;
+import org.springframework.context.config.FeatureSpecificationExecutor;
+import org.springframework.context.config.InvalidSpecificationException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -31,9 +30,11 @@ import org.springframework.util.Assert;
  * @author Chris Beams
  * @since 3.1
  */
-public class TxAnnotationDriven extends AbstractFeatureSpecification implements ProxySpecification {
+public final class TxAnnotationDriven extends AbstractFeatureSpecification {
 
-	private static final Class<? extends FeatureSpecificationExecutor> DEFAULT_EXECUTOR_TYPE = TxAnnotationDrivenExecutor.class;
+	static final String DEFAULT_TRANSACTION_MANAGER_BEAN_NAME = "transactionManager";
+
+	private static final Class<? extends FeatureSpecificationExecutor> EXECUTOR_TYPE = TxAnnotationDrivenExecutor.class;
 
 	private Object txManager;
 
@@ -41,18 +42,15 @@ public class TxAnnotationDriven extends AbstractFeatureSpecification implements 
 
 	private boolean proxyTargetClass = false;
 
-	private ProxyType proxyType = ProxyType.SPRINGAOP;
-
-	private Boolean exposeProxy = false;
-
-	static final String DEFAULT_TRANSACTION_MANAGER_BEAN_NAME = "transactionManager";
+	private AdviceMode mode = AdviceMode.PROXY;
 
 	/**
-	 * Create a TxAnnotationDriven specification assumes the presence of a
+	 * Create a {@code TxAnnotationDriven} specification assumes the presence of a
 	 * {@link PlatformTransactionManager} bean named {@value #DEFAULT_TRANSACTION_MANAGER_BEAN_NAME}.
 	 *
-	 * <p>See the alternate constructors defined here if your transaction manager does not follow
-	 * this default naming or you wish to refer to it by bean instance rather than by bean name.
+	 * <p>See the alternate constructors defined here if your transaction manager does
+	 * not follow this default naming or you wish to refer to it by bean instance rather
+	 * than by bean name.
 	 * @see #TxAnnotationDriven(String)
 	 * @see #TxAnnotationDriven(PlatformTransactionManager)
 	 */
@@ -61,16 +59,18 @@ public class TxAnnotationDriven extends AbstractFeatureSpecification implements 
 	}
 
 	/**
-	 * Create a new TxAnnotationDriven specification that will use the specified transaction
-	 * manager.
+	 * Create a new {@code TxAnnotationDriven} specification that will use the specified
+	 * transaction manager bean name.
 	 *
-	 * @param txManager name of {@link PlatformTransactionManager} bean, ${placeholder}
-	 * resolving to a bean name, or SpEL #{expression} resolving to bean name or bean instance.
-	 * If {@code null}, falls back to default value of {@value #DEFAULT_TRANSACTION_MANAGER_BEAN_NAME}.
+	 * @param txManagerBeanName name of {@link PlatformTransactionManager} bean or a
+	 * ${placeholder} or SpEL #{expression} resolving to bean name. If {@code null},
+	 * falls back to default value of {@value #DEFAULT_TRANSACTION_MANAGER_BEAN_NAME}.
 	 */
-	public TxAnnotationDriven(String txManager) {
-		super(DEFAULT_EXECUTOR_TYPE);
-		this.txManager = txManager != null ? txManager : DEFAULT_TRANSACTION_MANAGER_BEAN_NAME;
+	public TxAnnotationDriven(String txManagerBeanName) {
+		super(EXECUTOR_TYPE);
+		this.txManager = txManagerBeanName != null ?
+				txManagerBeanName :
+				DEFAULT_TRANSACTION_MANAGER_BEAN_NAME;
 	}
 
 	/**
@@ -80,38 +80,40 @@ public class TxAnnotationDriven extends AbstractFeatureSpecification implements 
 	 * @param txManager the {@link PlatformTransactionManager} bean to use. Must not be {@code null}.
 	 */
 	public TxAnnotationDriven(PlatformTransactionManager txManager) {
-		super(DEFAULT_EXECUTOR_TYPE);
+		super(EXECUTOR_TYPE);
 		Assert.notNull(txManager, "transaction manager must not be null");
 		this.txManager = txManager;
 	}
 
 	/**
-	 * Return the transaction manager to use.  May be a {@link PlatformTransactionManager} instance
-	 * or a String representing the bean name, a placeholder resolving to the bean name, or a SpEL
-	 * expression that resolves the bean name or bean instance.
+	 * Return the transaction manager to use.  May be a {@link PlatformTransactionManager}
+	 * instance or a String representing the bean name or a placeholder or SpEL expression
+	 * that resolves to the bean name.
 	 */
-	public Object transactionManager() {
+	Object transactionManager() {
 		return this.txManager;
 	}
 
 	/**
-	 * Set the type of transaction proxy to create: Spring AOP proxies or AspectJ-style weaving.
-	 * The default is {@link ProxyType#SPRINGAOP}.
+	 * Indicate how transactional advice should be applied.
+	 * @see AdviceMode
 	 */
-	public TxAnnotationDriven proxyType(ProxyType proxyType) {
-		this.proxyType = proxyType;
+	public TxAnnotationDriven mode(AdviceMode mode) {
+		this.mode = mode;
 		return this;
 	}
 
 	/**
-	 * Return the type of proxy to create.
+	 * Return how transactional advice should be applied.
 	 */
-	public ProxyType proxyType() {
-		return this.proxyType;
+	AdviceMode mode() {
+		return this.mode;
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Indicate whether class-based (CGLIB) proxies are to be created as opposed
+	 * to standard Java interface-based proxies.
+	 *
 	 * <p>Note: Class-based proxies require the {@link Transactional @Transactional}
 	 * annotation to be defined on the concrete class. Annotations in interfaces will
 	 * not work in that case (they will rather only work with interface-based proxies)!
@@ -121,17 +123,12 @@ public class TxAnnotationDriven extends AbstractFeatureSpecification implements 
 		return this;
 	}
 
-	public Boolean proxyTargetClass() {
+	/**
+	 * Return whether class-based (CGLIB) proxies are to be created as opposed
+	 * to standard Java interface-based proxies.
+	 */
+	Boolean proxyTargetClass() {
 		return this.proxyTargetClass;
-	}
-
-	public TxAnnotationDriven exposeProxy(Boolean exposeProxy) {
-		this.exposeProxy = exposeProxy;
-		return this;
-	}
-
-	public Boolean exposeProxy() {
-		return this.exposeProxy;
 	}
 
 	/**
@@ -149,7 +146,7 @@ public class TxAnnotationDriven extends AbstractFeatureSpecification implements 
 	 * when multiple advice executes at a specific joinpoint. May return
 	 * {@code null}, indicating that default ordering should be used.
 	 */
-	public Integer order() {
+	Integer order() {
 		return this.order;
 	}
 

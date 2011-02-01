@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.context;
+package org.springframework.context.config;
 
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.Assert;
@@ -49,6 +49,6 @@ public abstract class AbstractSpecificationExecutor<S extends FeatureSpecificati
 	 * against a bean factory.
 	 * @param specification the {@linkplain FeatureSpecification#validate() validated} specification
 	 */
-	public abstract void doExecute(S specification, ExecutorContext executorContext);
+	protected abstract void doExecute(S specification, ExecutorContext executorContext);
 
 }

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.springframework.context;
+package org.springframework.context.config;
+
 
 /**
  * Interface to be implemented by objects that specify the configuration of a particular feature
@@ -77,21 +78,26 @@ package org.springframework.context;
  * <p>Typically, a user will call only the constructor and 'mutator' methods of a specification
  * object. The accessor/getter methods, however, are typically called only by the specification's
  * {@linkplain FeatureSpecificationExecutor executor} for the purpose of populating and registering
- * bean definitions with the Spring container.
+ * bean definitions with the Spring container.For this reason, it is recommended that accessor
+ * methods be given package-private visibility. This creates a better experience for users from
+ * an IDE content-assist point of view as they will see only the public mutator methods, reducing
+ * any possible confusion.
  *
  * <p>A {@code FeatureSpecification} is responsible for declaring its executor class via the
- * {@link #getExecutorType()} method. Implementations may choose to make this mutable, usually
- * via a {@code setExecutorType()} method or possibly via a constructor.
- * {@link AbstractSpecificationExecutor} implementations get this functionality out of the box.
+ * {@link #executorType()} method. Implementations may choose to make this mutable, but doing so
+ * not recommended. Rather, both the specification class and its executor class should be marked
+ * {@code final} with the executor being given package-private visibility.
  *
- * <p>Implementations should take care to allow for use string-based bean names, placeholder
+ * <p>Implementations should take care to allow for use of string-based bean names, placeholder
  * (<code>"${...}"</code>) and SpEL (<code>"#{...}</code>) expressions wherever they may be useful.
  * While it is generally desirable to refer to dependent beans in pure Java, in certain cases a
- * user may wish or need to refer by bean name.  For example, the {@code TxAnnotationDriven} specification
+ * user may wish or need to refer by bean name. For example, the {@code TxAnnotationDriven} specification
  * referenced above allows for specifying its transaction-manager reference by {@code String} or by
- * {@code PlatformTransactionManager} reference.  Such strings should always be candidates for placeholder
+ * {@code PlatformTransactionManager} reference. Such strings should always be candidates for placeholder
  * replacement and SpEL evaluation for maximum configurability as well as parity with the featureset
- * available in Spring XML.
+ * available in Spring XML. With regard to SpEL expressions, users should assume that only expressions
+ * evaluating to a bean name will be supported. While it is technically possible with SpEL to resolve
+ * a bean instance, specification executors will not support such use unless explicitly indicated.
  *
  * <p>See the Javadoc for {@code @FeatureConfiguration} classes and {@code @Feature} methods for
  * information on their lifecycle and semantics.
@@ -118,6 +124,6 @@ public interface FeatureSpecification {
 	 * The type of {@link FeatureSpecificationExecutor} that executes this specification.
 	 * Implementations may choose to make this property mutable.
 	 */
-	Class<? extends FeatureSpecificationExecutor> getExecutorType();
+	Class<? extends FeatureSpecificationExecutor> executorType();
 
 }

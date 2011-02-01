@@ -20,10 +20,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
-import org.springframework.context.ExecutorContext;
-import org.springframework.context.FeatureSpecification;
-import org.springframework.context.FeatureSpecificationExecutor;
 import org.springframework.context.annotation.configuration.StubSpecification;
+import org.springframework.context.config.ExecutorContext;
+import org.springframework.context.config.FeatureSpecification;
+import org.springframework.context.config.FeatureSpecificationExecutor;
 import org.springframework.util.Assert;
 
 /**

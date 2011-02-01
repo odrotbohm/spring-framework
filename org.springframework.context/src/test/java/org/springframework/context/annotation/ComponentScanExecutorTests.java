@@ -22,8 +22,8 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ExecutorContext;
-import org.springframework.context.InvalidSpecificationException;
+import org.springframework.context.config.ExecutorContext;
+import org.springframework.context.config.InvalidSpecificationException;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.mock.env.MockEnvironment;
 

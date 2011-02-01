@@ -21,19 +21,21 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.context.FeatureSpecification;
-
 /**
  * Meta-annotation indicating that an annotation should be processed
- * to produce a {@link FeatureSpecification}.
+ * to produce a {@code FeatureSpecification}.
  *
  * @author Chris Beams
  * @since 3.1
+ * @see org.springframework.context.config.FeatureSpecification
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface FeatureAnnotation {
 
+	/**
+	 * Indicate the class that should be used to process this annotation.
+	 */
 	Class<? extends FeatureAnnotationProcessor> processor();
 
 }

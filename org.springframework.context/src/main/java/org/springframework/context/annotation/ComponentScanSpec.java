@@ -19,21 +19,18 @@ package org.springframework.context.annotation;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.context.AbstractFeatureSpecification;
-import org.springframework.context.FeatureSpecification;
-import org.springframework.context.FeatureSpecificationExecutor;
-import org.springframework.context.InvalidSpecificationException;
+import org.springframework.context.config.AbstractFeatureSpecification;
+import org.springframework.context.config.FeatureSpecificationExecutor;
+import org.springframework.context.config.InvalidSpecificationException;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * {@link FeatureSpecification} implementation that holds component-scanning
- * configuration metadata.  This decouples the metadata from its XML or
- * annotation source. Once this structure has been populated by an XML
- * or annotation parser, it may be acted upon by {@link ComponentScanExecutor}
- * which is responsible for actual scanning and bean definition registration.
+ * Specifies the configuration of Spring's <em>component-scanning</em> feature.
+ * May be used directly within a {@link Feature @Feature} method, or indirectly
+ * through the {@link ComponentScan @ComponentScan} annotation.
  *
  * @author Chris Beams
  * @since 3.1
@@ -42,9 +39,9 @@ import org.springframework.util.StringUtils;
  * @see ComponentScanBeanDefinitionParser
  * @see ComponentScanExecutor
  */
-public class ComponentScanSpec extends AbstractFeatureSpecification {
+public final class ComponentScanSpec extends AbstractFeatureSpecification {
 
-	private static final Class<? extends FeatureSpecificationExecutor> DEFAULT_EXECUTOR_TYPE = ComponentScanExecutor.class;
+	private static final Class<? extends FeatureSpecificationExecutor> EXECUTOR_TYPE = ComponentScanExecutor.class;
 
 	private Boolean includeAnnotationConfig = null;
 	private String resourcePattern = null;
@@ -64,7 +61,7 @@ public class ComponentScanSpec extends AbstractFeatureSpecification {
 	 * @see #validate()
 	 */
 	ComponentScanSpec() {
-		super(DEFAULT_EXECUTOR_TYPE);
+		super(EXECUTOR_TYPE);
 	}
 
 	public ComponentScanSpec(Class<?>... basePackageClasses) {
@@ -82,13 +79,13 @@ public class ComponentScanSpec extends AbstractFeatureSpecification {
 		}
 	}
 
-	public Boolean includeAnnotationConfig() {
-		return this.includeAnnotationConfig;
-	}
-
 	public ComponentScanSpec includeAnnotationConfig(Boolean includeAnnotationConfig) {
 		this.includeAnnotationConfig = includeAnnotationConfig;
 		return this;
+	}
+
+	Boolean includeAnnotationConfig() {
+		return this.includeAnnotationConfig;
 	}
 
 	public ComponentScanSpec resourcePattern(String resourcePattern) {
@@ -96,7 +93,7 @@ public class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this;
 	}
 
-	public String resourcePattern() {
+	String resourcePattern() {
 		return resourcePattern;
 	}
 
@@ -112,7 +109,7 @@ public class ComponentScanSpec extends AbstractFeatureSpecification {
 			StringUtils.addStringToArray(this.basePackages, basePackage);
 	}
 
-	public String[] basePackages() {
+	String[] basePackages() {
 		return basePackages;
 	}
 
@@ -121,7 +118,7 @@ public class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this;
 	}
 
-	public Boolean useDefaultFilters() {
+	Boolean useDefaultFilters() {
 		return this.useDefaultFilters;
 	}
 
@@ -130,7 +127,7 @@ public class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this;
 	}
 
-	public BeanNameGenerator beanNameGenerator() {
+	BeanNameGenerator beanNameGenerator() {
 		return this.beanNameGenerator;
 	}
 
@@ -139,7 +136,7 @@ public class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this;
 	}
 
-	public ScopeMetadataResolver scopeMetadataResolver() {
+	ScopeMetadataResolver scopeMetadataResolver() {
 		return this.scopeMetadataResolver;
 	}
 
@@ -148,7 +145,7 @@ public class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this;
 	}
 
-	public ScopedProxyMode scopedProxyMode() {
+	ScopedProxyMode scopedProxyMode() {
 		return this.scopedProxyMode;
 	}
 
@@ -163,7 +160,7 @@ public class ComponentScanSpec extends AbstractFeatureSpecification {
 			ObjectUtils.addObjectToArray(this.includeFilters, includeFilter);
 	}
 
-	public TypeFilter[] includeFilters() {
+	TypeFilter[] includeFilters() {
 		return this.includeFilters;
 	}
 
@@ -178,7 +175,7 @@ public class ComponentScanSpec extends AbstractFeatureSpecification {
 			ObjectUtils.addObjectToArray(this.excludeFilters, excludeFilter);
 	}
 
-	public TypeFilter[] excludeFilters() {
+	TypeFilter[] excludeFilters() {
 		return this.excludeFilters;
 	}
 

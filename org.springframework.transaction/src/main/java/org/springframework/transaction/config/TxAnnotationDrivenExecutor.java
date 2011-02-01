@@ -24,8 +24,8 @@ import org.springframework.beans.factory.parsing.ComponentRegistrar;
 import org.springframework.beans.factory.parsing.CompositeComponentDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.context.AbstractSpecificationExecutor;
-import org.springframework.context.ExecutorContext;
+import org.springframework.context.config.AbstractSpecificationExecutor;
+import org.springframework.context.config.ExecutorContext;
 import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
 import org.springframework.transaction.interceptor.BeanFactoryTransactionAttributeSourceAdvisor;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
@@ -37,18 +37,16 @@ import org.springframework.util.Assert;
  * @author Chris Beams
  * @since 3.1
  */
-class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxAnnotationDriven> {
+final class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxAnnotationDriven> {
 
 	/**
-	 * The bean name of the internally managed transaction advisor (used when
-	 * proxyType == SPRINGAOP).
+	 * The bean name of the internally managed transaction advisor (used when mode == PROXY).
 	 */
 	public static final String TRANSACTION_ADVISOR_BEAN_NAME =
 			"org.springframework.transaction.config.internalTransactionAdvisor";
 
 	/**
-	 * The bean name of the internally managed transaction aspect (used when
-	 * proxyType == ASPECTJ).
+	 * The bean name of the internally managed transaction aspect (used when mode == ASPECTJ).
 	 */
 	public static final String TRANSACTION_ASPECT_BEAN_NAME =
 			"org.springframework.transaction.config.internalTransactionAspect";
@@ -58,19 +56,19 @@ class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxAnnotat
 
 
 	@Override
-	public void doExecute(TxAnnotationDriven txSpec, ExecutorContext executorContext) {
+	protected void doExecute(TxAnnotationDriven txSpec, ExecutorContext executorContext) {
 		BeanDefinitionRegistry registry = executorContext.getRegistry();
 		ComponentRegistrar registrar = executorContext.getRegistrar();
-		switch (txSpec.proxyType()) {
+		switch (txSpec.mode()) {
 			case ASPECTJ:
 				registerTransactionAspect(txSpec, registry, registrar);
 				break;
-			case SPRINGAOP:
+			case PROXY:
 				AopAutoProxyConfigurer.configureAutoProxyCreator(txSpec, registry, registrar);
 				break;
 			default:
 				throw new IllegalArgumentException(
-						String.format("proxy type %s is not supported", txSpec.proxyType()));
+						String.format("AdviceMode %s is not supported", txSpec.mode()));
 		}
 	}
 
@@ -101,7 +99,7 @@ class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxAnnotat
 
 		public static void configureAutoProxyCreator(TxAnnotationDriven txSpec, BeanDefinitionRegistry registry, ComponentRegistrar registrar) {
 			Object source = txSpec.getSource();
-			AopNamespaceUtils.registerAutoProxyCreatorIfNecessary(registry, registrar, source, txSpec);
+			AopNamespaceUtils.registerAutoProxyCreatorIfNecessary(registry, registrar, source, txSpec.proxyTargetClass());
 
 			if (!registry.containsBeanDefinition(TRANSACTION_ADVISOR_BEAN_NAME)) {
 

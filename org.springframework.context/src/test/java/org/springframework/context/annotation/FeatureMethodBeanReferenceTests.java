@@ -23,8 +23,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
-import org.springframework.context.FeatureSpecification;
 import org.springframework.context.annotation.configuration.StubSpecification;
+import org.springframework.context.config.FeatureSpecification;
 
 import test.beans.ITestBean;
 import test.beans.TestBean;

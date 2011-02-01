@@ -53,7 +53,8 @@ public abstract class AopNamespaceUtils {
 
 
 	/**
-	 * @deprecated in favor of {@link #registerAutoProxyCreatorIfNecessary(BeanDefinitionRegistry, ComponentRegistrar, Object, ProxySpecification)}
+	 * @deprecated since Spring 3.1 in favor of
+	 * {@link #registerAutoProxyCreatorIfNecessary(BeanDefinitionRegistry, ComponentRegistrar, Object, Boolean, Boolean)}
 	 */
 	@Deprecated
 	public static void registerAutoProxyCreatorIfNecessary(
@@ -66,12 +67,17 @@ public abstract class AopNamespaceUtils {
 	}
 
 	public static void registerAutoProxyCreatorIfNecessary(
-			BeanDefinitionRegistry registry, ComponentRegistrar parserContext, Object source, ProxySpecification proxySpec) {
+			BeanDefinitionRegistry registry, ComponentRegistrar parserContext, Object source, Boolean proxyTargetClass, Boolean exposeProxy) {
 
 		BeanDefinition beanDefinition =
 			AopConfigUtils.registerAutoProxyCreatorIfNecessary(registry, source);
-		useClassProxyingIfNecessary(registry, proxySpec);
+		useClassProxyingIfNecessary(registry, proxyTargetClass, exposeProxy);
 		registerComponentIfNecessary(beanDefinition, parserContext);
+	}
+
+	public static void registerAutoProxyCreatorIfNecessary(
+			BeanDefinitionRegistry registry, ComponentRegistrar parserContext, Object source, Boolean proxyTargetClass) {
+		registerAutoProxyCreatorIfNecessary(registry, parserContext, source, proxyTargetClass, false);
 	}
 
 	public static void registerAspectJAutoProxyCreatorIfNecessary(
@@ -114,6 +120,12 @@ public abstract class AopNamespaceUtils {
 	}
 
 
+	/**
+	 * @deprecated since Spring 3.1 in favor of
+	 * {@link #useClassProxyingIfNecessary(BeanDefinitionRegistry, Boolean, Boolean)}
+	 * which does not require a parameter of type org.w3c.dom.Element
+	 */
+	@Deprecated
 	private static void useClassProxyingIfNecessary(BeanDefinitionRegistry registry, Element sourceElement) {
 		if (sourceElement != null) {
 			boolean proxyTargetClass = Boolean.valueOf(sourceElement.getAttribute(PROXY_TARGET_CLASS_ATTRIBUTE));
@@ -127,11 +139,11 @@ public abstract class AopNamespaceUtils {
 		}
 	}
 
-	private static void useClassProxyingIfNecessary(BeanDefinitionRegistry registry, ProxySpecification proxySpec) {
-		if (proxySpec.proxyTargetClass()) {
+	private static void useClassProxyingIfNecessary(BeanDefinitionRegistry registry, Boolean proxyTargetClass, Boolean exposeProxy) {
+		if (proxyTargetClass) {
 			AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
 		}
-		if (proxySpec.exposeProxy()) {
+		if (exposeProxy) {
 			AopConfigUtils.forceAutoProxyCreatorToExposeProxy(registry);
 		}
 	}
