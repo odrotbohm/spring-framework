@@ -13,6 +13,6 @@
 	</mvc:annotation-driven>
 
 	<bean id="messageCodesResolver" 
-		class="org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParserTests$TestMessageCodesResolver"/>
+		class="org.springframework.web.servlet.config.TestMessageCodesResolver"/>
 
 </beans>

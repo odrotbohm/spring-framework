@@ -15,15 +15,51 @@
  */
 package org.springframework.web.servlet.config;
 
-import org.springframework.context.AbstractFeatureSpecification;
-import org.springframework.context.FeatureSpecificationExecutor;
-import org.springframework.context.InvalidSpecificationException;
+import org.springframework.context.config.AbstractFeatureSpecification;
+import org.springframework.context.config.FeatureSpecificationExecutor;
+import org.springframework.context.config.InvalidSpecificationException;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.format.support.FormattingConversionServiceFactoryBean;
+import org.springframework.http.converter.feed.AtomFeedHttpMessageConverter;
+import org.springframework.http.converter.feed.RssChannelHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
+import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.validation.MessageCodesResolver;
 import org.springframework.validation.Validator;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 /**
- * TODO
+ * <p> Specifies the Spring MVC "annotation-driven" container feature. The 
+ * feature provides the following fine-grained configuration:
+ * 
+ * <ul>
+ * 	<li> DefaultAnnotationHandlerMapping bean for mapping HTTP Servlet Requests 
+ * to @Controller methods using @RequestMapping annotations.
+ * 	<li> AnnotationMethodHandlerAdapter bean for invoking annotated @Controller 
+ * methods. 
+ * 	<li> ExceptionResolvers for invoking @ExceptionHandler controller methods
+ * and for mapping Spring exception to HTTP status codes.
+ * </ul>
+ * 
+ * The HandlerAdapter is further configured with the following, which apply globally
+ * (across controllers invoked though the AnnotationMethodHandlerAdapter):
+ * 
+ * <ul>
+ * 	<li> {@link ConversionService} - a custom instance can be provided via 
+ * 	{@link #conversionService(ConversionService)}. Otherwise it defaults to a fresh
+ * 	{@link ConversionService} instance created by the default
+ * 	{@link FormattingConversionServiceFactoryBean}.
+ * 	<li> {@link Validator} - a custom instance can be provided via
+ * 	{@link #validator(Validator)}. Otherwise it defaults to a fresh Validator instance 
+ * 	created by the default {@link LocalValidatorFactoryBean} <em>assuming JSR-303 API 
+ * 	is present on the classpath</em>.
+ * 	<li> HttpMessageConverters including the {@link Jaxb2RootElementHttpMessageConverter} 
+ * 	<em>assuming JAXB2 is present on the classpath</em>, the 
+ * 	{@link MappingJacksonHttpMessageConverter} <em>assuming Jackson is present on the 
+ * 	classpath</em>, and the {@link AtomFeedHttpMessageConverter} and the 
+ * 	{@link RssChannelHttpMessageConverter} converters <em>assuming Rome is present on 
+ * 	the classpath</em>.
+ * </ul>
  * 
  * @author Rossen Stoyanchev
  * @since 3.1

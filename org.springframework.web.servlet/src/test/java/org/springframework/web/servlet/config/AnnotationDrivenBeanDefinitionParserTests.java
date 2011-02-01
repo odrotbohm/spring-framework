@@ -78,17 +78,17 @@ public class AnnotationDrivenBeanDefinitionParserTests {
 		assertTrue(((HttpMessageConverter<?>[]) converters)[1] instanceof ResourceHttpMessageConverter);
 	}
 
-	private static class TestMessageCodesResolver implements MessageCodesResolver {
+}
 
-		public String[] resolveMessageCodes(String errorCode, String objectName) {
-			throw new IllegalStateException("Not expected to be invoked");
-		}
+class TestMessageCodesResolver implements MessageCodesResolver {
 
-		@SuppressWarnings("rawtypes")
-		public String[] resolveMessageCodes(String errorCode, String objectName, String field, Class fieldType) {
-			throw new IllegalStateException("Not expected to be invoked");
-		}
+	public String[] resolveMessageCodes(String errorCode, String objectName) {
+		throw new IllegalStateException("Not expected to be invoked");
+	}
 
+	@SuppressWarnings("rawtypes")
+	public String[] resolveMessageCodes(String errorCode, String objectName, String field, Class fieldType) {
+		throw new IllegalStateException("Not expected to be invoked");
 	}
 
 }

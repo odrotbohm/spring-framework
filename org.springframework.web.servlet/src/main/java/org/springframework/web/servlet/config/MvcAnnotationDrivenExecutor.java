@@ -22,9 +22,8 @@ import org.springframework.beans.factory.parsing.ComponentRegistrar;
 import org.springframework.beans.factory.parsing.CompositeComponentDefinition;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.context.AbstractSpecificationExecutor;
-import org.springframework.context.ExecutorContext;
-import org.springframework.core.convert.ConversionService;
+import org.springframework.context.config.AbstractSpecificationExecutor;
+import org.springframework.context.config.ExecutorContext;
 import org.springframework.format.support.FormattingConversionServiceFactoryBean;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -37,7 +36,6 @@ import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConvert
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.http.converter.xml.XmlAwareFormHttpMessageConverter;
 import org.springframework.util.ClassUtils;
-import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.servlet.handler.ConversionServiceExposingInterceptor;
@@ -49,25 +47,7 @@ import org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionRes
 import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
 
 /**
- * <p>Prepares container metadata for the {@link MvcAnnotationDriven} feature specification.
- * 
- * <p>Responsible for:
- * <ol>
- * <li>Registering a DefaultAnnotationHandlerMapping bean for mapping HTTP Servlet Requests to @Controller methods
- * using @RequestMapping annotations.
- * <li>Registering a AnnotationMethodHandlerAdapter bean for invoking annotated @Controller methods.
- * Will configure the HandlerAdapter's <code>webBindingInitializer</code> property for centrally configuring
- * {@code @Controller} {@code DataBinder} instances:
- * <ul>
- * <li>Configures the conversionService if specified, otherwise defaults to a fresh {@link ConversionService} instance
- * created by the default {@link FormattingConversionServiceFactoryBean}.
- * <li>Configures the validator if specified, otherwise defaults to a fresh {@link Validator} instance created by the
- * default {@link LocalValidatorFactoryBean} <em>if the JSR-303 API is present on the classpath</em>.
- * <li>Configures standard {@link org.springframework.http.converter.HttpMessageConverter HttpMessageConverters},
- * including the {@link Jaxb2RootElementHttpMessageConverter} <em>if JAXB2 is present on the classpath</em>, and
- * the {@link MappingJacksonHttpMessageConverter} <em>if Jackson is present on the classpath</em>.
- * </ul>
- * </ol>
+ * <p>Creates bean definitions for the {@link MvcAnnotationDriven} feature specification.
  * 
  * @author Keith Donald
  * @author Juergen Hoeller
@@ -75,6 +55,7 @@ import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolv
  * @author Rossen Stoyanchev
  * 
  * @since 3.1
+ * @see MvcAnnotationDriven
  */
 class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<MvcAnnotationDriven> {
 

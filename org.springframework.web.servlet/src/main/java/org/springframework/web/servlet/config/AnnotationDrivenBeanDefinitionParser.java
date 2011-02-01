@@ -16,10 +16,12 @@
 
 package org.springframework.web.servlet.config;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.context.ExecutorContext;
+import org.springframework.context.config.ExecutorContext;
+import org.springframework.context.config.FeatureSpecificationExecutor;
 import org.w3c.dom.Element;
 
 /**
@@ -28,14 +30,19 @@ import org.w3c.dom.Element;
  *
  * @author Rossen Stoyanchev
  * @since 3.0
+ * @see MvcAnnotationDriven
  * @see MvcAnnotationDrivenExecutor
  */
 class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 
+	/**
+	 * Parses the {@code <mvc:annotation-driven/>} tag.
+	 */
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
 		MvcAnnotationDriven spec = createSpecification(element, parserContext);
-		MvcAnnotationDrivenExecutor specExecutor = new MvcAnnotationDrivenExecutor();
-		specExecutor.doExecute(spec, createExecutorContext(parserContext));
+		FeatureSpecificationExecutor executor = BeanUtils.instantiateClass(spec.executorType(),
+				FeatureSpecificationExecutor.class);
+		executor.execute(spec, createExecutorContext(parserContext));
 		return null;
 	}
 
