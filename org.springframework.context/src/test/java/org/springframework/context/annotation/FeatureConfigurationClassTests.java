@@ -17,8 +17,8 @@
 package org.springframework.context.annotation;
 
 import org.junit.Test;
-import org.springframework.context.FeatureSpecification;
 import org.springframework.context.annotation.configuration.StubSpecification;
+import org.springframework.context.config.FeatureSpecification;
 
 public class FeatureConfigurationClassTests {
 

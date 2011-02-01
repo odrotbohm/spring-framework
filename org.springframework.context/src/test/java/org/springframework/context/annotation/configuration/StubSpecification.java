@@ -16,10 +16,10 @@
 
 package org.springframework.context.annotation.configuration;
 
-import org.springframework.context.ExecutorContext;
-import org.springframework.context.FeatureSpecification;
-import org.springframework.context.InvalidSpecificationException;
-import org.springframework.context.FeatureSpecificationExecutor;
+import org.springframework.context.config.ExecutorContext;
+import org.springframework.context.config.FeatureSpecification;
+import org.springframework.context.config.FeatureSpecificationExecutor;
+import org.springframework.context.config.InvalidSpecificationException;
 
 public class StubSpecification implements FeatureSpecification {
 
@@ -36,7 +36,7 @@ public class StubSpecification implements FeatureSpecification {
 	public void validate() throws InvalidSpecificationException {
 	}
 
-	public Class<? extends FeatureSpecificationExecutor> getExecutorType() {
+	public Class<? extends FeatureSpecificationExecutor> executorType() {
 		return this.excecutorType;
 	}
 

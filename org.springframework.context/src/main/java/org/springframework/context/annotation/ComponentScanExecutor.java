@@ -23,8 +23,8 @@ import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.parsing.CompositeComponentDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionDefaults;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.context.AbstractSpecificationExecutor;
-import org.springframework.context.ExecutorContext;
+import org.springframework.context.config.AbstractSpecificationExecutor;
+import org.springframework.context.config.ExecutorContext;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
@@ -35,7 +35,7 @@ import org.springframework.core.type.filter.TypeFilter;
  * @author Chris Beams
  * @since 3.1
  */
-class ComponentScanExecutor extends AbstractSpecificationExecutor<ComponentScanSpec> {
+final class ComponentScanExecutor extends AbstractSpecificationExecutor<ComponentScanSpec> {
 
 	private BeanDefinitionDefaults beanDefinitionDefaults;
 	private String[] autowireCandidatePatterns;
@@ -62,7 +62,7 @@ class ComponentScanExecutor extends AbstractSpecificationExecutor<ComponentScanS
 	 * the given specification and perform actual scanning and bean definition
 	 * registration.
 	 */
-	public void doExecute(ComponentScanSpec spec, ExecutorContext executorContext) {
+	protected void doExecute(ComponentScanSpec spec, ExecutorContext executorContext) {
 		BeanDefinitionRegistry registry = executorContext.getRegistry();
 		ResourceLoader resourceLoader = executorContext.getResourceLoader();
 		Environment environment = executorContext.getEnvironment();

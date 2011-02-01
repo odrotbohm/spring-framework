@@ -16,6 +16,7 @@
 
 package org.springframework.context.annotation;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -43,6 +44,7 @@ import org.springframework.core.type.filter.TypeFilter;
  * @author Chris Beams
  * @since 3.1
  */
+@Documented
 @FeatureAnnotation(processor=ComponentScanAnnotationProcessor.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

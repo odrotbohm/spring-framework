@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Feature;
 import org.springframework.context.annotation.FeatureConfiguration;
-import org.springframework.context.annotation.ProxyType;
+import org.springframework.context.config.AdviceMode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.CallCountingTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -112,8 +112,8 @@ class TxFeature {
 class TxWithAspectJFeature {
 
 	@Feature
-	public TxAnnotationDriven tx(TxManagerConfig txManagerConfig) {
-		return new TxAnnotationDriven(txManagerConfig.txManager()).proxyType(ProxyType.ASPECTJ);
+	public TxAnnotationDriven tx(PlatformTransactionManager txManager) {
+		return new TxAnnotationDriven(txManager).mode(AdviceMode.ASPECTJ);
 	}
 
 }

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.springframework.context;
+package org.springframework.context.config;
+
 
 /**
  * Interface for executing a populated {@link FeatureSpecification}. Provides

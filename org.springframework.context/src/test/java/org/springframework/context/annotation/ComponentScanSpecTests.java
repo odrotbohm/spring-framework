@@ -19,7 +19,7 @@ package org.springframework.context.annotation;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.springframework.context.InvalidSpecificationException;
+import org.springframework.context.config.InvalidSpecificationException;
 
 /**
  * Unit tests for {@link ComponentScanSpec}.

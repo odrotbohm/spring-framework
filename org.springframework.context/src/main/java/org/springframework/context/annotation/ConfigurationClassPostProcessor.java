@@ -47,11 +47,11 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.EnvironmentAware;
-import org.springframework.context.ExecutorContext;
-import org.springframework.context.FeatureSpecification;
 import org.springframework.context.ResourceLoaderAware;
-import org.springframework.context.SourceAwareSpecification;
-import org.springframework.context.FeatureSpecificationExecutor;
+import org.springframework.context.config.ExecutorContext;
+import org.springframework.context.config.FeatureSpecification;
+import org.springframework.context.config.FeatureSpecificationExecutor;
+import org.springframework.context.config.SourceAwareSpecification;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -345,7 +345,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					format("The specification returned from @Feature method %s.%s() must not be null",
 							featureMethod.getDeclaringClass().getSimpleName(), featureMethod.getName()));
 
-			FeatureSpecificationExecutor executor = BeanUtils.instantiateClass(spec.getExecutorType());
+			FeatureSpecificationExecutor executor = BeanUtils.instantiateClass(spec.executorType());
 
 			if (spec instanceof SourceAwareSpecification) {
 				((SourceAwareSpecification)spec).setSource(featureMethod);

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.context;
+package org.springframework.context.config;
 
 import org.springframework.beans.factory.parsing.ComponentRegistrar;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;

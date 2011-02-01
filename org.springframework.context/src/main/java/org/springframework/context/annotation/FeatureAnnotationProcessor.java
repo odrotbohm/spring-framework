@@ -16,8 +16,8 @@
 
 package org.springframework.context.annotation;
 
-import org.springframework.context.FeatureSpecification;
-import org.springframework.context.FeatureSpecificationExecutor;
+import org.springframework.context.config.FeatureSpecification;
+import org.springframework.context.config.FeatureSpecificationExecutor;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
