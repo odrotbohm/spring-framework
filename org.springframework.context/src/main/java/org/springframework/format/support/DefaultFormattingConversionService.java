@@ -24,19 +24,21 @@ import java.util.Set;
 
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.format.AnnotationFormatterFactory;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.format.Parser;
 import org.springframework.format.Printer;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.datetime.joda.JodaTimeFormatterRegistrar;
 import org.springframework.format.number.NumberFormatAnnotationFormatterFactory;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringValueResolver;
 
 /**
  * A specialization of {@link FormattingConversionService} configured by default with
  * converters and formatters appropriate for most applications.
  *
  * <p>Designed for direct instantiation but also exposes the static {@link #addDefaultFormatters}
- * utility method for ad hoc use against any {@code FormattingConversionService} instance, just
+ * utility method for ad hoc use against any {@code FormatterRegistry} instance, just
  * as {@code DefaultConversionService} exposes its own
  * {@link DefaultConversionService#addDefaultConverters addDefaultConverters} method.
  *
@@ -54,7 +56,7 @@ public class DefaultFormattingConversionService extends FormattingConversionServ
 	 * {@linkplain #addDefaultFormatters default formatters}.
 	 */
 	public DefaultFormattingConversionService() {
-		this(true);
+		this(null, true);
 	}
 
 	/**
@@ -65,24 +67,37 @@ public class DefaultFormattingConversionService extends FormattingConversionServ
 	 * @param registerDefaultFormatters whether to register default formatters
 	 */
 	public DefaultFormattingConversionService(boolean registerDefaultFormatters) {
+		this(null, registerDefaultFormatters);
+	}
+
+	/**
+	 * Create a new {@code DefaultFormattingConversionService} with the set of
+	 * {@linkplain DefaultConversionService#addDefaultConverters default converters} and,
+	 * based on the value of {@code registerDefaultFormatters}, the set of
+	 * {@linkplain #addDefaultFormatters default formatters}
+	 * @param embeddedValueResolver delegated to {@link #setEmbeddedValueResolver(StringValueResolver)}
+	 * prior to calling {@link #addDefaultFormatters}.
+	 * @param registerDefaultFormatters whether to register default formatters
+	 */
+	public DefaultFormattingConversionService(StringValueResolver embeddedValueResolver, boolean registerDefaultFormatters) {
+		this.setEmbeddedValueResolver(embeddedValueResolver);
 		DefaultConversionService.addDefaultConverters(this);
 		if (registerDefaultFormatters) {
 			addDefaultFormatters(this);
 		}
 	}
 
-
 	/**
 	 * Add formatters appropriate for most environments, including number formatters and a Joda-Time
 	 * date formatter if Joda-Time is present on the classpath.
-	 * @param conversionService the service to register default formatters against
+	 * @param formatterRegistry the service to register default formatters against
 	 */
-	public static void addDefaultFormatters(FormattingConversionService conversionService) {
-		conversionService.addFormatterForFieldAnnotation(new NumberFormatAnnotationFormatterFactory());
+	public static void addDefaultFormatters(FormatterRegistry formatterRegistry) {
+		formatterRegistry.addFormatterForFieldAnnotation(new NumberFormatAnnotationFormatterFactory());
 		if (jodaTimePresent) {
-			new JodaTimeFormatterRegistrar().registerFormatters(conversionService);
+			new JodaTimeFormatterRegistrar().registerFormatters(formatterRegistry);
 		} else {
-			conversionService.addFormatterForFieldAnnotation(new NoJodaDateTimeFormatAnnotationFormatterFactory());
+			formatterRegistry.addFormatterForFieldAnnotation(new NoJodaDateTimeFormatAnnotationFormatterFactory());
 		}
 	}
 
