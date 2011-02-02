@@ -46,10 +46,6 @@ import org.springframework.util.StringValueResolver;
  * date-related formatters and converters. For a more detailed list of cases
  * see {@link #setFormatterRegistrars(Set)}
  *
- * <p>This implementation creates a {@link DefaultFormattingConversionService}.
- * Subclasses may override {@link #createConversionService()} in order to return
- * a {@code FormattingConversionService} instance of their choosing.
- *
  * <p>Like all {@code FactoryBean} implementations, this class is suitable for
  * use when configuring a Spring application context using Spring {@code <beans>}
  * XML. When configuring the container with
@@ -73,11 +69,11 @@ public class FormattingConversionServiceFactoryBean
 
 	private Set<FormatterRegistrar> formatterRegistrars;
 
-	private StringValueResolver embeddedValueResolver;
-
 	private FormattingConversionService conversionService;
 
-	protected boolean registerDefaultFormatters = true;
+	private StringValueResolver embeddedValueResolver;
+
+	private boolean registerDefaultFormatters = true;
 
 	/**
 	 * Configure the set of custom converter objects that should be added.
@@ -132,23 +128,11 @@ public class FormattingConversionServiceFactoryBean
 		this.registerDefaultFormatters = registerDefaultFormatters;
 	}
 
-	/**
-	 * Return an instance of {@link DefaultFormattingConversionService} configured with the
-	 * value set by {@link #setRegisterDefaultFormatters(boolean)}, which is {@code true} by
-	 * default.
-	 * <p>Subclasses may override this method in order to further customize this instance
-	 * or return an entirely different {@code FormattingConversionService} implementation.
-	 */
-	protected FormattingConversionService createConversionService() {
-		return new DefaultFormattingConversionService(this.registerDefaultFormatters);
-	}
 
-
-	// implementing FactoryBean
+	// implementing InitializingBean
 
 	public void afterPropertiesSet() {
-		this.conversionService = createConversionService();
-		this.conversionService.setEmbeddedValueResolver(this.embeddedValueResolver);
+		this.conversionService = new DefaultFormattingConversionService(this.embeddedValueResolver, this.registerDefaultFormatters);
 		ConversionServiceFactory.registerConverters(this.converters, this.conversionService);
 		registerFormatters();
 	}
