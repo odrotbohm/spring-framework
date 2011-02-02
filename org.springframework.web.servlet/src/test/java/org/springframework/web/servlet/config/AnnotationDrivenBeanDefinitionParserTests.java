@@ -61,6 +61,9 @@ public class AnnotationDrivenBeanDefinitionParserTests {
 		assertEquals(TestMessageCodesResolver.class, resolver.getClass());
 	}
 
+	/**
+	 * TODO SPR-7420: this test fails because message-converters is not yet parsed.
+	 */
 	@Test
 	public void testMessageConverters() {
 		loadBeanDefinitions("mvc-config-message-converters.xml");
@@ -103,12 +106,14 @@ public class AnnotationDrivenBeanDefinitionParserTests {
 class TestMessageCodesResolver implements MessageCodesResolver {
 
 	public String[] resolveMessageCodes(String errorCode, String objectName) {
-		throw new IllegalStateException("Not expected to be invoked");
+		return new String[] { "test.foo.bar" };
+		//throw new IllegalStateException("Not expected to be invoked");
 	}
 
 	@SuppressWarnings("rawtypes")
 	public String[] resolveMessageCodes(String errorCode, String objectName, String field, Class fieldType) {
-		throw new IllegalStateException("Not expected to be invoked");
+		return new String[] { "test.foo.bar" };
+		//throw new IllegalStateException("Not expected to be invoked");
 	}
 
 }

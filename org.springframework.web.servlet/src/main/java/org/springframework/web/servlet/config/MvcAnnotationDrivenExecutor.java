@@ -47,17 +47,17 @@ import org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionRes
 import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
 
 /**
- * <p>Creates bean definitions for the {@link MvcAnnotationDriven} feature specification.
- * 
+ * Executes {@link MvcAnnotationDriven} specifications, creating and registering
+ * bean definitions as appropriate based on the configuration within.
+ *
  * @author Keith Donald
  * @author Juergen Hoeller
  * @author Arjen Poutsma
  * @author Rossen Stoyanchev
- * 
  * @since 3.1
  * @see MvcAnnotationDriven
  */
-class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<MvcAnnotationDriven> {
+final class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<MvcAnnotationDriven> {
 
 	private static final boolean jsr303Present = ClassUtils.isPresent("javax.validation.Validator",
 			AnnotationDrivenBeanDefinitionParser.class.getClassLoader());
@@ -185,20 +185,7 @@ class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<MvcAnnot
 
 	private ManagedList<?> getMessageConverters(MvcAnnotationDriven spec, ComponentRegistrar registrar) {
 		Object source = spec.getSource();
-		// TODO
-		//		Element convertersElement = DomUtils.getChildElementByTagName(element, "message-converters");
-		//		if (converters != null) {
-		//			ManagedList<BeanDefinitionHolder> messageConverters = new ManagedList<BeanDefinitionHolder>();
-		//			messageConverters.setSource(source);
-		//			for (Element converter : DomUtils.getChildElementsByTagName(convertersElement, "bean")) {
-		//				BeanDefinitionHolder beanDef = parserContext.getDelegate().parseBeanDefinitionElement(converter);
-		//				beanDef = parserContext.getDelegate().decorateBeanDefinitionIfRequired(converter, beanDef);
-		//				messageConverters.add(beanDef);
-		//			}
-		//			return messageConverters;
-		//		} else {
-		//					
-		//		}
+
 		ManagedList<RootBeanDefinition> messageConverters = new ManagedList<RootBeanDefinition>();
 		messageConverters.setSource(source);
 		messageConverters.add(createConverterBeanDefinition(ByteArrayHttpMessageConverter.class, source));
@@ -223,6 +210,7 @@ class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<MvcAnnot
 		return messageConverters;
 	}
 
+	@SuppressWarnings("rawtypes")
 	private RootBeanDefinition createConverterBeanDefinition(Class<? extends HttpMessageConverter> converterClass,
 			Object source) {
 		RootBeanDefinition beanDefinition = new RootBeanDefinition(converterClass);

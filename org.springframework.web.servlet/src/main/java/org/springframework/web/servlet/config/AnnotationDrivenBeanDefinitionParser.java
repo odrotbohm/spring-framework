@@ -58,6 +58,20 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 		if (element.hasAttribute("message-codes-resolver")) {
 			spec.messageCodesResolver(element.getAttribute("message-codes-resolver"));
 		}
+		// TODO
+		//		Element convertersElement = DomUtils.getChildElementByTagName(element, "message-converters");
+		//		if (converters != null) {
+		//			ManagedList<BeanDefinitionHolder> messageConverters = new ManagedList<BeanDefinitionHolder>();
+		//			messageConverters.setSource(source);
+		//			for (Element converter : DomUtils.getChildElementsByTagName(convertersElement, "bean")) {
+		//				BeanDefinitionHolder beanDef = parserContext.getDelegate().parseBeanDefinitionElement(converter);
+		//				beanDef = parserContext.getDelegate().decorateBeanDefinitionIfRequired(converter, beanDef);
+		//				messageConverters.add(beanDef);
+		//			}
+		//			return messageConverters;
+		//		} else {
+		//					
+		//		}
 		spec.setSource(parserContext.extractSource(element));
 		spec.setSourceName(element.getTagName());
 		return spec;
