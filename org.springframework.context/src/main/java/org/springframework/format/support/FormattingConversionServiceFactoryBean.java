@@ -16,10 +16,6 @@
 
 package org.springframework.format.support;
 
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.FactoryBean;
@@ -32,37 +28,44 @@ import org.springframework.format.FormatterRegistrar;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.Parser;
 import org.springframework.format.Printer;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.datetime.joda.JodaTimeFormatterRegistrar;
-import org.springframework.format.number.NumberFormatAnnotationFormatterFactory;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.StringValueResolver;
 
 /**
- * <p>A factory for a {@link FormattingConversionService} that installs default 
- * converters and formatters for common types such as numbers and datetimes.
- * 
- * <p>Converters and formatters can be registered declaratively through 
+ * A factory providing convenient access to a {@code FormattingConversionService}
+ * configured with converters and formatters for common types such as numbers and
+ * datetimes.
+ *
+ * <p>Additional converters and formatters can be registered declaratively through
  * {@link #setConverters(Set)} and {@link #setFormatters(Set)}. Another option
- * is to register converters and formatters in code by implementing the 
- * {@link FormatterRegistrar} interface. You can then configure provide the set 
+ * is to register converters and formatters in code by implementing the
+ * {@link FormatterRegistrar} interface. You can then configure provide the set
  * of registrars to use through {@link #setFormatterRegistrars(Set)}.
- * 
- * <p>A good example for registering converters and formatters in code is 
- * <code>JodaTimeFormatterRegistrar</code>, which registers a number of 
+ *
+ * <p>A good example for registering converters and formatters in code is
+ * <code>JodaTimeFormatterRegistrar</code>, which registers a number of
  * date-related formatters and converters. For a more detailed list of cases
- * see {@link #setFormatterRegistrars(Set)} 
- * 
+ * see {@link #setFormatterRegistrars(Set)}
+ *
+ * <p>This implementation creates a {@link DefaultFormattingConversionService}.
+ * Subclasses may override {@link #createConversionService()} in order to return
+ * a {@code FormattingConversionService} instance of their choosing.
+ *
+ * <p>Like all {@code FactoryBean} implementations, this class is suitable for
+ * use when configuring a Spring application context using Spring {@code <beans>}
+ * XML. When configuring the container with
+ * {@link org.springframework.context.annotation.Configuration @Configuration}
+ * classes, simply instantiate, configure and return the appropriate
+ * {@code FormattingConversionService} object from a
+ * {@link org.springframework.context.annotation.Bean @Bean} method.
+ *
  * @author Keith Donald
  * @author Juergen Hoeller
  * @author Rossen Stoyanchev
+ * @author Chris Beams
  * @since 3.0
  */
 public class FormattingConversionServiceFactoryBean
 		implements FactoryBean<FormattingConversionService>, EmbeddedValueResolverAware, InitializingBean {
-
-	private static final boolean jodaTimePresent = ClassUtils.isPresent(
-			"org.joda.time.LocalDate", FormattingConversionService.class.getClassLoader());
 
 	private Set<?> converters;
 
@@ -74,7 +77,7 @@ public class FormattingConversionServiceFactoryBean
 
 	private FormattingConversionService conversionService;
 
-	private boolean registerDefaultFormatters = true;
+	protected boolean registerDefaultFormatters = true;
 
 	/**
 	 * Configure the set of custom converter objects that should be added.
@@ -129,12 +132,24 @@ public class FormattingConversionServiceFactoryBean
 		this.registerDefaultFormatters = registerDefaultFormatters;
 	}
 
+	/**
+	 * Return an instance of {@link DefaultFormattingConversionService} configured with the
+	 * value set by {@link #setRegisterDefaultFormatters(boolean)}, which is {@code true} by
+	 * default.
+	 * <p>Subclasses may override this method in order to further customize this instance
+	 * or return an entirely different {@code FormattingConversionService} implementation.
+	 */
+	protected FormattingConversionService createConversionService() {
+		return new DefaultFormattingConversionService(this.registerDefaultFormatters);
+	}
+
+
+	// implementing FactoryBean
+
 	public void afterPropertiesSet() {
-		this.conversionService = new FormattingConversionService();
+		this.conversionService = createConversionService();
 		this.conversionService.setEmbeddedValueResolver(this.embeddedValueResolver);
-		ConversionServiceFactory.addDefaultConverters(this.conversionService);
 		ConversionServiceFactory.registerConverters(this.converters, this.conversionService);
-		addDefaultFormatters();
 		registerFormatters();
 	}
 
@@ -162,23 +177,13 @@ public class FormattingConversionServiceFactoryBean
 	 * through FormatterRegistrars.
 	 * @see #setFormatters(Set)
 	 * @see #setFormatterRegistrars(Set) 
+	 * @deprecated since Spring 3.1 in favor of {@link #setFormatterRegistrars(Set)}
 	 */
+	@Deprecated
 	protected void installFormatters(FormatterRegistry registry) {
 	}
 
 	// private helper methods
-
-	private void addDefaultFormatters() {
-		if (registerDefaultFormatters) {
-			this.conversionService.addFormatterForFieldAnnotation(new NumberFormatAnnotationFormatterFactory());
-			if (jodaTimePresent) {
-				new JodaTimeFormatterRegistrar().registerFormatters(this.conversionService);
-			} else {
-				this.conversionService
-						.addFormatterForFieldAnnotation(new NoJodaDateTimeFormatAnnotationFormatterFactory());
-			}
-		}
-	}
 
 	private void registerFormatters() {
 		if (this.formatters != null) {
@@ -199,36 +204,6 @@ public class FormattingConversionServiceFactoryBean
 			}
 		}
 		installFormatters(this.conversionService);
-	}
-
-	/**
-	 * Dummy AnnotationFormatterFactory that simply fails if @DateTimeFormat is being used
-	 * without the JodaTime library being present.
-	 */
-	private static final class NoJodaDateTimeFormatAnnotationFormatterFactory
-			implements AnnotationFormatterFactory<DateTimeFormat> {
-
-		private final Set<Class<?>> fieldTypes;
-
-		public NoJodaDateTimeFormatAnnotationFormatterFactory() {
-			Set<Class<?>> rawFieldTypes = new HashSet<Class<?>>(4);
-			rawFieldTypes.add(Date.class);
-			rawFieldTypes.add(Calendar.class);
-			rawFieldTypes.add(Long.class);
-			this.fieldTypes = Collections.unmodifiableSet(rawFieldTypes);
-		}
-
-		public Set<Class<?>> getFieldTypes() {
-			return this.fieldTypes;
-		}
-
-		public Printer<?> getPrinter(DateTimeFormat annotation, Class<?> fieldType) {
-			throw new IllegalStateException("JodaTime library not available - @DateTimeFormat not supported");
-		}
-
-		public Parser<?> getParser(DateTimeFormat annotation, Class<?> fieldType) {
-			throw new IllegalStateException("JodaTime library not available - @DateTimeFormat not supported");
-		}
 	}
 
 }
