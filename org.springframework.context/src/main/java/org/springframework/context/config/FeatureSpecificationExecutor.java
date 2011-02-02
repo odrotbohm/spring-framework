@@ -16,7 +16,6 @@
 
 package org.springframework.context.config;
 
-
 /**
  * Interface for executing a populated {@link FeatureSpecification}. Provides
  * a generic mechanism for handling container configuration metadata regardless of

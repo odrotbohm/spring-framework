@@ -15,6 +15,7 @@
  */
 package org.springframework.web.servlet.config;
 
+import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.context.config.AbstractFeatureSpecification;
 import org.springframework.context.config.FeatureSpecificationExecutor;
 import org.springframework.context.config.InvalidSpecificationException;
@@ -75,6 +76,8 @@ public final class MvcAnnotationDriven extends AbstractFeatureSpecification {
 
 	private Object messageCodesResolver;
 
+	private ManagedList<? super Object> messageConverters = new ManagedList<Object>();
+
 	/**
 	 * Creates an MvcAnnotationDriven specification.
 	 */
@@ -113,6 +116,21 @@ public final class MvcAnnotationDriven extends AbstractFeatureSpecification {
 
 	Object conversionService() {
 		return this.conversionService;
+	}
+
+	public MvcAnnotationDriven messageConverters(HttpMessageConverter<?>... converters) {
+		for (HttpMessageConverter<?> converter : converters) {
+			this.messageConverters.add(converter);
+		}
+		return this;
+	}
+
+	void messageConverters(ManagedList<? super Object> messageConverters) {
+		this.messageConverters = messageConverters;
+	}
+
+	ManagedList<?> messageConverters() {
+		return this.messageConverters;
 	}
 
 	/**

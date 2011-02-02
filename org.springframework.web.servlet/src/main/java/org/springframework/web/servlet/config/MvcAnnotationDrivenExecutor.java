@@ -95,13 +95,16 @@ final class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<Mv
 		bindingDef.getPropertyValues().add("validator", validator);
 		bindingDef.getPropertyValues().add("messageCodesResolver", messageCodesResolver);
 
-		ManagedList<?> messageConverters = getMessageConverters(spec, registrar);
+		if (spec.messageConverters().isEmpty()) {
+			// the user has not specified custom message converters -> register defaults
+			spec.messageConverters(getDefaultMessageConverters(spec, registrar));
+		}
 
 		RootBeanDefinition annAdapterDef = new RootBeanDefinition(AnnotationMethodHandlerAdapter.class);
 		annAdapterDef.setSource(source);
 		annAdapterDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 		annAdapterDef.getPropertyValues().add("webBindingInitializer", bindingDef);
-		annAdapterDef.getPropertyValues().add("messageConverters", messageConverters);
+		annAdapterDef.getPropertyValues().add("messageConverters", spec.messageConverters());
 		String annAdapterName = registrar.registerWithGeneratedName(annAdapterDef);
 
 		RootBeanDefinition csInterceptorDef = new RootBeanDefinition(ConversionServiceExposingInterceptor.class);
@@ -117,7 +120,7 @@ final class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<Mv
 		RootBeanDefinition annExceptionResolver = new RootBeanDefinition(AnnotationMethodHandlerExceptionResolver.class);
 		annExceptionResolver.setSource(source);
 		annExceptionResolver.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-		annExceptionResolver.getPropertyValues().add("messageConverters", messageConverters);
+		annExceptionResolver.getPropertyValues().add("messageConverters", spec.messageConverters());
 		annExceptionResolver.getPropertyValues().add("order", 0);
 		String annExceptionResolverName = registrar.registerWithGeneratedName(annExceptionResolver);
 
@@ -183,10 +186,10 @@ final class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<Mv
 		}
 	}
 
-	private ManagedList<?> getMessageConverters(MvcAnnotationDriven spec, ComponentRegistrar registrar) {
+	private ManagedList<? super Object> getDefaultMessageConverters(MvcAnnotationDriven spec, ComponentRegistrar registrar) {
 		Object source = spec.getSource();
 
-		ManagedList<RootBeanDefinition> messageConverters = new ManagedList<RootBeanDefinition>();
+		ManagedList<? super Object> messageConverters = new ManagedList<Object>();
 		messageConverters.setSource(source);
 		messageConverters.add(createConverterBeanDefinition(ByteArrayHttpMessageConverter.class, source));
 
