@@ -46,7 +46,6 @@ import org.springframework.core.convert.support.GenericConversionService;
  * @author Juergen Hoeller
  * @author Chris Beams
  * @since 3.0
- * @see ConversionServiceFactory#createDefaultConversionService()
  */
 public class ConversionServiceFactoryBean implements FactoryBean<ConversionService>, InitializingBean {
 
