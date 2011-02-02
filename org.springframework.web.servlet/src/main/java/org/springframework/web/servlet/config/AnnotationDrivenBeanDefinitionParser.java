@@ -18,10 +18,13 @@ package org.springframework.web.servlet.config;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.context.config.ExecutorContext;
 import org.springframework.context.config.FeatureSpecificationExecutor;
+import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -58,20 +61,19 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 		if (element.hasAttribute("message-codes-resolver")) {
 			spec.messageCodesResolver(element.getAttribute("message-codes-resolver"));
 		}
-		// TODO
-		//		Element convertersElement = DomUtils.getChildElementByTagName(element, "message-converters");
-		//		if (converters != null) {
-		//			ManagedList<BeanDefinitionHolder> messageConverters = new ManagedList<BeanDefinitionHolder>();
-		//			messageConverters.setSource(source);
-		//			for (Element converter : DomUtils.getChildElementsByTagName(convertersElement, "bean")) {
-		//				BeanDefinitionHolder beanDef = parserContext.getDelegate().parseBeanDefinitionElement(converter);
-		//				beanDef = parserContext.getDelegate().decorateBeanDefinitionIfRequired(converter, beanDef);
-		//				messageConverters.add(beanDef);
-		//			}
-		//			return messageConverters;
-		//		} else {
-		//					
-		//		}
+		// has the user explicitly specified message converters? If so, they will prevent
+		// the exectuor from registering a set of defaults
+		Element convertersElement = DomUtils.getChildElementByTagName(element, "message-converters");
+		if (convertersElement != null) {
+			ManagedList<? super Object> messageConverters = new ManagedList<Object>();
+			messageConverters.setSource(parserContext.extractSource(convertersElement));
+			for (Element converter : DomUtils.getChildElementsByTagName(convertersElement, "bean")) {
+				BeanDefinitionHolder beanDef = parserContext.getDelegate().parseBeanDefinitionElement(converter);
+				beanDef = parserContext.getDelegate().decorateBeanDefinitionIfRequired(converter, beanDef);
+				messageConverters.add(beanDef);
+			}
+			spec.messageConverters(messageConverters);
+		}
 		spec.setSource(parserContext.extractSource(element));
 		spec.setSourceName(element.getTagName());
 		return spec;

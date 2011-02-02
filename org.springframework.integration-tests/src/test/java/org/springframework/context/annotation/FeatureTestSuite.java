@@ -16,6 +16,7 @@
 
 package org.springframework.context.annotation;
 
+/*
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -23,6 +24,8 @@ import org.springframework.transaction.TxNamespaceHandlerTests;
 import org.springframework.transaction.annotation.AnnotationTransactionNamespaceHandlerTests;
 import org.springframework.transaction.annotation.TxAnnotationDrivenFeatureTests;
 import org.springframework.transaction.config.AnnotationDrivenTests;
+import org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParserTests;
+*/
 
 
 /**
@@ -38,7 +41,6 @@ import org.springframework.transaction.config.AnnotationDrivenTests;
  * project test folders, Ant/Ivy are not configured to do so. Uncomment
  * as necessary when doing @Feature-related work.
  * 
- */
 @RunWith(Suite.class)
 @SuiteClasses({
 	EarlyBeanReferenceProxyCreatorTests.class,
@@ -59,7 +61,12 @@ import org.springframework.transaction.config.AnnotationDrivenTests;
 	TxNamespaceHandlerTests.class,
 	AnnotationTransactionNamespaceHandlerTests.class,
 	AnnotationDrivenTests.class,
+
+	// mvc-related
+	AnnotationDrivenBeanDefinitionParserTests.class,
+	MvcAnnotationDrivenFeatureTests.class,
 })
+ */
 public class FeatureTestSuite {
 
 }
