@@ -16,8 +16,6 @@
 
 package org.springframework.web.servlet.config;
 
-import java.util.Arrays;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
@@ -31,12 +29,10 @@ import org.w3c.dom.Element;
  * {@link org.springframework.beans.factory.xml.BeanDefinitionParser} that parses a
  * {@code resources} element. 
  *
- * @author Keith Donald
- * @author Jeremy Grelle
  * @author Rossen Stoyanchev
  * @since 3.0.4
- * @see ResourcesSpec
- * @see ResourcesSpecExecutor
+ * @see MvcResources
+ * @see MvcResourcesExecutor
  */
 class ResourcesBeanDefinitionParser implements BeanDefinitionParser {
 
@@ -44,21 +40,34 @@ class ResourcesBeanDefinitionParser implements BeanDefinitionParser {
 	 * Parses the {@code <mvc:resources/>} tag
 	 */
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
-		ResourcesSpec spec = createSpecification(element, parserContext);
-		FeatureSpecificationExecutor executor = BeanUtils.instantiateClass(spec.executorType(),
-				FeatureSpecificationExecutor.class);
-		executor.execute(spec, createExecutorContext(parserContext));
+		MvcResources spec = createSpecification(element, parserContext);
+		if (spec != null) {
+			FeatureSpecificationExecutor executor = BeanUtils.instantiateClass(spec.executorType(),
+					FeatureSpecificationExecutor.class);
+			executor.execute(spec, createExecutorContext(parserContext));
+		}
 		return null;
 	}
 
-	private ResourcesSpec createSpecification(Element element, ParserContext parserContext) {
+	private MvcResources createSpecification(Element element, ParserContext parserContext) {
+		String mapping = element.getAttribute("mapping");
+		if (mapping == null) {
+			parserContext.getReaderContext().error("The 'mapping' attribute is required.",
+					parserContext.extractSource(element));
+			return null;
+		}
 		String[] locations = StringUtils.commaDelimitedListToStringArray(element.getAttribute("location"));
-		ResourcesSpec spec = new ResourcesSpec(Arrays.asList(locations), element.getAttribute("mapping"));
+		if (locations == null) {
+			parserContext.getReaderContext().error("The 'location' attribute is required.",
+					parserContext.extractSource(element));
+			return null;
+		}
+		MvcResources spec = new MvcResources(mapping, locations);
 		if (element.hasAttribute("cache-period")) {
-			spec.cachePeriod(Integer.valueOf(element.getAttribute("cache-period")));
+			spec.cachePeriod(element.getAttribute("cache-period"));
 		}
 		if (element.hasAttribute("order")) {
-			spec.order(Integer.valueOf(element.getAttribute("order")));
+			spec.order(element.getAttribute("order"));
 		}
 		spec.setSource(parserContext.extractSource(element));
 		spec.setSourceName(element.getTagName());

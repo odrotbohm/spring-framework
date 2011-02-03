@@ -31,7 +31,7 @@ import org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 /**
- * Executes {@link ResourcesSpec} specifications, creating and registering
+ * Executes {@link MvcResources} specifications, creating and registering
  * bean definitions as appropriate based on the configuration within.
  *
  * @author Keith Donald
@@ -39,12 +39,12 @@ import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
  * @author Rossen Stoyanchev
  * @since 3.1
  */
-final class ResourcesSpecExecutor extends AbstractSpecificationExecutor<ResourcesSpec> {
+class MvcResourcesExecutor extends AbstractSpecificationExecutor<MvcResources> {
 
 	private static final String HANDLER_ADAPTER_BEAN_NAME = "org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter";
 
 	@Override
-	protected void doExecute(ResourcesSpec spec, ExecutorContext executorContext) {
+	protected void doExecute(MvcResources spec, ExecutorContext executorContext) {
 		BeanDefinitionRegistry registry = executorContext.getRegistry();
 		ComponentRegistrar registrar = executorContext.getRegistrar();
 		Object source = spec.getSource();

@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -38,7 +37,7 @@ import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
  * @author Rossen Stoyanchev
  * @since 3.1
  */
-public class ResourcesSpecTests {
+public class MvcResourcesTests {
 
 	@Test
 	public void testResources() {
@@ -63,9 +62,8 @@ public class ResourcesSpecTests {
 	private static class ResourcesFeature {
 
 		@Feature
-		public ResourcesSpec resources() {
-			return new ResourcesSpec(Arrays.asList(new String[] { "/foo", "/bar" }), "/resources/**")
-					.cachePeriod(86400).order(1);
+		public MvcResources resources() {
+			return new MvcResources("/resources/**", new String[] { "/foo", "/bar" }).cachePeriod(86400).order(1);
 		}
 
 	}
