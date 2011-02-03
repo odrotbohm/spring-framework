@@ -31,7 +31,7 @@ import org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 /**
- * Executes {@link MvcResources} specifications, creating and registering
+ * Executes {@link MvcResources} specification, creating and registering
  * bean definitions as appropriate based on the configuration within.
  *
  * @author Keith Donald

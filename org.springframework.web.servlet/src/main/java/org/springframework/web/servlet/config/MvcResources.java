@@ -28,16 +28,16 @@ import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMa
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 /**
- * Specifies the Spring MVC "resources" container feature. The
+ * Specifies the Spring MVC Resources container feature. The 
  * feature provides the following fine-grained configuration:
  *
  * <ul>
- * <li>{@link ResourceHttpRequestHandler} to serve static resources from a
- *     list of web-root relative, classpath, or other locations.
- * <li>{@link SimpleUrlHandlerMapping} to map the above request handler to a
- *     a specific path pattern (e.g. "/resources/**").
- * <li>{@link HttpRequestHandlerAdapter} to enable the DispatcherServlet to be
- *     able to invoke the above request handler.
+ * 	<li>{@link ResourceHttpRequestHandler} to serve static resources from a
+ * 		list of web-root relative, classpath, or other locations.
+ * 	<li>{@link SimpleUrlHandlerMapping} to map the above request handler to a
+ * 		a specific path pattern (e.g. "/resources/**").
+ * 	<li>{@link HttpRequestHandlerAdapter} to enable the DispatcherServlet to 
+ * 		invoke the above request handler.
  * </ul>
  *
  * @author Rossen Stoynchev
