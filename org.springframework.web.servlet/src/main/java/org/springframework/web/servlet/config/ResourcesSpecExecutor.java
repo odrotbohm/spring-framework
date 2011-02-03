@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.web.servlet.config;
 
 import java.util.Map;
@@ -38,7 +39,7 @@ import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
  * @author Rossen Stoyanchev
  * @since 3.1
  */
-class ResourcesSpecExecutor extends AbstractSpecificationExecutor<ResourcesSpec> {
+final class ResourcesSpecExecutor extends AbstractSpecificationExecutor<ResourcesSpec> {
 
 	private static final String HANDLER_ADAPTER_BEAN_NAME = "org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter";
 
@@ -47,7 +48,7 @@ class ResourcesSpecExecutor extends AbstractSpecificationExecutor<ResourcesSpec>
 		BeanDefinitionRegistry registry = executorContext.getRegistry();
 		ComponentRegistrar registrar = executorContext.getRegistrar();
 		Object source = spec.getSource();
-		
+
 		if (!registry.containsBeanDefinition(HANDLER_ADAPTER_BEAN_NAME)) {
 			RootBeanDefinition handlerAdapterDef = new RootBeanDefinition(HttpRequestHandlerAdapter.class);
 			handlerAdapterDef.setSource(source);
