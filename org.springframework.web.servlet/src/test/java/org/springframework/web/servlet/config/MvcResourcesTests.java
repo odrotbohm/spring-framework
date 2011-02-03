@@ -32,8 +32,7 @@ import org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 /**
- * Test fixture for {@link ResourceSpecExecutor}.
- * 
+ * Test fixture for {@link MvcResources} feature specification.
  * @author Rossen Stoyanchev
  * @since 3.1
  */
@@ -42,12 +41,13 @@ public class MvcResourcesTests {
 	@Test
 	public void testResources() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(ResourcesFeature.class);
+		ctx.register(MvcResourcesFeature.class);
 		ctx.refresh();
 		HttpRequestHandlerAdapter adapter = ctx.getBean(HttpRequestHandlerAdapter.class);
 		assertNotNull(adapter);
 		ResourceHttpRequestHandler handler = ctx.getBean(ResourceHttpRequestHandler.class);
 		assertNotNull(handler);
+		@SuppressWarnings("unchecked")
 		List<Resource> locations = (List<Resource>) new DirectFieldAccessor(handler).getPropertyValue("locations");
 		assertNotNull(locations);
 		assertEquals(2, locations.size());
@@ -59,8 +59,9 @@ public class MvcResourcesTests {
 	}
 
 	@FeatureConfiguration
-	private static class ResourcesFeature {
+	private static class MvcResourcesFeature {
 
+		@SuppressWarnings("unused")
 		@Feature
 		public MvcResources resources() {
 			return new MvcResources("/resources/**", new String[] { "/foo", "/bar" }).cachePeriod(86400).order(1);
