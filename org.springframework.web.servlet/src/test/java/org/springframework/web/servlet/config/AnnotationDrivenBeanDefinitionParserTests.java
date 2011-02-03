@@ -87,13 +87,11 @@ class TestMessageCodesResolver implements MessageCodesResolver {
 
 	public String[] resolveMessageCodes(String errorCode, String objectName) {
 		return new String[] { "test.foo.bar" };
-		//throw new IllegalStateException("Not expected to be invoked");
 	}
 
 	@SuppressWarnings("rawtypes")
 	public String[] resolveMessageCodes(String errorCode, String objectName, String field, Class fieldType) {
 		return new String[] { "test.foo.bar" };
-		//throw new IllegalStateException("Not expected to be invoked");
 	}
 
 }

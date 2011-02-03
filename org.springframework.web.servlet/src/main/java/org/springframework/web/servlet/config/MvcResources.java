@@ -15,13 +15,11 @@
  */
 package org.springframework.web.servlet.config;
 
-import java.util.List;
-
 import org.springframework.context.config.AbstractFeatureSpecification;
 import org.springframework.context.config.FeatureSpecificationExecutor;
 import org.springframework.context.config.InvalidSpecificationException;
 import org.springframework.core.Ordered;
-import org.springframework.util.CollectionUtils;
+import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter;
@@ -44,20 +42,26 @@ import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
  * @author Rossen Stoynchev
  * @since 3.1
  */
-public class ResourcesSpec extends AbstractFeatureSpecification {
+public class MvcResources extends AbstractFeatureSpecification {
 
-	private static final Class<? extends FeatureSpecificationExecutor> EXECUTOR_TYPE = ResourcesSpecExecutor.class;
+	private static final Class<? extends FeatureSpecificationExecutor> EXECUTOR_TYPE = MvcResourcesExecutor.class;
 
-	private List<String> locations;
+	private Object[] locations;
 
 	private String mapping;
 
-	private Integer cachePeriod;
+	private Object cachePeriod;
 	
-	private Integer order = Ordered.LOWEST_PRECEDENCE - 1;
+	private Object order = Ordered.LOWEST_PRECEDENCE - 1;
 
 	/**
-	 * Creates a ResourcesSpec specification.
+	 * Creates an MvcResources specification instance.
+	 * See alternate constructor defined here if you prefer to use the Spring
+	 * {@link Resource} type for specifying locations.
+	 * 
+	 * @param mapping - the URL path pattern within the current Servlet context to 
+	 * 		use to identify resource requests (e.g. "/resources/**").
+	 * 
 	 * @param locations - resource locations to serve static content from specified 
 	 * 		as a list of Spring {@link Resource} patterns. Each location must point 
 	 * 		to a valid directory. Locations will be checked in the order specified. 
@@ -65,10 +69,25 @@ public class ResourcesSpec extends AbstractFeatureSpecification {
 	 * 		configured resources will be served from the Web root and from any JAR on 
 	 * 		the classpath  that contains a /META-INF/public-web-resources/ directory,
 	 * 		with resources under the Web root taking precedence.
+	 */
+	public MvcResources(String mapping, String... locations) {
+		super(EXECUTOR_TYPE);
+		this.locations = locations;
+		this.mapping = mapping;
+	}
+
+	/**
+	 * Creates an MvcResources specification instance. See alternate constructor 
+	 * defined here if you prefer to use String-based path patterns.
+	 * 
 	 * @param mapping - the URL path pattern within the current Servlet context to 
 	 * 		use to identify resource requests (e.g. "/resources/**").
+	 * 
+	 * @param locations - resource locations to serve static content from specified 
+	 * 		as a list of Spring {@link Resource} patterns. Each location must point 
+	 * 		to a valid directory. Locations will be checked in the order specified. 
 	 */
-	public ResourcesSpec(List<String> locations, String mapping) {
+	public MvcResources(String mapping, Resource... locations) {
 		super(EXECUTOR_TYPE);
 		this.locations = locations;
 		this.mapping = mapping;
@@ -84,12 +103,27 @@ public class ResourcesSpec extends AbstractFeatureSpecification {
 	 * 
 	 * @param cachePeriod the cache period in seconds
 	 */
-	public ResourcesSpec cachePeriod(Integer cachePeriod) {
+	public MvcResources cachePeriod(Integer cachePeriod) {
 		this.cachePeriod = cachePeriod;
 		return this;
 	}
-	
+
 	/**
+	 * Specify a cachePeriod as a String. An alternative to {@link #cachePeriod(Integer)}. 
+	 * The String must represent an Integer after placeholder and SpEL expression 
+	 * resolution. 
+	 * 
+	 * @param cachePeriod the cache period in seconds
+	 */
+	public MvcResources cachePeriod(String cachePeriod) {
+		this.cachePeriod = cachePeriod;
+		return this;
+	}
+
+	/**
+	 * Specify a cachePeriod as a String. An alternative to {@link #cachePeriod(Integer)}. 
+	 * The String must represent an Integer after placeholder and SpEL expression 
+	 * resolution. 
 	 * Sets the order for the SimpleUrlHandlerMapping used to match resource
 	 * requests relative to order value for other HandlerMapping instances
 	 * such as the {@link DefaultAnnotationHandlerMapping} used to match 
@@ -98,18 +132,31 @@ public class ResourcesSpec extends AbstractFeatureSpecification {
 	 * @param order the order to use. The default value is 
 	 * 		{@link Ordered#LOWEST_PRECEDENCE} - 1.
 	 */
-	public ResourcesSpec order(Integer order) {
+	public MvcResources order(Integer order) {
+		this.order = order;
+		return this;
+	}
+
+	/**
+	 * Specify an order as a String. An alternative to {@link #order(Integer)}. 
+	 * The String must represent an Integer after placeholder and SpEL expression 
+	 * resolution. 
+	 * 
+	 * @param order the order to use. The default value is 
+	 * 		{@link Ordered#LOWEST_PRECEDENCE} - 1.
+	 */
+	public MvcResources order(String order) {
 		this.order = order;
 		return this;
 	}
 
 	// Package private accessors
 
-	Integer cachePeriod() {
+	Object cachePeriod() {
 		return cachePeriod;
 	}
 
-	List<String> locations() {
+	Object[] locations() {
 		return this.locations;
 	}
 
@@ -117,20 +164,16 @@ public class ResourcesSpec extends AbstractFeatureSpecification {
 		return mapping;
 	}
 	
-	Integer order() {
+	Object order() {
 		return order;
 	}
 
 	public void validate() throws InvalidSpecificationException {
-		StringBuilder message = new StringBuilder();
-		if (CollectionUtils.isEmpty(locations)) {
-			message.append("Location(s) are required. ");
-		}
 		if (!StringUtils.hasText(mapping)) {
-			message.append("A mapping is required.");
+			throw new InvalidSpecificationException("A mapping is required.");
 		}
-		if (message.length() > 0) {
-			throw new InvalidSpecificationException(message.toString());
+		if (locations == null || locations.length == 0) {
+			throw new InvalidSpecificationException("Location(s) are required. ");
 		}
 	}
 
