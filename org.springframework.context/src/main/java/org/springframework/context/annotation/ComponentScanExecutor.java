@@ -29,10 +29,13 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
 
 /**
- * TODO SPR-7420: document
+ * Executes the {@link ComponentScanSpec} feature specification.
  *
  * @author Chris Beams
  * @since 3.1
+ * @see ComponentScanSpec
+ * @see ComponentScanBeanDefinitionParser
+ * @see ComponentScan
  */
 final class ComponentScanExecutor extends AbstractSpecificationExecutor<ComponentScanSpec> {
 
