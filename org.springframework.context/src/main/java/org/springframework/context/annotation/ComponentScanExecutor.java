@@ -21,7 +21,6 @@ import java.util.Set;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.parsing.CompositeComponentDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionDefaults;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.config.AbstractSpecificationExecutor;
 import org.springframework.context.config.ExecutorContext;
@@ -36,26 +35,6 @@ import org.springframework.core.type.filter.TypeFilter;
  * @since 3.1
  */
 final class ComponentScanExecutor extends AbstractSpecificationExecutor<ComponentScanSpec> {
-
-	private BeanDefinitionDefaults beanDefinitionDefaults;
-	private String[] autowireCandidatePatterns;
-
-
-	public void setBeanDefinitionDefaults(BeanDefinitionDefaults beanDefinitionDefaults) {
-		this.beanDefinitionDefaults = beanDefinitionDefaults;
-	}
-
-	public BeanDefinitionDefaults getBeanDefinitionDefaults() {
-		return this.beanDefinitionDefaults;
-	}
-
-	public void setAutowireCandidatePatterns(String[] autowireCandidatePatterns) {
-		this.autowireCandidatePatterns = autowireCandidatePatterns;
-	}
-
-	public String[] getAutowireCandidatePatterns() {
-		return this.autowireCandidatePatterns;
-	}
 
 	/**
 	 * Configure a {@link ClassPathBeanDefinitionScanner} based on the content of
@@ -74,11 +53,11 @@ final class ComponentScanExecutor extends AbstractSpecificationExecutor<Componen
 		scanner.setResourceLoader(resourceLoader);
 		scanner.setEnvironment(environment);
 
-		if (this.beanDefinitionDefaults != null) {
-			scanner.setBeanDefinitionDefaults(this.beanDefinitionDefaults);
+		if (spec.beanDefinitionDefaults() != null) {
+			scanner.setBeanDefinitionDefaults(spec.beanDefinitionDefaults());
 		}
-		if (this.autowireCandidatePatterns != null) {
-			scanner.setAutowireCandidatePatterns(this.autowireCandidatePatterns);
+		if (spec.autowireCandidatePatterns() != null) {
+			scanner.setAutowireCandidatePatterns(spec.autowireCandidatePatterns());
 		}
 
 		if (spec.resourcePattern() != null) {
@@ -96,21 +75,17 @@ final class ComponentScanExecutor extends AbstractSpecificationExecutor<Componen
 		if (spec.scopedProxyMode() != null) {
 			scanner.setScopedProxyMode(spec.scopedProxyMode());
 		}
-		if (spec.includeFilters() != null) {
-			for (TypeFilter filter : spec.includeFilters()) {
-				scanner.addIncludeFilter(filter);
-			}
+		for (TypeFilter filter : spec.includeFilters()) {
+			scanner.addIncludeFilter(filter);
 		}
-		if (spec.excludeFilters() != null) {
-			for (TypeFilter filter : spec.excludeFilters()) {
-				scanner.addExcludeFilter(filter);
-			}
+		for (TypeFilter filter : spec.excludeFilters()) {
+			scanner.addExcludeFilter(filter);
 		}
 
 		Set<BeanDefinitionHolder> scannedBeans = scanner.doScan(spec.basePackages());
 
-		Object source = spec.getSource();
-		String sourceName = spec.getSourceName();
+		Object source = spec.source();
+		String sourceName = spec.sourceName();
 		CompositeComponentDefinition compositeDef = new CompositeComponentDefinition(sourceName, source);
 
 		for (BeanDefinitionHolder beanDefHolder : scannedBeans) {

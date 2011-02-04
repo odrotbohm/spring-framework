@@ -21,9 +21,10 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
+import org.springframework.beans.factory.parsing.FailFastProblemReporter;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.config.ExecutorContext;
-import org.springframework.context.config.InvalidSpecificationException;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.mock.env.MockEnvironment;
 
@@ -48,21 +49,19 @@ public class ComponentScanExecutorTests {
 		this.executorContext.setResourceLoader(new DefaultResourceLoader());
 		this.executorContext.setEnvironment(new MockEnvironment());
 		this.executorContext.setRegistrar(new SimpleComponentRegistrar(bf));
+		this.executorContext.setProblemReporter(new FailFastProblemReporter());
 	}
 
 	@Test
 	public void validSpec() {
-		ComponentScanSpec spec = new ComponentScanSpec("example.scannable");
-
-		this.executor.execute(spec, this.executorContext);
-
+		this.executor.execute(new ComponentScanSpec("example.scannable"), this.executorContext);
 		assertThat(bf.containsBean("fooServiceImpl"), is(true));
 	}
 
-	@Test(expected=InvalidSpecificationException.class)
+	@Test(expected=BeanDefinitionParsingException.class)
 	public void invalidSpec() {
-		ComponentScanSpec spec = new ComponentScanSpec();
-		this.executor.execute(spec, this.executorContext);
+		// ff problem reporter should throw due to no packages specified
+		this.executor.execute(new ComponentScanSpec(), this.executorContext);
 	}
 
 }

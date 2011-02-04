@@ -16,28 +16,24 @@
 
 package org.springframework.context.annotation.configuration;
 
+import org.springframework.beans.factory.parsing.SimpleProblemCollector;
+import org.springframework.context.config.AbstractFeatureSpecification;
 import org.springframework.context.config.ExecutorContext;
 import org.springframework.context.config.FeatureSpecification;
 import org.springframework.context.config.FeatureSpecificationExecutor;
-import org.springframework.context.config.InvalidSpecificationException;
 
-public class StubSpecification implements FeatureSpecification {
-
-	private final Class<? extends FeatureSpecificationExecutor> excecutorType;
+public class StubSpecification extends AbstractFeatureSpecification {
 
 	public StubSpecification() {
 		this(StubSpecificationExecutor.class);
 	}
 
 	public StubSpecification(Class<? extends FeatureSpecificationExecutor> excecutorType) {
-		this.excecutorType = excecutorType;
+		super(excecutorType);
 	}
 
-	public void validate() throws InvalidSpecificationException {
-	}
-
-	public Class<? extends FeatureSpecificationExecutor> executorType() {
-		return this.excecutorType;
+	@Override
+	protected void doValidate(SimpleProblemCollector reporter) {
 	}
 
 }

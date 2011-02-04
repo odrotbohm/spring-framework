@@ -76,7 +76,7 @@ final class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<Mv
 	@Override
 	public void doExecute(MvcAnnotationDriven spec, ExecutorContext executorContext) {
 		ComponentRegistrar registrar = executorContext.getRegistrar();
-		Object source = spec.getSource();
+		Object source = spec.source();
 
 		RootBeanDefinition annMappingDef = new RootBeanDefinition(DefaultAnnotationHandlerMapping.class);
 		annMappingDef.setSource(source);
@@ -138,7 +138,7 @@ final class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<Mv
 		defaultExceptionResolver.getPropertyValues().add("order", 2);
 		String defaultExceptionResolverName = registrar.registerWithGeneratedName(defaultExceptionResolver);
 
-		CompositeComponentDefinition compDefinition = new CompositeComponentDefinition(spec.getSourceName(), source);
+		CompositeComponentDefinition compDefinition = new CompositeComponentDefinition(spec.sourceName(), source);
 		compDefinition.addNestedComponent(new BeanComponentDefinition(annMappingDef, annMappingName));
 		compDefinition.addNestedComponent(new BeanComponentDefinition(annAdapterDef, annAdapterName));
 		compDefinition.addNestedComponent(new BeanComponentDefinition(annExceptionResolver, annExceptionResolverName));
@@ -155,7 +155,7 @@ final class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<Mv
 			return getBeanOrReference(spec.conversionService());
 		} else {
 			RootBeanDefinition conversionDef = new RootBeanDefinition(FormattingConversionServiceFactoryBean.class);
-			conversionDef.setSource(spec.getSource());
+			conversionDef.setSource(spec.source());
 			conversionDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 			String conversionName = registrar.registerWithGeneratedName(conversionDef);
 			registrar.registerComponent(new BeanComponentDefinition(conversionDef, conversionName));
@@ -168,7 +168,7 @@ final class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<Mv
 			return getBeanOrReference(spec.validator());
 		} else if (jsr303Present) {
 			RootBeanDefinition validatorDef = new RootBeanDefinition(LocalValidatorFactoryBean.class);
-			validatorDef.setSource(spec.getSource());
+			validatorDef.setSource(spec.source());
 			validatorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 			String validatorName = registrar.registerWithGeneratedName(validatorDef);
 			registrar.registerComponent(new BeanComponentDefinition(validatorDef, validatorName));
@@ -187,7 +187,7 @@ final class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<Mv
 	}
 
 	private ManagedList<? super Object> getDefaultMessageConverters(MvcAnnotationDriven spec, ComponentRegistrar registrar) {
-		Object source = spec.getSource();
+		Object source = spec.source();
 
 		ManagedList<? super Object> messageConverters = new ManagedList<Object>();
 		messageConverters.setSource(source);

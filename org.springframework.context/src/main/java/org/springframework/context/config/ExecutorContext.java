@@ -17,6 +17,7 @@
 package org.springframework.context.config;
 
 import org.springframework.beans.factory.parsing.ComponentRegistrar;
+import org.springframework.beans.factory.parsing.ProblemReporter;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
@@ -27,6 +28,9 @@ public class ExecutorContext {
 	private ComponentRegistrar registrar;
 	private ResourceLoader resourceLoader;
 	private Environment environment;
+	private ProblemReporter problemReporter;
+
+	public ExecutorContext() { }
 
 	public void setRegistry(BeanDefinitionRegistry registry) {
 		this.registry = registry;
@@ -58,6 +62,14 @@ public class ExecutorContext {
 
 	public Environment getEnvironment() {
 		return this.environment;
+	}
+
+	public void setProblemReporter(ProblemReporter problemReporter) {
+		this.problemReporter = problemReporter;
+	}
+
+	public ProblemReporter getProblemReporter() {
+		return this.problemReporter;
 	}
 
 }

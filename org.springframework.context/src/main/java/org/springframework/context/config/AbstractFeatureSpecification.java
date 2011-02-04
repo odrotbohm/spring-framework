@@ -16,6 +16,10 @@
 
 package org.springframework.context.config;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.parsing.ProblemReporter;
+import org.springframework.beans.factory.parsing.SimpleProblemCollector;
+
 
 /**
  * TODO SPR-7420: document
@@ -37,24 +41,37 @@ public abstract class AbstractFeatureSpecification implements SourceAwareSpecifi
 		this.executorType = executorType;
 	}
 
-	public Class<? extends FeatureSpecificationExecutor> executorType() {
-		return executorType;
+	public final boolean validate(ProblemReporter problemReporter) {
+		SimpleProblemCollector collector = new SimpleProblemCollector(this.source());
+		this.doValidate(collector);
+		collector.reportProblems(problemReporter);
+		return collector.hasErrors() ? false : true;
 	}
 
-	public void setSource(Object source) {
+	protected abstract void doValidate(SimpleProblemCollector reporter);
+
+	public AbstractFeatureSpecification source(Object source) {
 		this.source = source;
+		return this;
 	}
 
-	public Object getSource() {
+	public Object source() {
 		return this.source;
 	}
 
-	public void setSourceName(String sourceName) {
+	public AbstractFeatureSpecification sourceName(String sourceName) {
 		this.sourceName = sourceName;
+		return this;
 	}
 
-	public String getSourceName() {
+	public String sourceName() {
 		return this.sourceName;
+	}
+
+	public void execute(ExecutorContext executorContext) {
+		FeatureSpecificationExecutor executor =
+			BeanUtils.instantiateClass(this.executorType, FeatureSpecificationExecutor.class);
+		executor.execute(this, executorContext);
 	}
 
 }

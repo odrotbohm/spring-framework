@@ -16,7 +16,6 @@
 
 package org.springframework.context.annotation;
 
-/*
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -25,8 +24,10 @@ import org.springframework.transaction.annotation.AnnotationTransactionNamespace
 import org.springframework.transaction.annotation.TxAnnotationDrivenFeatureTests;
 import org.springframework.transaction.config.AnnotationDrivenTests;
 import org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParserTests;
-*/
-
+import org.springframework.web.servlet.config.MvcAnnotationDrivenFeatureTests;
+import org.springframework.web.servlet.config.MvcNamespaceTests;
+import org.springframework.web.servlet.config.MvcResourcesTests;
+import org.springframework.web.servlet.config.MvcViewControllersTests;
 
 /**
  * Tests directly or indirectly related to {@link FeatureConfiguration} class and
@@ -41,6 +42,7 @@ import org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionPars
  * project test folders, Ant/Ivy are not configured to do so. Uncomment
  * as necessary when doing @Feature-related work.
  * 
+ */
 @RunWith(Suite.class)
 @SuiteClasses({
 	EarlyBeanReferenceProxyCreatorTests.class,
@@ -55,6 +57,9 @@ import org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionPars
 
 	// context:component-scan related
 	ComponentScanFeatureTests.class,
+	ComponentScanSpecTests.class,
+	ComponentScanAnnotationTests.class,
+	ComponentScanAnnotationIntegrationTests.class,
 
 	// tx-related
 	TxAnnotationDrivenFeatureTests.class,
@@ -65,8 +70,10 @@ import org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionPars
 	// mvc-related
 	AnnotationDrivenBeanDefinitionParserTests.class,
 	MvcAnnotationDrivenFeatureTests.class,
+	MvcViewControllersTests.class,
+	MvcResourcesTests.class,
+	MvcNamespaceTests.class,
 })
- */
 public class FeatureTestSuite {
 
 }

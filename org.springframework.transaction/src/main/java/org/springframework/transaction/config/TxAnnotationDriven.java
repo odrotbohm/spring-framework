@@ -16,13 +16,15 @@
 
 package org.springframework.transaction.config;
 
+import org.springframework.beans.factory.parsing.SimpleProblemCollector;
 import org.springframework.context.config.AbstractFeatureSpecification;
 import org.springframework.context.config.AdviceMode;
 import org.springframework.context.config.FeatureSpecificationExecutor;
-import org.springframework.context.config.InvalidSpecificationException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * TODO SPR-7420: document
@@ -36,13 +38,13 @@ public final class TxAnnotationDriven extends AbstractFeatureSpecification {
 
 	private static final Class<? extends FeatureSpecificationExecutor> EXECUTOR_TYPE = TxAnnotationDrivenExecutor.class;
 
-	private Object txManager;
+	private Object txManager = null;
 
-	private Integer order = null;
+	private Object order = null;
 
-	private boolean proxyTargetClass = false;
+	private Boolean proxyTargetClass = false;
 
-	private AdviceMode mode = AdviceMode.PROXY;
+	private Object mode = AdviceMode.PROXY;
 
 	/**
 	 * Create a {@code TxAnnotationDriven} specification assumes the presence of a
@@ -104,10 +106,32 @@ public final class TxAnnotationDriven extends AbstractFeatureSpecification {
 	}
 
 	/**
+	 * Indicate how transactional advice should be applied.
+	 * @param name matching one of the labels in the AdviceMode enum; 
+	 * placeholder and SpEL expressions are not allowed.
+	 * @see AdviceMode
+	 */
+	TxAnnotationDriven mode(String mode) {
+		if (StringUtils.hasText(mode)) {
+			this.mode = mode;
+		}
+		return this;
+	}
+
+	/**
 	 * Return how transactional advice should be applied.
 	 */
 	AdviceMode mode() {
-		return this.mode;
+		if (this.mode instanceof AdviceMode) {
+			return (AdviceMode)this.mode;
+		}
+		if (this.mode instanceof String) {
+			return ObjectUtils.caseInsensitiveValueOf(AdviceMode.values(), (String)this.mode);
+		}
+		// TODO SPR-7420: deal with in validate & raise problem
+		throw new IllegalStateException(
+				"invalid type for field 'mode' (must be of type AdviceMode or String): "
+				+ this.mode.getClass().getName());
 	}
 
 	/**
@@ -136,8 +160,20 @@ public final class TxAnnotationDriven extends AbstractFeatureSpecification {
 	 * when multiple advice executes at a specific joinpoint. The default is
 	 * {@code null}, indicating that default ordering should be used.
 	 */
-	public TxAnnotationDriven order(Integer order) {
+	public TxAnnotationDriven order(int order) {
 		this.order = order;
+		return this;
+	}
+
+	/**
+	 * Indicate the ordering of the execution of the transaction advisor
+	 * when multiple advice executes at a specific joinpoint. The default is
+	 * {@code null}, indicating that default ordering should be used.
+	 */
+	public TxAnnotationDriven order(String order) {
+		if (StringUtils.hasText(order)) {
+			this.order = order;
+		}
 		return this;
 	}
 
@@ -146,16 +182,17 @@ public final class TxAnnotationDriven extends AbstractFeatureSpecification {
 	 * when multiple advice executes at a specific joinpoint. May return
 	 * {@code null}, indicating that default ordering should be used.
 	 */
-	Integer order() {
+	Object order() {
 		return this.order;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * <p>This implementation is a no-op, i.e. it is impossible to create
-	 * an invalid {@code TxAnnotationDriven} instance via its API.
-	 */
-	public void validate() throws InvalidSpecificationException {
+	@Override
+	protected void doValidate(SimpleProblemCollector problems) {
+		if (this.mode instanceof String) {
+			if (!ObjectUtils.containsConstant(AdviceMode.values(), (String)this.mode)) {
+				problems.error("no such mode name: " + this.mode);
+			}
+		}
 	}
 
 }

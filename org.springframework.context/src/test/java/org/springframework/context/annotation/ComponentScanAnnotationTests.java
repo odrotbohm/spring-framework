@@ -40,7 +40,7 @@ public class ComponentScanAnnotationTests {
 
 @Configuration
 @ComponentScan(
-	packageOf={TestBean.class},
+	basePackageClasses={TestBean.class},
 	nameGenerator = DefaultBeanNameGenerator.class,
 	scopedProxy = ScopedProxyMode.NO,
 	scopeResolver = AnnotationScopeMetadataResolver.class,
@@ -57,5 +57,5 @@ class MyConfig {
 
 }
 
-@ComponentScan(packageOf=example.scannable.NamedComponent.class)
+@ComponentScan(basePackageClasses=example.scannable.NamedComponent.class)
 class SimpleConfig { }

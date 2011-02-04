@@ -16,6 +16,7 @@
 
 package org.springframework.context.config;
 
+import org.springframework.beans.factory.parsing.ProblemReporter;
 
 /**
  * Interface to be implemented by objects that specify the configuration of a particular feature
@@ -83,11 +84,6 @@ package org.springframework.context.config;
  * an IDE content-assist point of view as they will see only the public mutator methods, reducing
  * any possible confusion.
  *
- * <p>A {@code FeatureSpecification} is responsible for declaring its executor class via the
- * {@link #executorType()} method. Implementations may choose to make this mutable, but doing so
- * not recommended. Rather, both the specification class and its executor class should be marked
- * {@code final} with the executor being given package-private visibility.
- *
  * <p>Implementations should take care to allow for use of string-based bean names, placeholder
  * (<code>"${...}"</code>) and SpEL (<code>"#{...}</code>) expressions wherever they may be useful.
  * While it is generally desirable to refer to dependent beans in pure Java, in certain cases a
@@ -114,16 +110,13 @@ public interface FeatureSpecification {
 	/**
 	 * Validate this specification instance to ensure all required properties
 	 * have been set, including checks on mutually exclusive or mutually
-	 * dependent properties.
-	 * @throws InvalidSpecificationException if any errors are found
+	 * dependent properties. May in some cases modify the state of the
+	 * specification e.g., instantiating types specified as strings.
 	 * @see AbstractSpecificationExecutor#execute(Specification)
+	 * @return whether any problems occurred during validation
 	 */
-	void validate() throws InvalidSpecificationException;
+	boolean validate(ProblemReporter problemReporter);
 
-	/**
-	 * The type of {@link FeatureSpecificationExecutor} that executes this specification.
-	 * Implementations may choose to make this property mutable.
-	 */
-	Class<? extends FeatureSpecificationExecutor> executorType();
+	void execute(ExecutorContext executorContext);
 
 }

@@ -98,7 +98,7 @@ final class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxA
 	private static class AopAutoProxyConfigurer {
 
 		public static void configureAutoProxyCreator(TxAnnotationDriven txSpec, BeanDefinitionRegistry registry, ComponentRegistrar registrar) {
-			Object source = txSpec.getSource();
+			Object source = txSpec.source();
 			AopNamespaceUtils.registerAutoProxyCreatorIfNecessary(registry, registrar, source, txSpec.proxyTargetClass());
 
 			if (!registry.containsBeanDefinition(TRANSACTION_ADVISOR_BEAN_NAME)) {
@@ -128,7 +128,7 @@ final class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxA
 				}
 				registry.registerBeanDefinition(TRANSACTION_ADVISOR_BEAN_NAME, advisorDef);
 
-				CompositeComponentDefinition compositeDef = new CompositeComponentDefinition(txSpec.getSourceName(), source);
+				CompositeComponentDefinition compositeDef = new CompositeComponentDefinition(txSpec.sourceName(), source);
 				compositeDef.addNestedComponent(new BeanComponentDefinition(sourceDef, sourceName));
 				compositeDef.addNestedComponent(new BeanComponentDefinition(interceptorDef, interceptorName));
 				compositeDef.addNestedComponent(new BeanComponentDefinition(advisorDef, TRANSACTION_ADVISOR_BEAN_NAME));

@@ -16,12 +16,10 @@
 
 package org.springframework.web.servlet.config;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.context.config.ExecutorContext;
-import org.springframework.context.config.FeatureSpecificationExecutor;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -42,9 +40,7 @@ class ResourcesBeanDefinitionParser implements BeanDefinitionParser {
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
 		MvcResources spec = createSpecification(element, parserContext);
 		if (spec != null) {
-			FeatureSpecificationExecutor executor = BeanUtils.instantiateClass(spec.executorType(),
-					FeatureSpecificationExecutor.class);
-			executor.execute(spec, createExecutorContext(parserContext));
+			spec.execute(createExecutorContext(parserContext));
 		}
 		return null;
 	}
@@ -69,8 +65,8 @@ class ResourcesBeanDefinitionParser implements BeanDefinitionParser {
 		if (element.hasAttribute("order")) {
 			spec.order(element.getAttribute("order"));
 		}
-		spec.setSource(parserContext.extractSource(element));
-		spec.setSourceName(element.getTagName());
+		spec.source(parserContext.extractSource(element));
+		spec.sourceName(element.getTagName());
 		return spec;
 	}
 
@@ -84,6 +80,7 @@ class ResourcesBeanDefinitionParser implements BeanDefinitionParser {
 		ExecutorContext executorContext = new ExecutorContext();
 		executorContext.setRegistry(parserContext.getRegistry());
 		executorContext.setRegistrar(parserContext);
+		executorContext.setProblemReporter(parserContext.getReaderContext().getProblemReporter());
 		return executorContext;
 	}
 

@@ -15,10 +15,10 @@
  */
 package org.springframework.web.servlet.config;
 
+import org.springframework.beans.factory.parsing.SimpleProblemCollector;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.context.config.AbstractFeatureSpecification;
 import org.springframework.context.config.FeatureSpecificationExecutor;
-import org.springframework.context.config.InvalidSpecificationException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.format.support.FormattingConversionServiceFactoryBean;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -193,7 +193,8 @@ public final class MvcAnnotationDriven extends AbstractFeatureSpecification {
 		return this.messageCodesResolver;
 	}
 
-	public void validate() throws InvalidSpecificationException {
+	@Override
+	protected void doValidate(SimpleProblemCollector reporter) {
 	}
 
 }

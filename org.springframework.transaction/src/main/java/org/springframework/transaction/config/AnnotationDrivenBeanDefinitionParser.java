@@ -17,13 +17,10 @@
 package org.springframework.transaction.config;
 
 import org.springframework.aop.config.AopNamespaceUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.context.config.AdviceMode;
 import org.springframework.context.config.ExecutorContext;
-import org.springframework.context.config.FeatureSpecificationExecutor;
 import org.w3c.dom.Element;
 
 /**
@@ -59,43 +56,20 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 			TxAnnotationDrivenExecutor.TRANSACTION_ASPECT_BEAN_NAME;
 
 
-	private static final String TRANSACTION_MANAGER_ATTRIBUTE = "transaction-manager";
-
-	private static final String PROXY_TYPE_ATTRIBUTE = "mode";
-
-	private static final String PROXY_TARGET_CLASS_ATTRIBUTE = "proxy-target-class";
-
-	private static final String ORDER_ATTRIBUTE = "order";
-
-
 	/**
 	 * Parses the {@code <tx:annotation-driven/>} tag. Will
 	 * {@link AopNamespaceUtils#registerAutoProxyCreatorIfNecessary register an AutoProxyCreator}
 	 * with the container as necessary.
 	 */
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
-		TxAnnotationDriven spec = createSpecification(element, parserContext);
-		FeatureSpecificationExecutor specExecutor =
-			BeanUtils.instantiateClass(spec.executorType(), FeatureSpecificationExecutor.class);
-		specExecutor.execute(spec, createExecutorContext(parserContext));
+		new TxAnnotationDriven(element.getAttribute("transaction-manager"))
+			.order(element.getAttribute("order"))
+			.mode(element.getAttribute("mode"))
+			.proxyTargetClass(Boolean.valueOf(element.getAttribute("proxy-target-class")))
+			.source(parserContext.extractSource(element))
+			.sourceName(element.getTagName())
+			.execute(createExecutorContext(parserContext));
 		return null;
-	}
-
-	protected TxAnnotationDriven createSpecification(Element element, ParserContext parserContext) {
-		TxAnnotationDriven spec = new TxAnnotationDriven(element.getAttribute(TRANSACTION_MANAGER_ATTRIBUTE))
-			.mode(element.getAttribute(PROXY_TYPE_ATTRIBUTE).equals("aspectj") ?
-					AdviceMode.ASPECTJ :
-					AdviceMode.PROXY)
-			.order(element.hasAttribute(ORDER_ATTRIBUTE) ?
-					Integer.valueOf(element.getAttribute(ORDER_ATTRIBUTE)) :
-					null)
-			.proxyTargetClass(
-					Boolean.valueOf(element.getAttribute(PROXY_TARGET_CLASS_ATTRIBUTE)));
-
-		spec.setSource(parserContext.extractSource(element));
-		spec.setSourceName(element.getTagName());
-
-		return spec;
 	}
 
 	/**
@@ -108,6 +82,7 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 		ExecutorContext executorContext = new ExecutorContext();
 		executorContext.setRegistry(parserContext.getRegistry());
 		executorContext.setRegistrar(parserContext);
+		executorContext.setProblemReporter(parserContext.getReaderContext().getProblemReporter());
 		return executorContext;
 	}
 

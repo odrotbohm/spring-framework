@@ -21,10 +21,12 @@ package org.springframework.context.config;
  * TODO SPR-7420: document
  * TODO SPR-7420: consider adapting to the existing org.springframework.validation package
  *                e.g. could extend a generic InvalidObjectException...
+ * TODO SPR-7420: REMOVE
  * 
  * @author Chris Beams
  * @since 3.1
  */
+@Deprecated
 @SuppressWarnings("serial")
 public class InvalidSpecificationException extends RuntimeException {
 

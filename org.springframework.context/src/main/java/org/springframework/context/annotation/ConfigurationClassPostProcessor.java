@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -50,7 +49,6 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.config.ExecutorContext;
 import org.springframework.context.config.FeatureSpecification;
-import org.springframework.context.config.FeatureSpecificationExecutor;
 import org.springframework.context.config.SourceAwareSpecification;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;
@@ -345,13 +343,11 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					format("The specification returned from @Feature method %s.%s() must not be null",
 							featureMethod.getDeclaringClass().getSimpleName(), featureMethod.getName()));
 
-			FeatureSpecificationExecutor executor = BeanUtils.instantiateClass(spec.executorType());
-
 			if (spec instanceof SourceAwareSpecification) {
-				((SourceAwareSpecification)spec).setSource(featureMethod);
-				((SourceAwareSpecification)spec).setSourceName(featureMethod.getName());
+				((SourceAwareSpecification)spec).source(featureMethod);
+				((SourceAwareSpecification)spec).sourceName(featureMethod.getName());
 			}
-			executor.execute(spec, executorContext);
+			spec.execute(executorContext);
 		} catch (Exception ex) {
 			throw new FeatureMethodExecutionException(ex);
 		}
@@ -364,6 +360,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		executorContext.setResourceLoader(this.resourceLoader);
 		executorContext.setRegistry(registry);
 		executorContext.setRegistrar(new SimpleComponentRegistrar(registry));
+		// TODO SPR-7420: how to get hold of the current problem reporter here?
+		executorContext.setProblemReporter(new FailFastProblemReporter());
 		return executorContext;
 	}
 

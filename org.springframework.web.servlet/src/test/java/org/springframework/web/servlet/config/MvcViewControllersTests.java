@@ -15,18 +15,21 @@
  */
 package org.springframework.web.servlet.config;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Map;
 
 import org.junit.Test;
+import org.springframework.beans.factory.parsing.FailFastProblemReporter;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Feature;
 import org.springframework.context.annotation.FeatureConfiguration;
-import org.springframework.context.config.InvalidSpecificationException;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.mvc.ParameterizableViewController;
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter;
@@ -59,15 +62,35 @@ public class MvcViewControllersTests {
 	}
 
 	@Test
-	public void testEmptyPathViewController() {
+	public void testEmptyPath() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		ctx.register(EmptyPathViewControllersFeature.class);
 		try {
 			ctx.refresh();
-		} catch (InvalidSpecificationException e) {
-			assertTrue(e.getMessage().contains("not empty"));
+			fail("expected exception");
+		} catch (Exception ex) {
+			assertTrue(ex.getCause().getMessage().contains("path attribute"));
 		}
 	}
+
+	@Test
+	public void testEmptyViewName() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(EmptyViewNameViewControllersFeature.class);
+		try {
+			ctx.refresh();
+			fail("expected exception");
+		} catch (Exception ex) {
+			assertTrue(ex.getCause().getMessage().contains("not empty"));
+		}
+	}
+
+	@Test
+	public void testNullViewName() {
+		FailFastProblemReporter problemReporter = new FailFastProblemReporter();
+		assertThat(new MvcViewControllers("/some/path").validate(problemReporter), is(true));
+	}
+
 
 	@FeatureConfiguration
 	private static class MvcViewControllersFeature {
@@ -80,13 +103,26 @@ public class MvcViewControllersTests {
 
 	}
 
+
+	@FeatureConfiguration
+	private static class EmptyViewNameViewControllersFeature {
+
+		@SuppressWarnings("unused")
+		@Feature
+		public MvcViewControllers mvcViewControllers() {
+			return new MvcViewControllers("/some/path", "");
+		}
+
+	}
+
+
 	@FeatureConfiguration
 	private static class EmptyPathViewControllersFeature {
 
 		@SuppressWarnings("unused")
 		@Feature
 		public MvcViewControllers mvcViewControllers() {
-			return new MvcViewControllers("/", "");
+			return new MvcViewControllers("", "someViewName");
 		}
 
 	}

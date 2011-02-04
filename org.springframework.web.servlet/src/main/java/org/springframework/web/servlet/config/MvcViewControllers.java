@@ -19,9 +19,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.parsing.SimpleProblemCollector;
 import org.springframework.context.config.AbstractFeatureSpecification;
 import org.springframework.context.config.FeatureSpecificationExecutor;
-import org.springframework.context.config.InvalidSpecificationException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.mvc.ParameterizableViewController;
@@ -29,20 +29,21 @@ import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter;
 
 /**
  * Specifies the Spring MVC "View Controllers" container feature. The
- * feature allows specifying one or more path to view name mappings. 
+ * feature allows specifying one or more path to view name mappings.
  * It sets up the following fine-grained configuration:
- *  
+ *
  * <ul>
- * 	<li>{@link ParameterizableViewController} for each path/view name pair.
- * 	<li>{@link SimpleUrlHandlerMapping} mapping each view controller to its path.
- * 	<li>{@link SimpleControllerHandlerAdapter} to enable the DispatcherServlet 
- * 		to invoke the view controllers. 
+ * <li>{@link ParameterizableViewController} for each path/view name pair.
+ * <li>{@link SimpleUrlHandlerMapping} mapping each view controller to its path.
+ * <li>{@link SimpleControllerHandlerAdapter} to enable the DispatcherServlet
+ *     to invoke the view controllers.
  * </ul>
  *
  * @author Rossen Stoyanchev
+ * @author Chris Beams
  * @since 3.1
  */
-public class MvcViewControllers extends AbstractFeatureSpecification {
+public final class MvcViewControllers extends AbstractFeatureSpecification {
 
 	private static final Class<? extends FeatureSpecificationExecutor> EXECUTOR_TYPE = MvcViewControllersExecutor.class;
 
@@ -70,17 +71,18 @@ public class MvcViewControllers extends AbstractFeatureSpecification {
 		return Collections.unmodifiableMap(mappings);
 	}
 
-	public void validate() throws InvalidSpecificationException {
+	@Override
+	protected void doValidate(SimpleProblemCollector problems) {
 		if (mappings.size() == 0) {
-			throw new InvalidSpecificationException("At least one ViewController must be defined.");
+			problems.error("At least one ViewController must be defined");
 		}
 		for (String path : mappings.keySet()) {
 			if (!StringUtils.hasText(path)) {
-				throw new InvalidSpecificationException("The path attribute in a ViewController is required.");
+				problems.error("The path attribute in a ViewController is required");
 			}
-			if (mappings.get(path) != null && mappings.get(path).isEmpty()) {
-				throw new InvalidSpecificationException(
-						"The view name in a ViewController may be null but not empty.");
+			String viewName = mappings.get(path);
+			if (viewName != null && viewName.isEmpty()) {
+				problems.error("The view name in a ViewController may be null but not empty.");
 			}
 		}
 	}

@@ -30,7 +30,7 @@ import org.springframework.core.type.filter.TypeFilter;
  * classes. Provides support parallel with Spring XML's {@code <context:component-scan>}
  * element.
  *
- * <p>Either {@link #packageOf()}, {@link #basePackages()} or its alias {@link #value()}
+ * <p>One of {@link #basePackageClasses()}, {@link #basePackages()} or its alias {@link #value()}
  * must be specified.
  *
  * <p>Note that the {@code <context:component-scan>} element has an {@code annotation-config}
@@ -51,14 +51,7 @@ import org.springframework.core.type.filter.TypeFilter;
 public @interface ComponentScan {
 
 	/**
-	 * Base packages to scan for annotated components.
-	 * <p>{@link #value()} is an alias for (and mutually exclusive with) this attribute.
-	 * <p>Use {@link #packageOf()} for a type-safe alternative to String-based package names.
-	 */
-	String[] basePackages() default {};
-
-	/**
-	 * Alias for (and mutually exclusive with) the {@link #basePackages()} attribute.
+	 * Alias for the {@link #basePackages()} attribute.
 	 * Allows for more concise annotation declarations e.g.:
 	 * {@code @ComponentScan("org.my.pkg")} instead of
 	 * {@code @ComponentScan(basePackages="org.my.pkg")}.
@@ -66,12 +59,19 @@ public @interface ComponentScan {
 	String[] value() default {};
 
 	/**
+	 * Base packages to scan for annotated components.
+	 * <p>{@link #value()} is an alias for (and mutually exclusive with) this attribute.
+	 * <p>Use {@link #basePackageClasses()} for a type-safe alternative to String-based package names.
+	 */
+	String[] basePackages() default {};
+
+	/**
 	 * Type-safe alternative to {@link #basePackages()} for specifying the packages
 	 * to scan for annotated components. The package of each class specified will be scanned.
 	 * <p>Consider creating a special no-op marker class or interface in each package
 	 * that serves no purpose other than being referenced by this attribute.
 	 */
-	Class<?>[] packageOf() default {};
+	Class<?>[] basePackageClasses() default {};
 
 	/**
 	 * The {@link BeanNameGenerator} class to be used for naming detected components

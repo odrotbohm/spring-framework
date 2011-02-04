@@ -115,7 +115,7 @@ public class ComponentScanAnnotationIntegrationTests {
 			ctx.refresh();
 			fail("Expected exception when parsing @ComponentScan definition that declares no packages");
 		} catch (BeanDefinitionParsingException ex) {
-			assertThat(ex.getMessage(), containsString("@ComponentScan must declare either 'basePackages' or 'packageOf'"));
+			assertThat(ex.getMessage(), containsString("At least one base package must be specified"));
 		}
 	}
 
@@ -160,18 +160,19 @@ public class ComponentScanAnnotationIntegrationTests {
 		assertThat(deserialized.foo(1), equalTo("bar"));
 	}
 
-	@Test(expected=BeanDefinitionParsingException.class)
+	@Test
 	public void withBasePackagesAndValueAlias() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		ctx.register(ComponentScanWithBasePackagesAndValueAlias.class);
 		ctx.refresh();
+		assertThat(ctx.containsBean("fooServiceImpl"), is(true));
 	}
 
 }
 
 
 @Configuration
-@ComponentScan(packageOf=example.scannable._package.class)
+@ComponentScan(basePackageClasses=example.scannable._package.class)
 class ComponentScanAnnotatedConfig {
 	@Bean
 	public TestBean testBean() {
@@ -241,5 +242,8 @@ class ComponentScanWithCustomTypeFilter {
 class ComponentScanWithScopedProxy { }
 
 @Configuration
-@ComponentScan(value="example.scannable", basePackages="example.scannable")
+@ComponentScan(
+		value="example.scannable",
+		basePackages="example.scannable",
+		basePackageClasses=example.scannable._package.class)
 class ComponentScanWithBasePackagesAndValueAlias { }

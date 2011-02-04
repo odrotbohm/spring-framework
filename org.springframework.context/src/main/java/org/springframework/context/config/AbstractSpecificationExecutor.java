@@ -30,18 +30,18 @@ public abstract class AbstractSpecificationExecutor<S extends FeatureSpecificati
 	/**
 	 * {@inheritDoc}
 	 * <p>This implementation {@linkplain FeatureSpecification#validate() validates} the
-	 * given specification before delegating it to the {@link #doExecute(FeatureSpecification)}
-	 * method.
-	 * @throws InvalidSpecificationException if the given specification has has errors
+	 * given specification and delegates it to {@link #doExecute(FeatureSpecification)}
+	 * only if valid.
 	 */
 	@SuppressWarnings("unchecked")
-	public final void execute(FeatureSpecification spec, ExecutorContext executorContext) throws InvalidSpecificationException {
+	public final void execute(FeatureSpecification spec, ExecutorContext executorContext) {
 		Assert.notNull(spec, "Specification must not be null");
 		Assert.notNull(spec, "ExecutorContext must not be null");
 		Class<?> typeArg = GenericTypeResolver.resolveTypeArgument(this.getClass(), AbstractSpecificationExecutor.class);
 		Assert.isTrue(typeArg.equals(spec.getClass()), "Specification cannot be executed by this executor");
-		spec.validate();
-		doExecute((S)spec, executorContext);
+		if (spec.validate(executorContext.getProblemReporter())) {
+			doExecute((S)spec, executorContext);
+		}
 	}
 
 	/**

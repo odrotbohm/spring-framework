@@ -16,13 +16,10 @@
 
 package org.springframework.web.servlet.config;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.context.config.ExecutorContext;
-import org.springframework.context.config.FeatureSpecificationExecutor;
-import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.mvc.ParameterizableViewController;
 import org.w3c.dom.Element;
 
@@ -38,30 +35,16 @@ import org.w3c.dom.Element;
 class ViewControllerBeanDefinitionParser implements BeanDefinitionParser {
 
 	/**
-	 * Parses the {@code <mvc:view-controller/>} tag
+	 * Parses the {@code <mvc:view-controller/>} tag.
 	 */
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
-		MvcViewControllers spec = createSpecification(element, parserContext);
-		if (spec != null) {
-			FeatureSpecificationExecutor executor = BeanUtils.instantiateClass(spec.executorType(),
-					FeatureSpecificationExecutor.class);
-			executor.execute(spec, createExecutorContext(parserContext));
-		}
-		return null;
-	}
-
-	private MvcViewControllers createSpecification(Element element, ParserContext parserContext) {
 		String path = element.getAttribute("path");
-		if (!StringUtils.hasText(path)) {
-			parserContext.getReaderContext().error("The path attribute in a ViewController is required.",
-					parserContext.extractSource(element));
-		}
 		String viewName = element.getAttribute("view-name");
-		MvcViewControllers spec = viewName.isEmpty() ? new MvcViewControllers(
-				path) : new MvcViewControllers(path, viewName);
-		spec.setSource(parserContext.extractSource(element));
-		spec.setSourceName(element.getTagName());
-		return spec;
+		new MvcViewControllers(path, viewName.isEmpty() ? null : viewName)
+			.source(parserContext.extractSource(element))
+			.sourceName(element.getTagName())
+			.execute(createExecutorContext(parserContext));
+		return null;
 	}
 
 	/**
@@ -74,6 +57,7 @@ class ViewControllerBeanDefinitionParser implements BeanDefinitionParser {
 		ExecutorContext executorContext = new ExecutorContext();
 		executorContext.setRegistry(parserContext.getRegistry());
 		executorContext.setRegistrar(parserContext);
+		executorContext.setProblemReporter(parserContext.getReaderContext().getProblemReporter());
 		return executorContext;
 	}
 

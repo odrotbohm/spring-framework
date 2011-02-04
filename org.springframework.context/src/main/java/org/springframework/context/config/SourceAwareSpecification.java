@@ -24,12 +24,12 @@ package org.springframework.context.config;
  */
 public interface SourceAwareSpecification extends FeatureSpecification {
 
-	public abstract String getSourceName();
+	String sourceName();
 
-	public abstract void setSourceName(String sourceName);
+	SourceAwareSpecification sourceName(String sourceName);
 
-	public abstract Object getSource();
+	Object source();
 
-	public abstract void setSource(Object source);
+	SourceAwareSpecification source(Object source);
 
 }

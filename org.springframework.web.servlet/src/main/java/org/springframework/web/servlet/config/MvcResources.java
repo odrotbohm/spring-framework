@@ -16,9 +16,9 @@
 
 package org.springframework.web.servlet.config;
 
+import org.springframework.beans.factory.parsing.SimpleProblemCollector;
 import org.springframework.context.config.AbstractFeatureSpecification;
 import org.springframework.context.config.FeatureSpecificationExecutor;
-import org.springframework.context.config.InvalidSpecificationException;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
@@ -28,22 +28,22 @@ import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMa
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 /**
- * Specifies the Spring MVC Resources container feature. The 
+ * Specifies the Spring MVC "resources" container feature. The
  * feature provides the following fine-grained configuration:
  *
  * <ul>
- * 	<li>{@link ResourceHttpRequestHandler} to serve static resources from a
- * 		list of web-root relative, classpath, or other locations.
- * 	<li>{@link SimpleUrlHandlerMapping} to map the above request handler to a
- * 		a specific path pattern (e.g. "/resources/**").
- * 	<li>{@link HttpRequestHandlerAdapter} to enable the DispatcherServlet to 
- * 		invoke the above request handler.
+ * <li>{@link ResourceHttpRequestHandler} to serve static resources from a
+ *     list of web-root relative, classpath, or other locations.
+ * <li>{@link SimpleUrlHandlerMapping} to map the above request handler to a
+ *     a specific path pattern (e.g. "/resources/**").
+ * <li>{@link HttpRequestHandlerAdapter} to enable the DispatcherServlet to be
+ *     able to invoke the above request handler.
  * </ul>
  *
  * @author Rossen Stoynchev
  * @since 3.1
  */
-public class MvcResources extends AbstractFeatureSpecification {
+public final class MvcResources extends AbstractFeatureSpecification {
 
 	private static final Class<? extends FeatureSpecificationExecutor> EXECUTOR_TYPE = MvcResourcesExecutor.class;
 
@@ -52,24 +52,23 @@ public class MvcResources extends AbstractFeatureSpecification {
 	private String mapping;
 
 	private Object cachePeriod;
-	
+
 	private Object order = Ordered.LOWEST_PRECEDENCE - 1;
 
 	/**
-	 * Creates an MvcResources specification instance.
-	 * See alternate constructor defined here if you prefer to use the Spring
-	 * {@link Resource} type for specifying locations.
-	 * 
-	 * @param mapping - the URL path pattern within the current Servlet context to 
-	 * 		use to identify resource requests (e.g. "/resources/**").
-	 * 
-	 * @param locations - resource locations to serve static content from specified 
-	 * 		as a list of Spring {@link Resource} patterns. Each location must point 
-	 * 		to a valid directory. Locations will be checked in the order specified. 
-	 * 		For example if "/" and "classpath:/META-INF/public-web-resources/" are
-	 * 		configured resources will be served from the Web root and from any JAR on 
-	 * 		the classpath  that contains a /META-INF/public-web-resources/ directory,
-	 * 		with resources under the Web root taking precedence.
+	 * Create an MvcResources specification instance. See alternate constructor
+	 * you prefer to use {@link Resource} instances instead of {@code String}-based
+	 * resource locations.
+	 *
+	 * @param mapping - the URL path pattern within the current Servlet context to
+	 * use to identify resource requests (e.g. "/resources/**").
+	 * @param locations - locations of resources containing static content to be
+	 * served. Each location must point to a valid directory. Locations will be
+	 * checked in the order specified. For example if "/" and
+	 * "classpath:/META-INF/public-web-resources/" are configured resources will
+	 * be served from the Web root and from any JAR on the classpath  that contains
+	 * a /META-INF/public-web-resources/ directory, with resources under the Web root
+	 * taking precedence.
 	 */
 	public MvcResources(String mapping, String... locations) {
 		super(EXECUTOR_TYPE);
@@ -78,19 +77,17 @@ public class MvcResources extends AbstractFeatureSpecification {
 	}
 
 	/**
-	 * Creates an MvcResources specification instance. See alternate constructor 
+	 * Create an MvcResources specification instance. See alternate constructor
 	 * defined here if you prefer to use String-based path patterns.
-	 * 
-	 * @param mapping - the URL path pattern within the current Servlet context to 
-	 * 		use to identify resource requests (e.g. "/resources/**").
-	 * 
-	 * @param locations - resource locations to serve static content from specified 
-	 * 		as a list of Spring {@link Resource} patterns. Each location must point 
-	 * 		to a valid directory. Locations will be checked in the order specified. 
+	 *
+	 * @param mapping - the URL path pattern within the current Servlet context to
+	 * use to identify resource requests (e.g. "/resources/**").
+	 * @param resources - Spring {@link Resource} objects containing static
+	 * content to be served. Resources will be checked in the order specified.
 	 */
-	public MvcResources(String mapping, Resource... locations) {
+	public MvcResources(String mapping, Resource... resources) {
 		super(EXECUTOR_TYPE);
-		this.locations = locations;
+		this.locations = resources;
 		this.mapping = mapping;
 	}
 
@@ -98,7 +95,7 @@ public class MvcResources extends AbstractFeatureSpecification {
 	 * The period of time resources should be cached for in seconds.
 	 * The default is to not send any cache headers but rather to rely on
 	 * last-modified timestamps only.
-	 * Set this to 0 in order to send cache headers that prevent caching,
+	 * <p>Set this to 0 in order to send cache headers that prevent caching,
 	 * or to a positive number of seconds in order to send cache headers
 	 * with the given max-age value.
 	 *
@@ -110,10 +107,10 @@ public class MvcResources extends AbstractFeatureSpecification {
 	}
 
 	/**
-	 * Specify a cachePeriod as a String. An alternative to {@link #cachePeriod(Integer)}. 
-	 * The String must represent an Integer after placeholder and SpEL expression 
-	 * resolution. 
-	 * 
+	 * Specify a cachePeriod as a String. An alternative to {@link #cachePeriod(Integer)}.
+	 * The String must represent an Integer after placeholder and SpEL expression
+	 * resolution.
+	 *
 	 * @param cachePeriod the cache period in seconds
 	 */
 	public MvcResources cachePeriod(String cachePeriod) {
@@ -122,10 +119,10 @@ public class MvcResources extends AbstractFeatureSpecification {
 	}
 
 	/**
-	 * Specify a cachePeriod as a String. An alternative to {@link #cachePeriod(Integer)}. 
-	 * The String must represent an Integer after placeholder and SpEL expression 
-	 * resolution. 
-	 * Sets the order for the SimpleUrlHandlerMapping used to match resource
+	 * Specify a cachePeriod as a String. An alternative to {@link #cachePeriod(Integer)}.
+	 * The String must represent an Integer after placeholder and SpEL expression
+	 * resolution.
+	 * <p>Sets the order for the SimpleUrlHandlerMapping used to match resource
 	 * requests relative to order value for other HandlerMapping instances
 	 * such as the {@link DefaultAnnotationHandlerMapping} used to match
 	 * controller requests.
@@ -139,12 +136,12 @@ public class MvcResources extends AbstractFeatureSpecification {
 	}
 
 	/**
-	 * Specify an order as a String. An alternative to {@link #order(Integer)}. 
-	 * The String must represent an Integer after placeholder and SpEL expression 
-	 * resolution. 
-	 * 
-	 * @param order the order to use. The default value is 
-	 * 		{@link Ordered#LOWEST_PRECEDENCE} - 1.
+	 * Specify an order as a String. An alternative to {@link #order(Integer)}.
+	 * The String must represent an Integer after placeholder and SpEL expression
+	 * resolution.
+	 *
+	 * @param order the order to use. The default value is
+	 * {@link Ordered#LOWEST_PRECEDENCE} - 1.
 	 */
 	public MvcResources order(String order) {
 		this.order = order;
@@ -164,17 +161,18 @@ public class MvcResources extends AbstractFeatureSpecification {
 	String mapping() {
 		return mapping;
 	}
-	
+
 	Object order() {
 		return order;
 	}
 
-	public void validate() throws InvalidSpecificationException {
+	@Override
+	protected void doValidate(SimpleProblemCollector problems) {
 		if (!StringUtils.hasText(mapping)) {
-			throw new InvalidSpecificationException("A mapping is required.");
+			problems.error("A mapping is required");
 		}
 		if (locations == null || locations.length == 0) {
-			throw new InvalidSpecificationException("Location(s) are required. ");
+			problems.error("One or more location(s) are required");
 		}
 	}
 

@@ -53,13 +53,6 @@ import org.springframework.core.type.AnnotationMetadata;
 public interface FeatureAnnotationProcessor {
 
 	/**
-	 * Whether this writer is capable of handling the metadata in question
-	 * i.e., whether the metadata contains the annotation(s) this writer knows
-	 * about.
-	 */
-	boolean accepts(AnnotationMetadata metadata);
-
-	/**
 	 * Parse the given annotation metadata and populate a {@link FeatureSpecification}
 	 * object suitable for execution by a {@link FeatureSpecificationExecutor}.
 	 */
