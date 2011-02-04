@@ -34,9 +34,9 @@ import org.springframework.beans.factory.parsing.ProblemReporter;
  *
  * <p>A {@code FeatureSpecification} is responsible for {@linkplain #validate validating itself}.
  * For example, a component-scanning specification would check that at least one base package has
- * been specified, and otherwise throw an {@link InvalidSpecificationException}. Validation is done
- * as part of the feature-processing lifecycle, and this method should not usually be a concern of end
- * users.
+ * been specified, and otherwise register a {@code Problem} with a {@link ProblemReporter}. Taking
+ * this approach as opposed to throwing exceptions allows for maximum tooling and error reporting
+ * flexibility.
  *
  * <p>A {@link FeatureSpecificationExecutor} is used to carry out the instructions within a populated
  * {@code FeatureSpecification}; this is where the "real work" happens. In the case of component scanning
