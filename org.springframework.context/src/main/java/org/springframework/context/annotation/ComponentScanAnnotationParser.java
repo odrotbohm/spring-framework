@@ -25,7 +25,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
- * {@link FeatureAnnotationProcessor} implementation that reads attributes from a
+ * {@link FeatureAnnotationParser} implementation that reads attributes from a
  * {@link ComponentScan @ComponentScan} annotation into a {@link ComponentScanSpec}
  * which can in turn be executed by {@link ComponentScanExecutor}.
  * {@link ComponentScanBeanDefinitionParser} serves the same role for
@@ -43,7 +43,7 @@ import org.springframework.util.ClassUtils;
  * @see ComponentScanBeanDefinitionParser
  * @see ConfigurationClassBeanDefinitionReader
  */
-final class ComponentScanAnnotationProcessor implements FeatureAnnotationProcessor {
+final class ComponentScanAnnotationParser implements FeatureAnnotationParser {
 
 	/**
 	 * Create and return a new {@link ComponentScanSpec} from the given

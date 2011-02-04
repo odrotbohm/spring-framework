@@ -147,7 +147,7 @@ class ConfigurationClassBeanDefinitionReader {
 				if (metadataReader.getAnnotationMetadata().isAnnotated(FeatureAnnotation.class.getName())) {
 					Map<String, Object> annotationAttributes = metadataReader.getAnnotationMetadata().getAnnotationAttributes(FeatureAnnotation.class.getName(), true);
 					// TODO SPR-7420: this is where we can catch user-defined types and avoid instantiating them for STS purposes
-					FeatureAnnotationProcessor processor = (FeatureAnnotationProcessor) BeanUtils.instantiateClass(Class.forName((String)annotationAttributes.get("processor")));
+					FeatureAnnotationParser processor = (FeatureAnnotationParser) BeanUtils.instantiateClass(Class.forName((String)annotationAttributes.get("parser")));
 					FeatureSpecification spec = processor.process(metadata);
 					spec.execute(this.executorContext);
 				}
@@ -411,7 +411,7 @@ class ConfigurationClassBeanDefinitionReader {
 	 */
 	private static class InvalidConfigurationImportProblem extends Problem {
 		public InvalidConfigurationImportProblem(String className, Resource resource, AnnotationMetadata metadata) {
-			super(String.format("%s was @Imported as a but is not annotated with @FeatureConfiguration or " +
+			super(String.format("%s was @Import'ed as a but is not annotated with @FeatureConfiguration or " +
 					"@Configuration nor does it declare any @Bean methods. Update the class to " +
 					"meet one of these requirements or do not attempt to @Import it.", className),
 					new Location(resource, metadata));

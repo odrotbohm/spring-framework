@@ -25,8 +25,11 @@ import java.lang.annotation.Target;
  * Meta-annotation indicating that an annotation should be processed
  * to produce a {@code FeatureSpecification}.
  *
+ * <p>See {@link ComponentScan @ComponentScan} for an implementation example.
+ *
  * @author Chris Beams
  * @since 3.1
+ * @see ComponentScan
  * @see org.springframework.context.config.FeatureSpecification
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -34,8 +37,9 @@ import java.lang.annotation.Target;
 public @interface FeatureAnnotation {
 
 	/**
-	 * Indicate the class that should be used to process this annotation.
+	 * Indicate the class that should be used to parse this annotation
+	 * into a {@code FeatureSpecification}.
 	 */
-	Class<? extends FeatureAnnotationProcessor> processor();
+	Class<? extends FeatureAnnotationParser> parser();
 
 }

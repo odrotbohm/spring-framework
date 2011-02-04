@@ -36,6 +36,7 @@ import org.w3c.dom.NodeList;
  * @since 2.5
  * @see ComponentScan
  * @see ComponentScanSpec
+ * @see ComponentScanExecutor
  */
 public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 
