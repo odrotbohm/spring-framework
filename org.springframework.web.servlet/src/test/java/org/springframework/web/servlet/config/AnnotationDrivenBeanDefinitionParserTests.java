@@ -103,6 +103,15 @@ public class AnnotationDrivenBeanDefinitionParserTests {
 
 }
 
+class TestWebArgumentResolver implements WebArgumentResolver {
+
+	public Object resolveArgument(MethodParameter methodParameter, NativeWebRequest webRequest) throws Exception {
+		return null;
+	}
+
+}
+
+
 class TestMessageCodesResolver implements MessageCodesResolver {
 
 	public String[] resolveMessageCodes(String errorCode, String objectName) {
