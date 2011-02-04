@@ -26,11 +26,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Parser for the &lt;context:component-scan/&gt; element. Parsed metadata is
- * used to populate a {@link ComponentScanSpec} object which is in turn
- * delegated to a {@link ComponentScanExecutor} for actual scanning and
- * bean definition registration.
- * 
+ * Parser for the {@code <context:component-scan/>} element. Parsed metadata is
+ * used to populate and execute a {@link ComponentScanSpec} instance.
+ *
  * @author Mark Fisher
  * @author Ramnivas Laddad
  * @author Juergen Hoeller
@@ -38,7 +36,6 @@ import org.w3c.dom.NodeList;
  * @since 2.5
  * @see ComponentScan
  * @see ComponentScanSpec
- * @see ComponentScanExecutor
  */
 public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 
@@ -80,6 +77,10 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		return null;
 	}
 
+
+	// Adapt the given ParserContext instance into an ExecutorContext.
+	// TODO SPR-7420: create a common ParserContext-to-ExecutorContext adapter utility
+	//                or otherwise unify these two types
 	private ExecutorContext createExecutorContext(ParserContext parserContext) {
 		ExecutorContext executorContext = new ExecutorContext();
 		executorContext.setRegistry(parserContext.getRegistry());

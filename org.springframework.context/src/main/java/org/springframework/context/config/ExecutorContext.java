@@ -22,6 +22,12 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 
+/**
+ * TODO: rename to SpecificationContext?
+ *
+ * @author Chris Beams
+ * @since 3.1
+ */
 public class ExecutorContext {
 
 	private BeanDefinitionRegistry registry;
