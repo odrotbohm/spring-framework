@@ -29,6 +29,7 @@ import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConvert
 import org.springframework.validation.MessageCodesResolver;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.bind.support.WebArgumentResolver;
 
 /**
  * Specifies the Spring MVC "annotation-driven" container feature. The
@@ -61,6 +62,9 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
  *   is present on the classpath</em>, and the {@link AtomFeedHttpMessageConverter} and the
  *   {@link RssChannelHttpMessageConverter} converters <em>assuming Rome is present on
  *   the classpath</em>.
+ * <li>Optionally, custom {@code WebArgumentResolver} beans to use for resolving 
+ * 	custom arguments to	handler methods. These are typically implemented to detect 
+ * 	special parameter types, resolving well-known argument values for them.
  * </ul>
  *
  * @author Rossen Stoyanchev
@@ -76,7 +80,11 @@ public final class MvcAnnotationDriven extends AbstractFeatureSpecification {
 
 	private Object messageCodesResolver;
 
+	private boolean shouldRegisterDefaultMessageConverters = true;
+
 	private ManagedList<? super Object> messageConverters = new ManagedList<Object>();
+
+	private ManagedList<? super Object> argumentResolvers = new ManagedList<Object>();
 
 	/**
 	 * Creates an MvcAnnotationDriven specification.
@@ -118,6 +126,16 @@ public final class MvcAnnotationDriven extends AbstractFeatureSpecification {
 		return this.conversionService;
 	}
 
+	/**
+	 * The HttpMessageConverter types to use for converting @RequestBody method 
+	 * parameters and @ResponseBody method return values. HttpMessageConverter 
+	 * registrations provided here will take precedence over HttpMessageConverter 
+	 * types registered by default. 
+	 * Also see {@link #shouldRegisterDefaultMessageConverters(boolean)} if 
+	 * default registrations are to be turned off altogether.
+	 * 
+	 * @param converters the message converters
+	 */
 	public MvcAnnotationDriven messageConverters(HttpMessageConverter<?>... converters) {
 		for (HttpMessageConverter<?> converter : converters) {
 			this.messageConverters.add(converter);
@@ -131,6 +149,37 @@ public final class MvcAnnotationDriven extends AbstractFeatureSpecification {
 
 	ManagedList<?> messageConverters() {
 		return this.messageConverters;
+	}
+
+	/**
+	 * Indicates whether or not default HttpMessageConverter registrations should 
+	 * be added in addition to the ones provided via 
+	 * {@link #messageConverters(HttpMessageConverter...).
+	 * 
+	 * @param shouldRegister true will result in registration of defaults.
+	 */
+	public MvcAnnotationDriven shouldRegisterDefaultMessageConverters(boolean shouldRegister) {
+		this.shouldRegisterDefaultMessageConverters = shouldRegister;
+		return this;
+	}
+
+	boolean shouldRegisterDefaultMessageConverters() {
+		return this.shouldRegisterDefaultMessageConverters;
+	}
+
+	public MvcAnnotationDriven argumentResolvers(WebArgumentResolver... resolvers) {
+		for (WebArgumentResolver resolver : resolvers) {
+			this.argumentResolvers.add(resolver);
+		}
+		return this;
+	}
+
+	void argumentResolvers(ManagedList<? super Object> argumentResolvers) {
+		this.argumentResolvers = argumentResolvers;
+	}
+
+	ManagedList<?> argumentResolvers() {
+		return this.argumentResolvers;
 	}
 
 	/**

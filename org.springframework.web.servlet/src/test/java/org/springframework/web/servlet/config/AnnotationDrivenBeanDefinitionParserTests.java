@@ -61,14 +61,18 @@ public class AnnotationDrivenBeanDefinitionParserTests {
 		assertEquals(TestMessageCodesResolver.class, resolver.getClass());
 	}
 
-	/**
-	 * TODO SPR-7420: this test fails because message-converters is not yet parsed.
-	 */
 	@Test
 	public void testMessageConverters() {
 		loadBeanDefinitions("mvc-config-message-converters.xml");
-		verifyMessageConverters(appContext.getBean(AnnotationMethodHandlerAdapter.class));
-		verifyMessageConverters(appContext.getBean(AnnotationMethodHandlerExceptionResolver.class));
+		verifyMessageConverters(appContext.getBean(AnnotationMethodHandlerAdapter.class), true);
+		verifyMessageConverters(appContext.getBean(AnnotationMethodHandlerExceptionResolver.class), true);
+	}
+
+	@Test
+	public void testMessageConvertersWithoutDefaultRegistrations() {
+		loadBeanDefinitions("mvc-config-message-converters-defaults-off.xml");
+		verifyMessageConverters(appContext.getBean(AnnotationMethodHandlerAdapter.class), false);
+		verifyMessageConverters(appContext.getBean(AnnotationMethodHandlerExceptionResolver.class), false);
 	}
 
 	@Test
@@ -91,12 +95,18 @@ public class AnnotationDrivenBeanDefinitionParserTests {
 		appContext.refresh();
 	}
 
-	private void verifyMessageConverters(Object bean) {
+	private void verifyMessageConverters(Object bean, boolean hasDefaultRegistrations) {
 		assertNotNull(bean);
 		Object converters = new DirectFieldAccessor(bean).getPropertyValue("messageConverters");
 		assertNotNull(converters);
 		assertTrue(converters instanceof HttpMessageConverter<?>[]);
-		assertEquals(2, ((HttpMessageConverter<?>[]) converters).length);
+		if (hasDefaultRegistrations) {
+			assertTrue("Default converters are registered in addition to custom ones",
+					((HttpMessageConverter<?>[]) converters).length > 2);
+		} else {
+			assertTrue("Default converters should not be registered",
+					((HttpMessageConverter<?>[]) converters).length == 2);
+		}
 		assertTrue(((HttpMessageConverter<?>[]) converters)[0] instanceof StringHttpMessageConverter);
 		assertTrue(((HttpMessageConverter<?>[]) converters)[1] instanceof ResourceHttpMessageConverter);
 	}
@@ -110,7 +120,6 @@ class TestWebArgumentResolver implements WebArgumentResolver {
 	}
 
 }
-
 
 class TestMessageCodesResolver implements MessageCodesResolver {
 

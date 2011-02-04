@@ -57,22 +57,33 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 		if (element.hasAttribute("message-codes-resolver")) {
 			spec.messageCodesResolver(element.getAttribute("message-codes-resolver"));
 		}
-		// has the user explicitly specified message converters? If so, they will prevent
-		// the exectuor from registering a set of defaults
 		Element convertersElement = DomUtils.getChildElementByTagName(element, "message-converters");
 		if (convertersElement != null) {
-			ManagedList<? super Object> messageConverters = new ManagedList<Object>();
-			messageConverters.setSource(parserContext.extractSource(convertersElement));
-			for (Element converter : DomUtils.getChildElementsByTagName(convertersElement, "bean")) {
-				BeanDefinitionHolder beanDef = parserContext.getDelegate().parseBeanDefinitionElement(converter);
-				beanDef = parserContext.getDelegate().decorateBeanDefinitionIfRequired(converter, beanDef);
-				messageConverters.add(beanDef);
+			if (convertersElement.hasAttribute("register-defaults")) {
+				spec.shouldRegisterDefaultMessageConverters(Boolean.valueOf(convertersElement
+						.getAttribute("register-defaults")));
 			}
-			spec.messageConverters(messageConverters);
+			spec.messageConverters(extractBeanSubElements(convertersElement, parserContext));
 		}
+		Element resolversElement = DomUtils.getChildElementByTagName(element, "argument-resolvers");
+		if (resolversElement != null) {
+			spec.argumentResolvers(extractBeanSubElements(resolversElement, parserContext));
+		}
+
 		spec.source(parserContext.extractSource(element));
 		spec.sourceName(element.getTagName());
 		return spec;
+	}
+
+	private ManagedList<? super Object> extractBeanSubElements(Element parentElement, ParserContext parserContext) {
+		ManagedList<? super Object> list = new ManagedList<Object>();
+		list.setSource(parserContext.extractSource(parentElement));
+		for (Element beanElement : DomUtils.getChildElementsByTagName(parentElement, "bean")) {
+			BeanDefinitionHolder beanDef = parserContext.getDelegate().parseBeanDefinitionElement(beanElement);
+			beanDef = parserContext.getDelegate().decorateBeanDefinitionIfRequired(beanElement, beanDef);
+			list.add(beanDef);
+		}
+		return list;
 	}
 
 	/**

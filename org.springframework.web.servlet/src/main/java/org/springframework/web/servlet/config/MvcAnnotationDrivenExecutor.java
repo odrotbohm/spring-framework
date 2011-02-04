@@ -95,16 +95,16 @@ final class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<Mv
 		bindingDef.getPropertyValues().add("validator", validator);
 		bindingDef.getPropertyValues().add("messageCodesResolver", messageCodesResolver);
 
-		if (spec.messageConverters().isEmpty()) {
-			// the user has not specified custom message converters -> register defaults
-			spec.messageConverters(getDefaultMessageConverters(spec, registrar));
-		}
+		ManagedList<? super Object> messageConverters = getMessageConverters(spec, registrar);
 
 		RootBeanDefinition annAdapterDef = new RootBeanDefinition(AnnotationMethodHandlerAdapter.class);
 		annAdapterDef.setSource(source);
 		annAdapterDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 		annAdapterDef.getPropertyValues().add("webBindingInitializer", bindingDef);
-		annAdapterDef.getPropertyValues().add("messageConverters", spec.messageConverters());
+		annAdapterDef.getPropertyValues().add("messageConverters", messageConverters);
+		if (!spec.argumentResolvers().isEmpty()) {
+			annAdapterDef.getPropertyValues().add("customArgumentResolvers", spec.argumentResolvers());
+		}
 		String annAdapterName = registrar.registerWithGeneratedName(annAdapterDef);
 
 		RootBeanDefinition csInterceptorDef = new RootBeanDefinition(ConversionServiceExposingInterceptor.class);
@@ -120,7 +120,7 @@ final class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<Mv
 		RootBeanDefinition annExceptionResolver = new RootBeanDefinition(AnnotationMethodHandlerExceptionResolver.class);
 		annExceptionResolver.setSource(source);
 		annExceptionResolver.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-		annExceptionResolver.getPropertyValues().add("messageConverters", spec.messageConverters());
+		annExceptionResolver.getPropertyValues().add("messageConverters", messageConverters);
 		annExceptionResolver.getPropertyValues().add("order", 0);
 		String annExceptionResolverName = registrar.registerWithGeneratedName(annExceptionResolver);
 
@@ -186,29 +186,31 @@ final class MvcAnnotationDrivenExecutor extends AbstractSpecificationExecutor<Mv
 		}
 	}
 
-	private ManagedList<? super Object> getDefaultMessageConverters(MvcAnnotationDriven spec, ComponentRegistrar registrar) {
-		Object source = spec.source();
-
+	private ManagedList<? super Object> getMessageConverters(MvcAnnotationDriven spec, ComponentRegistrar registrar) {
 		ManagedList<? super Object> messageConverters = new ManagedList<Object>();
+		Object source = spec.source();
 		messageConverters.setSource(source);
-		messageConverters.add(createConverterBeanDefinition(ByteArrayHttpMessageConverter.class, source));
-
-		RootBeanDefinition stringConverterDef = createConverterBeanDefinition(StringHttpMessageConverter.class, source);
-		stringConverterDef.getPropertyValues().add("writeAcceptCharset", false);
-		messageConverters.add(stringConverterDef);
-
-		messageConverters.add(createConverterBeanDefinition(ResourceHttpMessageConverter.class, source));
-		messageConverters.add(createConverterBeanDefinition(SourceHttpMessageConverter.class, source));
-		messageConverters.add(createConverterBeanDefinition(XmlAwareFormHttpMessageConverter.class, source));
-		if (jaxb2Present) {
-			messageConverters.add(createConverterBeanDefinition(Jaxb2RootElementHttpMessageConverter.class, source));
-		}
-		if (jacksonPresent) {
-			messageConverters.add(createConverterBeanDefinition(MappingJacksonHttpMessageConverter.class, source));
-		}
-		if (romePresent) {
-			messageConverters.add(createConverterBeanDefinition(AtomFeedHttpMessageConverter.class, source));
-			messageConverters.add(createConverterBeanDefinition(RssChannelHttpMessageConverter.class, source));
+		messageConverters.addAll(spec.messageConverters());
+		if (spec.shouldRegisterDefaultMessageConverters()) {
+			messageConverters.add(createConverterBeanDefinition(ByteArrayHttpMessageConverter.class, source));
+			RootBeanDefinition stringConverterDef = createConverterBeanDefinition(StringHttpMessageConverter.class,
+					source);
+			stringConverterDef.getPropertyValues().add("writeAcceptCharset", false);
+			messageConverters.add(stringConverterDef);
+			messageConverters.add(createConverterBeanDefinition(ResourceHttpMessageConverter.class, source));
+			messageConverters.add(createConverterBeanDefinition(SourceHttpMessageConverter.class, source));
+			messageConverters.add(createConverterBeanDefinition(XmlAwareFormHttpMessageConverter.class, source));
+			if (jaxb2Present) {
+				messageConverters
+						.add(createConverterBeanDefinition(Jaxb2RootElementHttpMessageConverter.class, source));
+			}
+			if (jacksonPresent) {
+				messageConverters.add(createConverterBeanDefinition(MappingJacksonHttpMessageConverter.class, source));
+			}
+			if (romePresent) {
+				messageConverters.add(createConverterBeanDefinition(AtomFeedHttpMessageConverter.class, source));
+				messageConverters.add(createConverterBeanDefinition(RssChannelHttpMessageConverter.class, source));
+			}
 		}
 		return messageConverters;
 	}
