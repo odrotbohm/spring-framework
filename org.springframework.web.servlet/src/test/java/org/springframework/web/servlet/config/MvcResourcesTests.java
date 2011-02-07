@@ -18,6 +18,8 @@ package org.springframework.web.servlet.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -58,6 +60,19 @@ public class MvcResourcesTests {
 		assertSame(handler, mapping.getHandlerMap().get("/resources/**"));
 	}
 
+	@Test
+	public void testInvalidResources() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(InvalidMvcResourcesFeature.class);
+		try {
+			ctx.refresh();
+			fail("Invalid feature spec should not validate");
+		} catch (RuntimeException e) {
+			assertTrue(e.getCause().getMessage().contains("Mapping is required"));
+			// TODO : should all problems be in the message ? 
+		}
+	}
+
 	@FeatureConfiguration
 	private static class MvcResourcesFeature {
 
@@ -65,6 +80,17 @@ public class MvcResourcesTests {
 		@Feature
 		public MvcResources resources() {
 			return new MvcResources("/resources/**", new String[] { "/foo", "/bar" }).cachePeriod(86400).order(1);
+		}
+
+	}
+
+	@FeatureConfiguration
+	private static class InvalidMvcResourcesFeature {
+
+		@SuppressWarnings("unused")
+		@Feature
+		public MvcResources resources() {
+			return new MvcResources(" ", new String[] {});
 		}
 
 	}

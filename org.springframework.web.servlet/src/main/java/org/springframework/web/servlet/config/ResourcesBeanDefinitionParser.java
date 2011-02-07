@@ -47,13 +47,13 @@ class ResourcesBeanDefinitionParser implements BeanDefinitionParser {
 
 	private MvcResources createSpecification(Element element, ParserContext parserContext) {
 		String mapping = element.getAttribute("mapping");
-		if (mapping == null) {
+		if (!StringUtils.hasText(mapping)) {
 			parserContext.getReaderContext().error("The 'mapping' attribute is required.",
 					parserContext.extractSource(element));
 			return null;
 		}
 		String[] locations = StringUtils.commaDelimitedListToStringArray(element.getAttribute("location"));
-		if (locations == null) {
+		if (locations.length == 0) {
 			parserContext.getReaderContext().error("The 'location' attribute is required.",
 					parserContext.extractSource(element));
 			return null;

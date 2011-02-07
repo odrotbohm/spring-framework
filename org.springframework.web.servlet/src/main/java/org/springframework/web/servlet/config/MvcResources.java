@@ -169,10 +169,10 @@ public final class MvcResources extends AbstractFeatureSpecification {
 	@Override
 	protected void doValidate(SimpleProblemCollector problems) {
 		if (!StringUtils.hasText(mapping)) {
-			problems.error("A mapping is required");
+			problems.error("Mapping is required");
 		}
 		if (locations == null || locations.length == 0) {
-			problems.error("One or more location(s) are required");
+			problems.error("At least one location is required");
 		}
 	}
 
