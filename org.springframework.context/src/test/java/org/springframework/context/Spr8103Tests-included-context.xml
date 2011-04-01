@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean name="bean1" class="org.springframework.context.Spr8103Tests$Bean1Impl" init-method="start">
+        <property name="refBean2" ref="bean2"/>
+        <property name="someStringValue" value="${bean1.someStringValue}"/>
+    </bean>
+
+    <bean id="bean2" class="org.springframework.context.Spr8103Tests$Bean2Impl">
+        <property name="someLongValue" value="${bean2.someLongValue}"/>
+    </bean>
+
+</beans>
