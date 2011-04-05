@@ -56,6 +56,6 @@ public interface FeatureAnnotationParser {
 	 * Parse the given annotation metadata and populate a {@link FeatureSpecification}
 	 * object suitable for execution by a {@link FeatureSpecificationExecutor}.
 	 */
-	FeatureSpecification process(AnnotationMetadata metadata);
+	FeatureSpecification parse(AnnotationMetadata metadata);
 
 }
