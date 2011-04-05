@@ -50,7 +50,7 @@ final class ComponentScanAnnotationParser implements FeatureAnnotationParser {
 	 * {@link ComponentScan} annotation metadata.
 	 * @throws IllegalArgumentException if ComponentScan attributes are not present in metadata
 	 */
-	public ComponentScanSpec process(AnnotationMetadata metadata) {
+	public ComponentScanSpec parse(AnnotationMetadata metadata) {
 		Map<String, Object> attribs = metadata.getAnnotationAttributes(ComponentScan.class.getName(), true);
 		Assert.notNull(attribs, String.format("@ComponentScan annotation not found " +
 				"while parsing metadata for class [%s].", metadata.getClassName()));

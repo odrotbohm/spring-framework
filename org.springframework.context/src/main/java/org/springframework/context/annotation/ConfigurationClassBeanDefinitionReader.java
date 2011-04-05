@@ -152,8 +152,8 @@ public class ConfigurationClassBeanDefinitionReader {
 				if (metadataReader.getAnnotationMetadata().isAnnotated(FeatureAnnotation.class.getName())) {
 					Map<String, Object> annotationAttributes = metadataReader.getAnnotationMetadata().getAnnotationAttributes(FeatureAnnotation.class.getName(), true);
 					// TODO SPR-7420: this is where we can catch user-defined types and avoid instantiating them for STS purposes
-					FeatureAnnotationParser processor = (FeatureAnnotationParser) BeanUtils.instantiateClass(Class.forName((String)annotationAttributes.get("parser")));
-					FeatureSpecification spec = processor.process(metadata);
+					FeatureAnnotationParser parser = (FeatureAnnotationParser) BeanUtils.instantiateClass(Class.forName((String)annotationAttributes.get("parser")));
+					FeatureSpecification spec = parser.parse(metadata);
 					spec.execute(this.specificationContext);
 				}
 			}
