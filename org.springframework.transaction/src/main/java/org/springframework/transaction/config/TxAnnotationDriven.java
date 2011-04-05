@@ -34,7 +34,11 @@ import org.springframework.util.StringUtils;
  */
 public final class TxAnnotationDriven extends AbstractFeatureSpecification {
 
-	static final String DEFAULT_TRANSACTION_MANAGER_BEAN_NAME = "transactionManager";
+	public static final String DEFAULT_TRANSACTION_MANAGER_BEAN_NAME = "transactionManager";
+
+	public static final AdviceMode DEFAULT_ADVICE_MODE = AdviceMode.PROXY;
+
+	public static final boolean DEFAULT_PROXY_TRANSACTION_CLASS = false;
 
 	private static final Class<? extends FeatureSpecificationExecutor> EXECUTOR_TYPE = TxAnnotationDrivenExecutor.class;
 
@@ -42,9 +46,9 @@ public final class TxAnnotationDriven extends AbstractFeatureSpecification {
 
 	private Object order = null;
 
-	private Boolean proxyTargetClass = false;
+	private Boolean proxyTargetClass = DEFAULT_PROXY_TRANSACTION_CLASS;
 
-	private Object mode = AdviceMode.PROXY;
+	private Object mode = DEFAULT_ADVICE_MODE;
 
 	/**
 	 * Create a {@code TxAnnotationDriven} specification assumes the presence of a
