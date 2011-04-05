@@ -42,7 +42,7 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.config.AnnotationDrivenTx;
+import org.springframework.transaction.config.TxAnnotationDriven;
 import org.springframework.transaction.interceptor.BeanFactoryTransactionAttributeSourceAdvisor;
 
 /**
@@ -148,7 +148,7 @@ public class TxAnnotationDrivenTests {
 
 
 	@Configuration
-	@AnnotationDrivenTx
+	@TxAnnotationDriven
 	static class DefaultTxManagerNameConfig {
 		@Bean
 		PlatformTransactionManager transactionManager(DataSource dataSource) {
@@ -158,7 +158,7 @@ public class TxAnnotationDrivenTests {
 
 
 	@Configuration
-	@AnnotationDrivenTx(transactionManager="txManager")
+	@TxAnnotationDriven(transactionManager="txManager")
 	static class CustomTxManagerNameConfig {
 		@Bean
 		PlatformTransactionManager txManager(DataSource dataSource) {
@@ -168,7 +168,7 @@ public class TxAnnotationDrivenTests {
 
 
 	@Configuration
-	@AnnotationDrivenTx(transactionManager="typoManager")
+	@TxAnnotationDriven(transactionManager="typoManager")
 	static class BogusTxManagerNameConfig {
 		@Bean
 		PlatformTransactionManager txManager(DataSource dataSource) {
@@ -178,7 +178,7 @@ public class TxAnnotationDrivenTests {
 
 
 	@Configuration
-	@AnnotationDrivenTx
+	@TxAnnotationDriven
 	static class NonConventionalTxManagerNameConfig {
 		@Bean
 		PlatformTransactionManager txManager(DataSource dataSource) {
@@ -188,7 +188,7 @@ public class TxAnnotationDrivenTests {
 
 
 	@Configuration
-	@AnnotationDrivenTx(proxyTargetClass=true)
+	@TxAnnotationDriven(proxyTargetClass=true)
 	static class ProxyTargetClassTxConfig {
 		@Bean
 		PlatformTransactionManager transactionManager(DataSource dataSource) {
@@ -198,7 +198,7 @@ public class TxAnnotationDrivenTests {
 
 
 	@Configuration
-	@AnnotationDrivenTx(mode=AdviceMode.ASPECTJ)
+	@TxAnnotationDriven(mode=AdviceMode.ASPECTJ)
 	static class AspectJTxConfig {
 		@Bean
 		PlatformTransactionManager transactionManager(DataSource dataSource) {

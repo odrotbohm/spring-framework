@@ -16,187 +16,56 @@
 
 package org.springframework.transaction.config;
 
-import org.springframework.beans.factory.parsing.ProblemCollector;
-import org.springframework.context.config.AbstractFeatureSpecification;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.springframework.context.annotation.FeatureAnnotation;
 import org.springframework.context.config.AdviceMode;
-import org.springframework.context.config.FeatureSpecificationExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 /**
- * TODO SPR-7420: document
+ * Configures annotation-driven transaction management for use in conjunction with
+ * {@link Configuration @Configuration} classes. Provides support parallel with
+ * Spring XML's {@code <tx:annotation-driven>} element.
  *
  * @author Chris Beams
  * @since 3.1
  */
-public final class TxAnnotationDriven extends AbstractFeatureSpecification {
-
-	public static final String DEFAULT_TRANSACTION_MANAGER_BEAN_NAME = "transactionManager";
-
-	public static final AdviceMode DEFAULT_ADVICE_MODE = AdviceMode.PROXY;
-
-	public static final boolean DEFAULT_PROXY_TRANSACTION_CLASS = false;
-
-	private static final Class<? extends FeatureSpecificationExecutor> EXECUTOR_TYPE = TxAnnotationDrivenExecutor.class;
-
-	private Object txManager = null;
-
-	private Object order = null;
-
-	private Boolean proxyTargetClass = DEFAULT_PROXY_TRANSACTION_CLASS;
-
-	private Object mode = DEFAULT_ADVICE_MODE;
+@Documented
+@FeatureAnnotation(parser=TxAnnotationDrivenParser.class)
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface TxAnnotationDriven {
 
 	/**
-	 * Create a {@code TxAnnotationDriven} specification assumes the presence of a
-	 * {@link PlatformTransactionManager} bean named {@value #DEFAULT_TRANSACTION_MANAGER_BEAN_NAME}.
+	 * Set the name of the {@link PlatformTransactionManager} bean to use.
+	 * The default is {@link TxAnnotationDrivenSpecification#DEFAULT_TRANSACTION_MANAGER_BEAN_NAME
+	 * "transactionManager"}.
 	 *
-	 * <p>See the alternate constructors defined here if your transaction manager does
-	 * not follow this default naming or you wish to refer to it by bean instance rather
-	 * than by bean name.
-	 * @see #TxAnnotationDriven(String)
-	 * @see #TxAnnotationDriven(PlatformTransactionManager)
+	 * <p>TODO SPR-8207 document by-type fallback and rarity of need for
+	 * transactionManager attribute
 	 */
-	public TxAnnotationDriven() {
-		this(DEFAULT_TRANSACTION_MANAGER_BEAN_NAME);
-	}
-
-	/**
-	 * Create a new {@code TxAnnotationDriven} specification that will use the specified
-	 * transaction manager bean name.
-	 *
-	 * @param txManagerBeanName name of {@link PlatformTransactionManager} bean or a
-	 * ${placeholder} or SpEL #{expression} resolving to bean name. If {@code null},
-	 * falls back to default value of {@value #DEFAULT_TRANSACTION_MANAGER_BEAN_NAME}.
-	 */
-	public TxAnnotationDriven(String txManagerBeanName) {
-		super(EXECUTOR_TYPE);
-		this.txManager = txManagerBeanName != null ?
-				txManagerBeanName :
-				DEFAULT_TRANSACTION_MANAGER_BEAN_NAME;
-	}
-
-	/**
-	 * Create a new TxAnnotationDriven specification that will use the specified transaction
-	 * manager.
-	 *
-	 * @param txManager the {@link PlatformTransactionManager} bean to use. Must not be {@code null}.
-	 */
-	public TxAnnotationDriven(PlatformTransactionManager txManager) {
-		super(EXECUTOR_TYPE);
-		Assert.notNull(txManager, "transaction manager must not be null");
-		this.txManager = txManager;
-	}
-
-	/**
-	 * Return the transaction manager to use.  May be a {@link PlatformTransactionManager}
-	 * instance or a String representing the bean name or a placeholder or SpEL expression
-	 * that resolves to the bean name.
-	 */
-	Object transactionManager() {
-		return this.txManager;
-	}
+	String transactionManager() default TxAnnotationDrivenSpecification.DEFAULT_TRANSACTION_MANAGER_BEAN_NAME;
 
 	/**
 	 * Indicate how transactional advice should be applied.
+	 * The default is {@link TxAnnotationDrivenSpecification#DEFAULT_ADVICE_MODE AdviceMode.PROXY}.
 	 * @see AdviceMode
 	 */
-	public TxAnnotationDriven mode(AdviceMode mode) {
-		this.mode = mode;
-		return this;
-	}
-
-	/**
-	 * Indicate how transactional advice should be applied.
-	 * @param name matching one of the labels in the AdviceMode enum; 
-	 * placeholder and SpEL expressions are not allowed.
-	 * @see AdviceMode
-	 */
-	TxAnnotationDriven mode(String mode) {
-		if (StringUtils.hasText(mode)) {
-			this.mode = mode;
-		}
-		return this;
-	}
-
-	/**
-	 * Return how transactional advice should be applied.
-	 */
-	AdviceMode mode() {
-		if (this.mode instanceof AdviceMode) {
-			return (AdviceMode)this.mode;
-		}
-		if (this.mode instanceof String) {
-			return ObjectUtils.caseInsensitiveValueOf(AdviceMode.values(), (String)this.mode);
-		}
-		// TODO SPR-7420: deal with in validate & raise problem
-		throw new IllegalStateException(
-				"invalid type for field 'mode' (must be of type AdviceMode or String): "
-				+ this.mode.getClass().getName());
-	}
+	AdviceMode mode() default AdviceMode.PROXY;
 
 	/**
 	 * Indicate whether class-based (CGLIB) proxies are to be created as opposed
-	 * to standard Java interface-based proxies.
+	 * to standard Java interface-based proxies. The default is
+	 * {@link TxAnnotationDrivenSpecification#DEFAULT_PROXY_TRANSACTION_CLASS false}.
 	 *
 	 * <p>Note: Class-based proxies require the {@link Transactional @Transactional}
 	 * annotation to be defined on the concrete class. Annotations in interfaces will
 	 * not work in that case (they will rather only work with interface-based proxies)!
 	 */
-	public TxAnnotationDriven proxyTargetClass(Boolean proxyTargetClass) {
-		this.proxyTargetClass = proxyTargetClass;
-		return this;
-	}
-
-	/**
-	 * Return whether class-based (CGLIB) proxies are to be created as opposed
-	 * to standard Java interface-based proxies.
-	 */
-	Boolean proxyTargetClass() {
-		return this.proxyTargetClass;
-	}
-
-	/**
-	 * Indicate the ordering of the execution of the transaction advisor
-	 * when multiple advice executes at a specific joinpoint. The default is
-	 * {@code null}, indicating that default ordering should be used.
-	 */
-	public TxAnnotationDriven order(int order) {
-		this.order = order;
-		return this;
-	}
-
-	/**
-	 * Indicate the ordering of the execution of the transaction advisor
-	 * when multiple advice executes at a specific joinpoint. The default is
-	 * {@code null}, indicating that default ordering should be used.
-	 */
-	public TxAnnotationDriven order(String order) {
-		if (StringUtils.hasText(order)) {
-			this.order = order;
-		}
-		return this;
-	}
-
-	/**
-	 * Return the ordering of the execution of the transaction advisor
-	 * when multiple advice executes at a specific joinpoint. May return
-	 * {@code null}, indicating that default ordering should be used.
-	 */
-	Object order() {
-		return this.order;
-	}
-
-	@Override
-	protected void doValidate(ProblemCollector problems) {
-		if (this.mode instanceof String) {
-			if (!ObjectUtils.containsConstant(AdviceMode.values(), (String)this.mode)) {
-				problems.error("no such mode name: " + this.mode);
-			}
-		}
-	}
+	boolean proxyTargetClass() default TxAnnotationDrivenSpecification.DEFAULT_PROXY_TRANSACTION_CLASS;
 
 }

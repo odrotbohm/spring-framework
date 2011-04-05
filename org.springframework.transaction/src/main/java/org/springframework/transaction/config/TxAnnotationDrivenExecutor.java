@@ -37,7 +37,7 @@ import org.springframework.util.Assert;
  * @author Chris Beams
  * @since 3.1
  */
-final class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxAnnotationDriven> {
+final class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxAnnotationDrivenSpecification> {
 
 	/**
 	 * The bean name of the internally managed transaction advisor (used when mode == PROXY).
@@ -56,7 +56,7 @@ final class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxA
 
 
 	@Override
-	protected void doExecute(TxAnnotationDriven txSpec, SpecificationContext specificationContext) {
+	protected void doExecute(TxAnnotationDrivenSpecification txSpec, SpecificationContext specificationContext) {
 		BeanDefinitionRegistry registry = specificationContext.getRegistry();
 		ComponentRegistrar registrar = specificationContext.getRegistrar();
 		switch (txSpec.mode()) {
@@ -72,7 +72,7 @@ final class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxA
 		}
 	}
 
-	private void registerTransactionAspect(TxAnnotationDriven spec, BeanDefinitionRegistry registry, ComponentRegistrar registrar) {
+	private void registerTransactionAspect(TxAnnotationDrivenSpecification spec, BeanDefinitionRegistry registry, ComponentRegistrar registrar) {
 		if (!registry.containsBeanDefinition(TRANSACTION_ASPECT_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition();
 			def.setBeanClassName(TRANSACTION_ASPECT_CLASS_NAME);
@@ -82,7 +82,7 @@ final class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxA
 		}
 	}
 
-	private static void registerTransactionManager(TxAnnotationDriven spec, BeanDefinition def) {
+	private static void registerTransactionManager(TxAnnotationDrivenSpecification spec, BeanDefinition def) {
 		Object txManager = spec.transactionManager();
 		Assert.notNull(txManager, "transactionManager must be specified");
 		if (txManager instanceof String) {
@@ -97,7 +97,7 @@ final class TxAnnotationDrivenExecutor extends AbstractSpecificationExecutor<TxA
 	 */
 	private static class AopAutoProxyConfigurer {
 
-		public static void configureAutoProxyCreator(TxAnnotationDriven txSpec, BeanDefinitionRegistry registry, ComponentRegistrar registrar) {
+		public static void configureAutoProxyCreator(TxAnnotationDrivenSpecification txSpec, BeanDefinitionRegistry registry, ComponentRegistrar registrar) {
 			Object source = txSpec.source();
 			AopNamespaceUtils.registerAutoProxyCreatorIfNecessary(registry, registrar, source, txSpec.proxyTargetClass());
 
