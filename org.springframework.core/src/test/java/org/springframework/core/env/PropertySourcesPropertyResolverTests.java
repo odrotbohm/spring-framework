@@ -177,9 +177,6 @@ public class PropertySourcesPropertyResolverTests {
 		}
 	}
 
-
-
-	/*
 	@Test
 	public void resolvePlaceholders() {
 		MutablePropertySources propertySources = new MutablePropertySources();
@@ -240,5 +237,5 @@ public class PropertySourcesPropertyResolverTests {
 	public void resolveRequiredPlaceholders_withNullInput() {
 		new PropertySourcesPropertyResolver(new MutablePropertySources()).resolveRequiredPlaceholders(null);
 	}
-	*/
+
 }
