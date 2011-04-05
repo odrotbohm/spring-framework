@@ -54,14 +54,14 @@ public class ComponentScanExecutorTests {
 
 	@Test
 	public void validSpec() {
-		this.executor.execute(new ComponentScanSpec("example.scannable"), this.specificationContext);
+		this.executor.execute(new ComponentScanSpecification("example.scannable"), this.specificationContext);
 		assertThat(bf.containsBean("fooServiceImpl"), is(true));
 	}
 
 	@Test(expected=BeanDefinitionParsingException.class)
 	public void invalidSpec() {
 		// ff problem reporter should throw due to no packages specified
-		this.executor.execute(new ComponentScanSpec(), this.specificationContext);
+		this.executor.execute(new ComponentScanSpecification(), this.specificationContext);
 	}
 
 }

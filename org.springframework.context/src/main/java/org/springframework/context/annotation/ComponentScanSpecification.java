@@ -41,8 +41,8 @@ import org.springframework.util.StringUtils;
 
 /**
  * Specifies the configuration of Spring's <em>component-scanning</em> feature.
- * May be used directly within a {@link Feature @Feature} method, or indirectly
- * through the {@link ComponentScan @ComponentScan} annotation.
+ * Used internally when parsing the {{<context:component-scan>}} element
+ * and {@link ComponentScan @ComponentScan} annotation.
  *
  * @author Chris Beams
  * @since 3.1
@@ -51,7 +51,7 @@ import org.springframework.util.StringUtils;
  * @see ComponentScanBeanDefinitionParser
  * @see ComponentScanExecutor
  */
-public final class ComponentScanSpec extends AbstractFeatureSpecification {
+final class ComponentScanSpecification extends AbstractFeatureSpecification {
 
 	private static final Class<? extends FeatureSpecificationExecutor> EXECUTOR_TYPE = ComponentScanExecutor.class;
 
@@ -77,16 +77,17 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 	 *
 	 * @see #validate()
 	 */
-	ComponentScanSpec() {
+	ComponentScanSpecification() {
 		super(EXECUTOR_TYPE);
 	}
 
 	/**
-	 * 
+	 * Specify that the given packages to be scanned.
+	 *
 	 * @param basePackages
 	 * @see #forDelimitedPackages(String)
 	 */
-	public ComponentScanSpec(String... basePackages) {
+	public ComponentScanSpecification(String... basePackages) {
 		this();
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		for (String basePackage : basePackages) {
@@ -94,17 +95,17 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		}
 	}
 
-	public ComponentScanSpec(Class<?>... basePackageClasses) {
+	public ComponentScanSpecification(Class<?>... basePackageClasses) {
 		this(packagesFor(basePackageClasses));
 	}
 
 
-	public ComponentScanSpec includeAnnotationConfig(Boolean includeAnnotationConfig) {
+	public ComponentScanSpecification includeAnnotationConfig(Boolean includeAnnotationConfig) {
 		this.includeAnnotationConfig = includeAnnotationConfig;
 		return this;
 	}
 
-	ComponentScanSpec includeAnnotationConfig(String includeAnnotationConfig) {
+	ComponentScanSpecification includeAnnotationConfig(String includeAnnotationConfig) {
 		if (StringUtils.hasText(includeAnnotationConfig)) {
 			this.includeAnnotationConfig = Boolean.valueOf(includeAnnotationConfig);
 		}
@@ -115,7 +116,7 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this.includeAnnotationConfig;
 	}
 
-	public ComponentScanSpec resourcePattern(String resourcePattern) {
+	public ComponentScanSpecification resourcePattern(String resourcePattern) {
 		if (StringUtils.hasText(resourcePattern)) {
 			this.resourcePattern = resourcePattern;
 		}
@@ -126,7 +127,7 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		return resourcePattern;
 	}
 
-	ComponentScanSpec addBasePackage(String basePackage) {
+	ComponentScanSpecification addBasePackage(String basePackage) {
 		if (StringUtils.hasText(basePackage)) {
 			this.basePackages.add(basePackage);
 		}
@@ -142,7 +143,7 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this.basePackages.toArray(new String[this.basePackages.size()]);
 	}
 
-	public ComponentScanSpec beanNameGenerator(BeanNameGenerator beanNameGenerator) {
+	public ComponentScanSpecification beanNameGenerator(BeanNameGenerator beanNameGenerator) {
 		this.beanNameGenerator = beanNameGenerator;
 		return this;
 	}
@@ -151,7 +152,7 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 	 * Set the class name of the BeanNameGenerator to be used and the ClassLoader
 	 * to load it.
 	 */
-	ComponentScanSpec beanNameGenerator(String beanNameGenerator, ClassLoader classLoader) {
+	ComponentScanSpecification beanNameGenerator(String beanNameGenerator, ClassLoader classLoader) {
 		setClassLoader(classLoader);
 		if (StringUtils.hasText(beanNameGenerator)) {
 			this.beanNameGenerator = beanNameGenerator;
@@ -163,12 +164,12 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		return nullSafeTypedObject(this.beanNameGenerator, BeanNameGenerator.class);
 	}
 
-	public ComponentScanSpec scopeMetadataResolver(ScopeMetadataResolver scopeMetadataResolver) {
+	public ComponentScanSpecification scopeMetadataResolver(ScopeMetadataResolver scopeMetadataResolver) {
 		this.scopeMetadataResolver = scopeMetadataResolver;
 		return this;
 	}
 
-	ComponentScanSpec scopeMetadataResolver(String scopeMetadataResolver, ClassLoader classLoader) {
+	ComponentScanSpecification scopeMetadataResolver(String scopeMetadataResolver, ClassLoader classLoader) {
 		setClassLoader(classLoader);
 		if (StringUtils.hasText(scopeMetadataResolver)) {
 			this.scopeMetadataResolver = scopeMetadataResolver;
@@ -180,12 +181,12 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		return nullSafeTypedObject(this.scopeMetadataResolver, ScopeMetadataResolver.class);
 	}
 
-	public ComponentScanSpec scopedProxyMode(ScopedProxyMode scopedProxyMode) {
+	public ComponentScanSpecification scopedProxyMode(ScopedProxyMode scopedProxyMode) {
 		this.scopedProxyMode = scopedProxyMode;
 		return this;
 	}
 
-	ComponentScanSpec scopedProxyMode(String scopedProxyMode) {
+	ComponentScanSpecification scopedProxyMode(String scopedProxyMode) {
 		if (StringUtils.hasText(scopedProxyMode)) {
 			this.scopedProxyMode = scopedProxyMode;
 		}
@@ -196,12 +197,12 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		return nullSafeTypedObject(this.scopedProxyMode, ScopedProxyMode.class);
 	}
 
-	public ComponentScanSpec useDefaultFilters(Boolean useDefaultFilters) {
+	public ComponentScanSpecification useDefaultFilters(Boolean useDefaultFilters) {
 		this.useDefaultFilters = useDefaultFilters;
 		return this;
 	}
 
-	ComponentScanSpec useDefaultFilters(String useDefaultFilters) {
+	ComponentScanSpecification useDefaultFilters(String useDefaultFilters) {
 		if (StringUtils.hasText(useDefaultFilters)) {
 			this.useDefaultFilters = Boolean.valueOf(useDefaultFilters);
 		}
@@ -212,7 +213,7 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this.useDefaultFilters;
 	}
 
-	public ComponentScanSpec includeFilters(TypeFilter... includeFilters) {
+	public ComponentScanSpecification includeFilters(TypeFilter... includeFilters) {
 		this.includeFilters.clear();
 		for (TypeFilter filter : includeFilters) {
 			addIncludeFilter(filter);
@@ -220,13 +221,13 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this;
 	}
 
-	ComponentScanSpec addIncludeFilter(TypeFilter includeFilter) {
+	ComponentScanSpecification addIncludeFilter(TypeFilter includeFilter) {
 		Assert.notNull(includeFilter, "includeFilter must not be null");
 		this.includeFilters.add(includeFilter);
 		return this;
 	}
 
-	ComponentScanSpec addIncludeFilter(String filterType, String expression, ClassLoader classLoader) {
+	ComponentScanSpecification addIncludeFilter(String filterType, String expression, ClassLoader classLoader) {
 		this.includeFilters.add(new FilterTypeDescriptor(filterType, expression, classLoader));
 		return this;
 	}
@@ -235,7 +236,7 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this.includeFilters.toArray(new TypeFilter[this.includeFilters.size()]);
 	}
 
-	public ComponentScanSpec excludeFilters(TypeFilter... excludeFilters) {
+	public ComponentScanSpecification excludeFilters(TypeFilter... excludeFilters) {
 		this.excludeFilters.clear();
 		for (TypeFilter filter : excludeFilters) {
 			addExcludeFilter(filter);
@@ -243,13 +244,13 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this;
 	}
 
-	ComponentScanSpec addExcludeFilter(TypeFilter excludeFilter) {
+	ComponentScanSpecification addExcludeFilter(TypeFilter excludeFilter) {
 		Assert.notNull(excludeFilter, "excludeFilter must not be null");
 		this.excludeFilters.add(excludeFilter);
 		return this;
 	}
 
-	ComponentScanSpec addExcludeFilter(String filterType, String expression, ClassLoader classLoader) {
+	ComponentScanSpecification addExcludeFilter(String filterType, String expression, ClassLoader classLoader) {
 		this.excludeFilters.add(new FilterTypeDescriptor(filterType, expression, classLoader));
 		return this;
 	}
@@ -258,7 +259,7 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this.excludeFilters.toArray(new TypeFilter[this.excludeFilters.size()]);
 	}
 
-	ComponentScanSpec beanDefinitionDefaults(BeanDefinitionDefaults beanDefinitionDefaults) {
+	ComponentScanSpecification beanDefinitionDefaults(BeanDefinitionDefaults beanDefinitionDefaults) {
 		this.beanDefinitionDefaults = beanDefinitionDefaults;
 		return this;
 	}
@@ -267,7 +268,7 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 		return this.beanDefinitionDefaults;
 	}
 
-	ComponentScanSpec autowireCandidatePatterns(String[] autowireCandidatePatterns) {
+	ComponentScanSpecification autowireCandidatePatterns(String[] autowireCandidatePatterns) {
 		this.autowireCandidatePatterns = autowireCandidatePatterns;
 		return this;
 	}
@@ -282,9 +283,9 @@ public final class ComponentScanSpec extends AbstractFeatureSpecification {
 	 * delimited package names.
 	 * @see ConfigurableApplicationContext#CONFIG_LOCATION_DELIMITERS
 	 */
-	static ComponentScanSpec forDelimitedPackages(String basePackages) {
+	static ComponentScanSpecification forDelimitedPackages(String basePackages) {
 		Assert.notNull(basePackages, "base packages must not be null");
-		return new ComponentScanSpec(
+		return new ComponentScanSpecification(
 				StringUtils.tokenizeToStringArray(basePackages,
 						ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS));
 	}

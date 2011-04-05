@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * Parser for the {@code <context:component-scan/>} element. Parsed metadata is
- * used to populate and execute a {@link ComponentScanSpec} instance.
+ * used to populate and execute a {@link ComponentScanSpecification} instance.
  *
  * @author Mark Fisher
  * @author Ramnivas Laddad
@@ -33,7 +33,7 @@ import org.w3c.dom.NodeList;
  * @author Chris Beams
  * @since 2.5
  * @see ComponentScan
- * @see ComponentScanSpec
+ * @see ComponentScanSpecification
  * @see ComponentScanExecutor
  */
 public class ComponentScanBeanDefinitionParser extends AbstractSpecificationBeanDefinitionParser {
@@ -41,8 +41,8 @@ public class ComponentScanBeanDefinitionParser extends AbstractSpecificationBean
 	public FeatureSpecification doParse(Element element, ParserContext parserContext) {
 		ClassLoader classLoader = parserContext.getReaderContext().getResourceLoader().getClassLoader();
 
-		ComponentScanSpec spec =
-			ComponentScanSpec.forDelimitedPackages(element.getAttribute("base-package"))
+		ComponentScanSpecification spec =
+			ComponentScanSpecification.forDelimitedPackages(element.getAttribute("base-package"))
 			.includeAnnotationConfig(element.getAttribute("annotation-config"))
 			.useDefaultFilters(element.getAttribute("use-default-filters"))
 			.resourcePattern(element.getAttribute("resource-pattern"))
