@@ -47,12 +47,12 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
 /**
- * Unit tests for {@link ComponentScanSpec}.
+ * Unit tests for {@link ComponentScanSpecification}.
  * 
  * @author Chris Beams
  * @since 3.1
  */
-public class ComponentScanSpecTests {
+public class ComponentScanSpecificationTests {
 
 	private CollatingProblemReporter problemReporter;
 	private ClassLoader classLoader;
@@ -66,7 +66,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void includeAnnotationConfig() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		assertThat(spec.includeAnnotationConfig(), nullValue());
 		spec.includeAnnotationConfig(true);
 		assertThat(spec.validate(problemReporter), is(true));
@@ -93,7 +93,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void resourcePattern() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		assertThat(spec.resourcePattern(), nullValue());
 		assertThat(spec.validate(problemReporter), is(true));
 		spec.resourcePattern("**/Foo*.class");
@@ -109,7 +109,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void useDefaultFilters() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		assertThat(spec.useDefaultFilters(), nullValue());
 		assertThat(spec.validate(problemReporter), is(true));
 		spec.useDefaultFilters((Boolean)null);
@@ -137,7 +137,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void includeFilters() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		spec.includeFilters(
 				new AnnotationTypeFilter(MyAnnotation.class),
 				new AssignableTypeFilter(Object.class));
@@ -147,7 +147,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void stringIncludeExcludeFilters() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		spec.addIncludeFilter("annotation", MyAnnotation.class.getName(), classLoader);
 		spec.addExcludeFilter("assignable", Object.class.getName(), classLoader);
 		spec.addExcludeFilter("annotation", Override.class.getName(), classLoader);
@@ -158,7 +158,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void bogusStringIncludeFilter() throws IOException {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		spec.addIncludeFilter("bogus-type", "bogus-expr", classLoader);
 		assertThat(spec.validate(problemReporter), is(false));
 		assertThat(spec.includeFilters().length, is(1));
@@ -172,7 +172,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void exerciseFilterTypes() throws IOException {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		spec.addIncludeFilter("aspectj", "*..Bogus", classLoader);
 		assertThat(spec.validate(problemReporter), is(true));
 		spec.addIncludeFilter("regex", ".*Foo", classLoader);
@@ -187,13 +187,13 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void missingBasePackages() {
-		ComponentScanSpec spec = new ComponentScanSpec();
+		ComponentScanSpecification spec = new ComponentScanSpecification();
 		assertThat(spec.validate(problemReporter), is(false));
 	}
 
 	@Test
 	public void withBasePackageViaAdderMethod() {
-		ComponentScanSpec spec = new ComponentScanSpec();
+		ComponentScanSpecification spec = new ComponentScanSpecification();
 		spec.addBasePackage("org.p1");
 		spec.addBasePackage("org.p2");
 		assertThat(spec.validate(problemReporter), is(true));
@@ -202,21 +202,21 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void withBasePackagesViaStringConstructor() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1", "org.p2");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1", "org.p2");
 		assertThat(spec.validate(problemReporter), is(true));
 		assertExactContents(spec.basePackages(), "org.p1", "org.p2");
 	}
 
 	@Test
 	public void withBasePackagesViaClassConstructor() {
-		ComponentScanSpec spec = new ComponentScanSpec(java.lang.Object.class, java.io.Closeable.class);
+		ComponentScanSpecification spec = new ComponentScanSpecification(java.lang.Object.class, java.io.Closeable.class);
 		assertThat(spec.validate(problemReporter), is(true));
 		assertExactContents(spec.basePackages(), "java.lang", "java.io");
 	}
 
 	@Test
 	public void forDelimitedPackages() {
-		ComponentScanSpec spec = ComponentScanSpec.forDelimitedPackages("pkg.one,pkg.two");
+		ComponentScanSpecification spec = ComponentScanSpecification.forDelimitedPackages("pkg.one,pkg.two");
 		assertTrue(ObjectUtils.containsElement(spec.basePackages(), "pkg.one"));
 		assertTrue(ObjectUtils.containsElement(spec.basePackages(), "pkg.two"));
 		assertThat(spec.basePackages().length, is(2));
@@ -224,20 +224,20 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void withSomeEmptyBasePackages() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1", "", "org.p3");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1", "", "org.p3");
 		assertThat(spec.validate(problemReporter), is(true));
 		assertExactContents(spec.basePackages(), "org.p1", "org.p3");
 	}
 
 	@Test
 	public void withAllEmptyBasePackages() {
-		ComponentScanSpec spec = new ComponentScanSpec("", "", "");
+		ComponentScanSpecification spec = new ComponentScanSpecification("", "", "");
 		assertThat(spec.validate(problemReporter), is(false));
 	}
 
 	@Test
 	public void withInstanceBeanNameGenerator() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		assertThat(spec.beanNameGenerator(), nullValue());
 		BeanNameGenerator bng = new DefaultBeanNameGenerator();
 		spec.beanNameGenerator(bng);
@@ -247,7 +247,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void withStringBeanNameGenerator() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		spec.beanNameGenerator(DefaultBeanNameGenerator.class.getName(), classLoader);
 		assertThat(spec.validate(problemReporter), is(true));
 		assertThat(spec.beanNameGenerator(), instanceOf(DefaultBeanNameGenerator.class));
@@ -255,7 +255,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void withInstanceScopeMetadataResolver() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		assertThat(spec.scopeMetadataResolver(), nullValue());
 		ScopeMetadataResolver smr = new AnnotationScopeMetadataResolver();
 		spec.scopeMetadataResolver(smr);
@@ -265,7 +265,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void withStringScopeMetadataResolver() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		spec.scopeMetadataResolver(AnnotationScopeMetadataResolver.class.getName(), classLoader);
 		assertThat(spec.validate(problemReporter), is(true));
 		assertThat(spec.scopeMetadataResolver(), instanceOf(AnnotationScopeMetadataResolver.class));
@@ -273,28 +273,28 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void withNonAssignableStringScopeMetadataResolver() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		spec.scopeMetadataResolver(Object.class.getName(), classLoader);
 		assertThat(spec.validate(problemReporter), is(false));
 	}
 
 	@Test
 	public void withNonExistentStringScopeMetadataResolver() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		spec.scopeMetadataResolver("org.Bogus", classLoader);
 		assertThat(spec.validate(problemReporter), is(false));
 	}
 
 	@Test
 	public void withNonNoArgStringScopeMetadataResolver() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		spec.scopeMetadataResolver(NonNoArgResolver.class.getName(), classLoader);
 		assertThat(spec.validate(problemReporter), is(false));
 	}
 
 	@Test
 	public void withStringScopedProxyMode() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		spec.scopedProxyMode("targetCLASS");
 		assertThat(spec.validate(problemReporter), is(true));
 		assertThat(spec.scopedProxyMode(), is(ScopedProxyMode.TARGET_CLASS));
@@ -311,7 +311,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void withScopeMetadataResolverAndScopedProxyMode() {
-		ComponentScanSpec spec = new ComponentScanSpec("org.p1");
+		ComponentScanSpecification spec = new ComponentScanSpecification("org.p1");
 		spec.scopeMetadataResolver(new AnnotationScopeMetadataResolver());
 		assertThat(spec.validate(problemReporter), is(true));
 		spec.scopedProxyMode(ScopedProxyMode.INTERFACES);
@@ -320,7 +320,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void addBasePackage() {
-		ComponentScanSpec spec = new ComponentScanSpec();
+		ComponentScanSpecification spec = new ComponentScanSpecification();
 		spec.addBasePackage("foo.bar");
 		assertThat(spec.validate(problemReporter), is(true));
 		assertThat(spec.basePackages().length, is(1));
@@ -328,7 +328,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void addBasePackageWithConstructor() {
-		ComponentScanSpec spec = new ComponentScanSpec("my.pkg");
+		ComponentScanSpecification spec = new ComponentScanSpecification("my.pkg");
 		spec.addBasePackage("foo.bar");
 		assertThat(spec.validate(problemReporter), is(true));
 		assertThat(spec.basePackages().length, is(2));
@@ -336,7 +336,7 @@ public class ComponentScanSpecTests {
 
 	@Test
 	public void addExcludeFilterString() {
-		ComponentScanSpec spec = new ComponentScanSpec("my.pkg");
+		ComponentScanSpecification spec = new ComponentScanSpecification("my.pkg");
 		spec.addExcludeFilter("annotation", MyAnnotation.class.getName(), ClassUtils.getDefaultClassLoader());
 		assertThat(spec.validate(problemReporter), is(true));
 		assertThat(spec.excludeFilters().length, is(1));
@@ -345,7 +345,7 @@ public class ComponentScanSpecTests {
 
 	@Test(expected=BeanDefinitionParsingException.class)
 	public void withFailFastProblemReporter() {
-		new ComponentScanSpec().validate(new FailFastProblemReporter());
+		new ComponentScanSpecification().validate(new FailFastProblemReporter());
 	}
 
 	private <T> void assertExactContents(T[] actual, T... expected) {
