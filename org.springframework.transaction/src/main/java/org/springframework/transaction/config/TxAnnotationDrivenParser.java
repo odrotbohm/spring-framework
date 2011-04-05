@@ -26,14 +26,14 @@ import org.springframework.util.Assert;
 
 /**
  * {@link FeatureAnnotationParser} implementation that reads attributes from a
- * {@link TxAnnotationDriven @TxAnnotationDriven} annotation into a
+ * {@link TxAnnotationDrivenSpecification @TxAnnotationDriven} annotation into a
  * {@link TxAnnotationDrivenSpecification} which can in turn be executed by
  * {@link TxAnnotationDrivenExecutor}. {@link AnnotationDrivenBeanDefinitionParser}
  * serves the same role for the {@code <tx:annotation-driven>} XML element.
  *
  * @author Chris Beams
  * @since 3.1
- * @see TxAnnotationDriven
+ * @see TxAnnotationDrivenSpecification
  * @see TxAnnotationDrivenSpecification
  * @see TxAnnotationDrivenExecutor
  * @see AnnotationDrivenBeanDefinitionParser
@@ -41,11 +41,11 @@ import org.springframework.util.Assert;
 final class TxAnnotationDrivenParser implements FeatureAnnotationParser {
 
 	public FeatureSpecification parse(AnnotationMetadata metadata) {
-		Map<String, Object> attribs = metadata.getAnnotationAttributes(AnnotationDrivenTx.class.getName(), true);
+		Map<String, Object> attribs = metadata.getAnnotationAttributes(TxAnnotationDriven.class.getName(), true);
 		Assert.notNull(attribs, String.format("@TxAnnotationDriven annotation not found " +
 				"while parsing metadata for class [%s].", metadata.getClassName()));
 
-		return new TxAnnotationDriven((String)attribs.get("transactionManager"))
+		return new TxAnnotationDrivenSpecification((String)attribs.get("transactionManager"))
 			.mode((AdviceMode) attribs.get("mode"))
 			.proxyTargetClass((Boolean) attribs.get("proxyTargetClass"))
 			.source(metadata.getClassName())

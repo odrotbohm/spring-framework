@@ -38,7 +38,7 @@ import org.w3c.dom.Element;
  * @author Rob Harrop
  * @author Chris Beams
  * @since 2.0
- * @see TxAnnotationDriven
+ * @see TxAnnotationDrivenSpecification
  */
 class AnnotationDrivenBeanDefinitionParser extends AbstractSpecificationBeanDefinitionParser {
 
@@ -62,7 +62,7 @@ class AnnotationDrivenBeanDefinitionParser extends AbstractSpecificationBeanDefi
 	 */
 	@Override
 	protected FeatureSpecification doParse(Element element, ParserContext parserContext) {
-		return new TxAnnotationDriven(element.getAttribute("transaction-manager"))
+		return new TxAnnotationDrivenSpecification(element.getAttribute("transaction-manager"))
 			.order(element.getAttribute("order"))
 			.mode(element.getAttribute("mode"))
 			.proxyTargetClass(Boolean.valueOf(element.getAttribute("proxy-target-class")));
