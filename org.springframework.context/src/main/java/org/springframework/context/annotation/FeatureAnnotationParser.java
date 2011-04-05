@@ -32,7 +32,7 @@ import org.springframework.core.type.AnnotationMetadata;
  * format differs.  {@link ComponentScanBeanDefinitionParser} is used to create
  * a specification from the {@code <context:component-scan>} XML element, while
  * {@link ComponentScanAnnotationParser} creates a specification from the
- * the annotation style. They both produce a {@link ComponentScanSpec}
+ * the annotation style. They both produce a {@link ComponentScanSpecification}
  * object that is ultimately delegated to a {@link ComponentScanExecutor}
  * which understands how to configure a {@link ClassPathBeanDefinitionScanner},
  * perform actual scanning, and register actual bean definitions against the

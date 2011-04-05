@@ -26,19 +26,15 @@ import org.springframework.util.ClassUtils;
 
 /**
  * {@link FeatureAnnotationParser} implementation that reads attributes from a
- * {@link ComponentScan @ComponentScan} annotation into a {@link ComponentScanSpec}
- * which can in turn be executed by {@link ComponentScanExecutor}.
- * {@link ComponentScanBeanDefinitionParser} serves the same role for
- * the {@code <context:component-scan>} XML element.
- *
- * <p>Note that {@link ComponentScanSpec} objects may be directly
- * instantiated and returned from {@link Feature @Feature} methods as an
- * alternative to using the {@link ComponentScan @ComponentScan} annotation.
+ * {@link ComponentScan @ComponentScan} annotation into a
+ * {@link ComponentScanSpecification} which can in turn be executed by a
+ * {@link ComponentScanExecutor}. {@link ComponentScanBeanDefinitionParser}
+ * serves the same role for the {@code <context:component-scan>} XML element.
  *
  * @author Chris Beams
  * @since 3.1
  * @see ComponentScan
- * @see ComponentScanSpec
+ * @see ComponentScanSpecification
  * @see ComponentScanExecutor
  * @see ComponentScanBeanDefinitionParser
  * @see ConfigurationClassBeanDefinitionReader
@@ -46,17 +42,17 @@ import org.springframework.util.ClassUtils;
 final class ComponentScanAnnotationParser implements FeatureAnnotationParser {
 
 	/**
-	 * Create and return a new {@link ComponentScanSpec} from the given
+	 * Create and return a new {@link ComponentScanSpecification} from the given
 	 * {@link ComponentScan} annotation metadata.
 	 * @throws IllegalArgumentException if ComponentScan attributes are not present in metadata
 	 */
-	public ComponentScanSpec parse(AnnotationMetadata metadata) {
+	public ComponentScanSpecification parse(AnnotationMetadata metadata) {
 		Map<String, Object> attribs = metadata.getAnnotationAttributes(ComponentScan.class.getName(), true);
 		Assert.notNull(attribs, String.format("@ComponentScan annotation not found " +
 				"while parsing metadata for class [%s].", metadata.getClassName()));
 
 		ClassLoader classLoader = ClassUtils.getDefaultClassLoader();
-		ComponentScanSpec spec = new ComponentScanSpec();
+		ComponentScanSpecification spec = new ComponentScanSpecification();
 
 		for (String pkg : (String[])attribs.get("value")) {
 			spec.addBasePackage(pkg);

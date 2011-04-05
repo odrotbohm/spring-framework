@@ -29,22 +29,22 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
 
 /**
- * Executes the {@link ComponentScanSpec} feature specification.
+ * Executes the {@link ComponentScanSpecification} feature specification.
  *
  * @author Chris Beams
  * @since 3.1
- * @see ComponentScanSpec
+ * @see ComponentScanSpecification
  * @see ComponentScanBeanDefinitionParser
  * @see ComponentScan
  */
-final class ComponentScanExecutor extends AbstractSpecificationExecutor<ComponentScanSpec> {
+final class ComponentScanExecutor extends AbstractSpecificationExecutor<ComponentScanSpecification> {
 
 	/**
 	 * Configure a {@link ClassPathBeanDefinitionScanner} based on the content of
 	 * the given specification and perform actual scanning and bean definition
 	 * registration.
 	 */
-	protected void doExecute(ComponentScanSpec spec, SpecificationContext specificationContext) {
+	protected void doExecute(ComponentScanSpecification spec, SpecificationContext specificationContext) {
 		BeanDefinitionRegistry registry = specificationContext.getRegistry();
 		ResourceLoader resourceLoader = specificationContext.getResourceLoader();
 		Environment environment = specificationContext.getEnvironment();
