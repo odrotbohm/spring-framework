@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package org.springframework.transaction.annotation;
+package org.springframework.transaction.config;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -25,28 +24,27 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.aop.support.AopUtils;
-import org.springframework.beans.factory.CannotLoadBeanClassException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Feature;
-import org.springframework.context.annotation.FeatureConfiguration;
 import org.springframework.context.config.AdviceMode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.CallCountingTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.AnnotationTransactionNamespaceHandlerTests;
 import org.springframework.transaction.annotation.AnnotationTransactionNamespaceHandlerTests.TransactionalTestBean;
-import org.springframework.transaction.config.TxAnnotationDriven;
 
 /**
- * Integration tests for {@link TxAnnotationDriven} support within @Configuration
- * classes. Adapted from original tx: namespace tests at
+ * Integration tests for @TxAnnotationDriven support within @Configuration
+ * classes. Adapted from original tx: namespace tests in
  * {@link AnnotationTransactionNamespaceHandlerTests}.
  *
  * @author Chris Beams
  * @since 3.1
+ * @see TxAnnotationDrivenTests
  */
 public class TxAnnotationDrivenFeatureTests {
+
 	@Test
 	public void transactionProxyIsCreated() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
@@ -90,32 +88,22 @@ public class TxAnnotationDrivenFeatureTests {
 			new AnnotationConfigApplicationContext(TxWithAspectJFeature.class, TxManagerConfig.class);
 			fail("should have thrown CNFE when trying to load AnnotationTransactionAspect. " +
 					"Do you actually have org.springframework.aspects on the classpath?");
-		} catch (CannotLoadBeanClassException ex) {
-			ClassNotFoundException cause = (ClassNotFoundException) ex.getCause();
-			assertThat(cause.getMessage(), equalTo("org.springframework.transaction.aspectj.AnnotationTransactionAspect"));
+		} catch (Exception ex) {
+			assertThat(ex.getMessage().endsWith("org.springframework.transaction.aspectj.AnnotationTransactionAspect"), is(true));
 		}
 	}
 
 }
 
-@FeatureConfiguration
+@Configuration
+@TxAnnotationDriven(transactionManager="txManager")
 class TxFeature {
-
-	@Feature
-	public TxAnnotationDriven tx(TxManagerConfig txManagerConfig) {
-		return new TxAnnotationDriven(txManagerConfig.txManager());
-	}
 }
 
 
-@FeatureConfiguration
+@Configuration
+@TxAnnotationDriven(mode=AdviceMode.ASPECTJ)
 class TxWithAspectJFeature {
-
-	@Feature
-	public TxAnnotationDriven tx(PlatformTransactionManager txManager) {
-		return new TxAnnotationDriven(txManager).mode(AdviceMode.ASPECTJ);
-	}
-
 }
 
 
