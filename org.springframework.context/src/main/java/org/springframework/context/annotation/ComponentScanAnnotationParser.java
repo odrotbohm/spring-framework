@@ -78,7 +78,17 @@ final class ComponentScanAnnotationParser implements FeatureAnnotationParser {
 			spec.scopedProxyMode(scopedProxyMode);
 		}
 
-		for (Filter filter : (Filter[]) attribs.get("includeFilters")) {
+		Filter[] filters = (Filter[]) attribs.get("includeFilters");
+		/*
+		 * when running spr7979_bootstrappedFromGXAC inspecting the 'filters' variable
+		 * in the debugger shows the following error:
+		 *
+		 *    org.eclipse.debug.core.DebugException: com.sun.jdi.ClassNotLoadedException:
+		 *    Type has not been loaded occurred while retrieving component type of array.
+		 *
+		 * when running spr7979_bootstrappedFromACAC, 'filters' is populated as expected.
+		 */
+		for (Filter filter : filters) {
 			spec.addIncludeFilter(filter.type().toString(), filter.value().getName(), classLoader);
 		}
 		for (Filter filter : (Filter[]) attribs.get("excludeFilters")) {

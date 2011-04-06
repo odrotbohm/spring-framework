@@ -31,15 +31,20 @@ import java.util.HashSet;
 
 import org.junit.Test;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.CustomAutowireConfigurer;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.SimpleMapScope;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.ComponentScanParserTests.CustomAnnotationAutowiredBean;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.util.SerializationTestUtils;
 
 import example.scannable.FooService;
@@ -55,6 +60,7 @@ import example.scannable_scoped.MyScope;
  * @since 3.1
  */
 public class ComponentScanAnnotationIntegrationTests {
+
 	@Test
 	public void controlScan() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
@@ -168,6 +174,47 @@ public class ComponentScanAnnotationIntegrationTests {
 		assertThat(ctx.containsBean("fooServiceImpl"), is(true));
 	}
 
+	@Test
+	public void spr7979_bootstrappedFromACAC() {
+		AbstractApplicationContext ctx = new AnnotationConfigApplicationContext(ComponentScanConfigWithTypeFilterAndAutowiring.class);
+		ctx.getBean(Bar.class);
+	}
+
+	@Test
+	public void spr7979_bootstrappedFromGXAC() {
+		AbstractApplicationContext ctx = new GenericXmlApplicationContext(new ByteArrayResource((
+				"<beans" +
+				"	xmlns='http://www.springframework.org/schema/beans'" +
+				"	xmlns:context='http://www.springframework.org/schema/context'" +
+				"	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'" +
+				"	xsi:schemaLocation='" +
+				"		http://www.springframework.org/schema/beans" +
+				"		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd" +
+				"		http://www.springframework.org/schema/context" +
+				"		http://www.springframework.org/schema/context/spring-context-3.0.xsd'>" +
+				"	<context:annotation-config/>" +
+				"	<bean class='" + ComponentScanConfigWithTypeFilterAndAutowiring.class.getName() + "'/>" +
+				"</beans>"
+				).getBytes()));
+			assertThat(ctx.getBean(Bar.class), notNullValue());
+			assertThat(ctx.getBean(ComponentScanConfigWithTypeFilterAndAutowiring.class).bar, notNullValue());
+	}
+}
+
+
+abstract class Foo { }
+class Bar extends Foo { }
+
+
+@Configuration
+@ComponentScan(
+	basePackageClasses=Foo.class,
+	useDefaultFilters=false,
+	includeFilters={
+		@ComponentScan.Filter(type=FilterType.ASSIGNABLE_TYPE, value=Foo.class)
+	})
+class ComponentScanConfigWithTypeFilterAndAutowiring {
+	@Autowired Bar bar;
 }
 
 
@@ -179,6 +226,7 @@ class ComponentScanAnnotatedConfig {
 		return new TestBean();
 	}
 }
+
 
 @Configuration
 @ComponentScan("example.scannable")
