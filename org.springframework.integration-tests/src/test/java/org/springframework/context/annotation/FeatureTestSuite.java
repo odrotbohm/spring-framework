@@ -17,12 +17,12 @@
 package org.springframework.context.annotation;
 
 /**
- * Tests directly or indirectly related to {@link FeatureConfiguration} class and
- * {@link Feature} method processing.
+ * Tests directly or indirectly related to processing {@link Configuration}
+ * classes and with {@link Feature} methods.
  *
  * @author Chris Beams
  * @since 3.1
- * 
+ *
  * commented due to classpath visibility differences between Eclipse
  * and Ant/Ivy at the command line.  Eclipse can see classes across
  * project test folders, Ant/Ivy are not configured to do so. Uncomment
@@ -32,8 +32,8 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 import org.springframework.transaction.TxNamespaceHandlerTests;
 import org.springframework.transaction.annotation.AnnotationTransactionNamespaceHandlerTests;
-import org.springframework.transaction.annotation.TxAnnotationDrivenFeatureTests;
 import org.springframework.transaction.config.AnnotationDrivenTests;
+import org.springframework.transaction.config.TxAnnotationDrivenFeatureTests;
 import org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParserTests;
 import org.springframework.web.servlet.config.MvcAnnotationDrivenFeatureTests;
 import org.springframework.web.servlet.config.MvcDefaultServletHandlerTests;
@@ -47,14 +47,14 @@ import org.springframework.web.servlet.config.MvcViewControllersTests;
 	BeanFactoryAwareFeatureConfigurationTests.class,
 	FeatureMethodBeanReferenceTests.class,
 	FeatureMethodQualifiedBeanReferenceTests.class,
+	FeatureMethodValueInjectionTests.class,
 	FeatureMethodErrorTests.class,
 	FeatureConfigurationClassTests.class,
 	FeatureConfigurationImportTests.class,
 	FeatureConfigurationImportResourceTests.class,
 
 	// context:component-scan related
-	ComponentScanFeatureTests.class,
-	ComponentScanSpecTests.class,
+	ComponentScanSpecificationTests.class,
 	ComponentScanAnnotationTests.class,
 	ComponentScanAnnotationIntegrationTests.class,
 
@@ -72,7 +72,7 @@ import org.springframework.web.servlet.config.MvcViewControllersTests;
 	MvcDefaultServletHandlerTests.class,
 	MvcNamespaceTests.class
 })
-*/
+ */
 public class FeatureTestSuite {
 
 }
