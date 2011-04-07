@@ -17,9 +17,6 @@
 package org.springframework.context.annotation;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -30,8 +27,9 @@ import org.springframework.context.config.FeatureSpecification;
 import test.beans.TestBean;
 
 /**
- * Tests proving that @FeatureConfiguration classes may be use @ImportResource
- * and then parameter autowire beans declared in the imported resource(s).
+ * Tests proving that @Feature methods may be declared in @Configuration
+ * classes using the @ImportResource annotation and then in turn
+ * parameter autowire beans declared in the imported resource(s).
  *
  * @author Chris Beams
  * @since 3.1
@@ -44,17 +42,9 @@ public class FeatureConfigurationImportResourceTests {
 			new AnnotationConfigApplicationContext(ImportingFeatureConfig.class);
 		TestBean testBean = ctx.getBean(TestBean.class);
 		assertThat(testBean.getName(), equalTo("beanFromXml"));
-
-		// and just quickly prove that the target of the bean proxied for the Feature method
-		// is indeed the same singleton instance as the one we just pulled from the container
-		ImportingFeatureConfig ifc = ctx.getBean(ImportingFeatureConfig.class);
-		TestBean proxyBean = ifc.testBean;
-		assertThat(proxyBean, instanceOf(EarlyBeanReferenceProxy.class));
-		assertNotSame(proxyBean, testBean);
-		assertSame(((EarlyBeanReferenceProxy)proxyBean).dereferenceTargetBean(), testBean);
 	}
 
-	@FeatureConfiguration
+	@Configuration
 	@ImportResource("org/springframework/context/annotation/FeatureConfigurationImportResourceTests-context.xml")
 	static class ImportingFeatureConfig {
 		TestBean testBean;

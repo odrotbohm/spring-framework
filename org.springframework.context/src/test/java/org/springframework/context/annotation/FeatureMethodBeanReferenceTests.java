@@ -16,17 +16,13 @@
 
 package org.springframework.context.annotation;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.springframework.context.annotation.configuration.StubSpecification;
 import org.springframework.context.config.FeatureSpecification;
 
-import test.beans.ITestBean;
 import test.beans.TestBean;
 
 /**
@@ -44,12 +40,9 @@ public class FeatureMethodBeanReferenceTests {
 		ctx.refresh();
 
 		TestBean registeredBean = ctx.getBean("testBean", TestBean.class);
-		TestBean proxiedBean = ctx.getBean(FeatureConfig.class).testBean;
+		TestBean referencedBean = ctx.getBean(FeatureConfig.class).testBean;
 
-		assertThat(registeredBean, not(instanceOf(EarlyBeanReferenceProxy.class)));
-		assertThat(proxiedBean, notNullValue());
-		assertThat(proxiedBean, instanceOf(EarlyBeanReferenceProxy.class));
-		assertThat(proxiedBean.getSpouse(), is(registeredBean.getSpouse()));
+		assertThat(registeredBean, is(referencedBean));
 	}
 
 
@@ -68,7 +61,7 @@ public class FeatureMethodBeanReferenceTests {
 	@Configuration
 	static class Config {
 		@Bean
-		public ITestBean testBean() {
+		public TestBean testBean() {
 			return new TestBean(new TestBean("mySpouse"));
 		}
 	}
