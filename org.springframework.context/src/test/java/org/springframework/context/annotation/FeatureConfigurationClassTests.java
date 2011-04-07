@@ -29,13 +29,6 @@ import org.springframework.mock.env.MockEnvironment;
 
 public class FeatureConfigurationClassTests {
 
-	@Test(expected=FeatureMethodExecutionException.class)
-	public void featureConfigurationClassesMustNotContainBeanAnnotatedMethods() {
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(FeatureConfigWithBeanAnnotatedMethod.class);
-		ctx.refresh();
-	}
-
 	@Test
 	public void featureMethodsMayAcceptResourceLoaderParameter() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
@@ -47,25 +40,6 @@ public class FeatureConfigurationClassTests {
 
 }
 
-
-@FeatureConfiguration
-class FeatureConfigWithBeanAnnotatedMethod {
-	/**
-	 * This is illegal use. @FeatureConfiguration classes cannot have @Bean methods.
-	 */
-	@Bean
-	public TestBean testBean() {
-		return new TestBean();
-	}
-
-	/**
-	 * This will never get called. An exception will first be raised regarding the illegal @Bean method above.
-	 */
-	@Feature
-	public FeatureSpecification feature() {
-		return new StubSpecification();
-	}
-}
 
 @FeatureConfiguration
 class FeatureMethodWithResourceLoaderParameter {

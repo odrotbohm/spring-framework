@@ -16,8 +16,10 @@
 
 package org.springframework.context.annotation;
 
+import java.lang.reflect.Method;
+
 import org.springframework.beans.factory.parsing.ProblemReporter;
-import org.springframework.core.type.MethodMetadata;
+import org.springframework.core.type.StandardMethodMetadata;
 
 /**
  * Represents a {@link Configuration} class method marked with the
@@ -31,8 +33,8 @@ import org.springframework.core.type.MethodMetadata;
  */
 final class FeatureMethod extends ConfigurationMethod {
 
-	public FeatureMethod(MethodMetadata metadata, ConfigurationClass configurationClass) {
-		super(metadata, configurationClass);
+	public FeatureMethod(Method method, ConfigurationClass configurationClass) {
+		super(new StandardMethodMetadata(method), configurationClass);
 	}
 
 	@Override
