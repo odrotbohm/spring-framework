@@ -46,7 +46,7 @@ import org.springframework.beans.factory.parsing.ProblemReporter;
  * <p>{@code FeatureSpecification} objects may be populated and executed by Spring XML namespace element
  * parsers on order to separate the concerns of XML parsing from Spring bean definition creation and
  * registration. This type of use is mostly a framework-internal matter. More interesting to end users is
- * the use of {@code FeatureSpecification} objects within {@code @FeatureConfiguration} classes and their
+ * the use of {@code FeatureSpecification} objects within {@code @Configuration} classes and their
  * {@code @Feature} methods. This functionality is new in Spring 3.1 and is the logical evolution of Spring's
  * Java-based configuration support first released in Spring 3.0 (see {@code @Configuration} classes and
  * {@code @Bean} methods). The primary goal of {@code Feature}-related support is to round out this
@@ -95,15 +95,13 @@ import org.springframework.beans.factory.parsing.ProblemReporter;
  * evaluating to a bean name will be supported. While it is technically possible with SpEL to resolve
  * a bean instance, specification executors will not support such use unless explicitly indicated.
  *
- * <p>See the Javadoc for {@code @FeatureConfiguration} classes and {@code @Feature} methods for
- * information on their lifecycle and semantics.
+ * <p>See the Javadoc for {@code @Feature} methods for information on their lifecycle and semantics.
  *
  * @author Chris Beams
  * @since 3.1
  * @see FeatureSpecificationExecutor
  * @see AbstractSpecificationExecutor
  * @see org.springframework.context.annotation.Feature
- * @see org.springframework.context.annotation.FeatureConfiguration
  */
 public interface FeatureSpecification {
 
