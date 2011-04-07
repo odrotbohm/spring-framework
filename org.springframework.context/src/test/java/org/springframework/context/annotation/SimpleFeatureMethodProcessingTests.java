@@ -24,6 +24,7 @@ import org.springframework.context.annotation.configuration.StubSpecification;
 import org.springframework.context.config.SpecificationContext;
 import org.springframework.context.config.FeatureSpecification;
 import org.springframework.context.config.FeatureSpecificationExecutor;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 /**
@@ -37,16 +38,41 @@ import org.springframework.util.Assert;
 public class SimpleFeatureMethodProcessingTests {
 
 	@Test
-	public void test() {
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(FeatureConfig.class);
-		assertThat(MySpecificationExecutor.executeMethodWasCalled, is(false));
-		ctx.refresh();
-		assertThat(MySpecificationExecutor.executeMethodWasCalled, is(true));
+	public void withConfigurationClass() {
+		try {
+			AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+			ctx.register(FeatureConfig.class);
+			assertThat(MySpecificationExecutor.executeMethodWasCalled, is(false));
+			ctx.refresh();
+			assertThat(MySpecificationExecutor.executeMethodWasCalled, is(true));
+		} finally {
+			MySpecificationExecutor.executeMethodWasCalled = false;
+		}
 	}
 
-	@FeatureConfiguration
+	@Test
+	public void withCompononentClass() {
+		try {
+			AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+			ctx.register(FeatureComponent.class);
+			assertThat(MySpecificationExecutor.executeMethodWasCalled, is(false));
+			ctx.refresh();
+			assertThat(MySpecificationExecutor.executeMethodWasCalled, is(true));
+		} finally {
+			MySpecificationExecutor.executeMethodWasCalled = false;
+		}
+	}
+
+	@Configuration
 	static class FeatureConfig {
+		@Feature
+		public FeatureSpecification f() {
+			return new StubSpecification(MySpecificationExecutor.class);
+		}
+	}
+
+	@Component
+	static class FeatureComponent {
 		@Feature
 		public FeatureSpecification f() {
 			return new StubSpecification(MySpecificationExecutor.class);

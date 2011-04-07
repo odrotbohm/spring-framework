@@ -22,9 +22,6 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.springframework.context.annotation.configuration.StubSpecification;
-import org.springframework.context.config.FeatureSpecification;
-
-import test.beans.TestBean;
 
 /**
  * Tests proving that @Feature methods may reference the product of @Bean methods.
@@ -62,23 +59,6 @@ public class FeatureMethodErrorTests {
 		}
 	}
 
-	@Test
-	public void containsBeanMethod() {
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(FeatureConfigWithBeanMethod.class);
-		try {
-			ctx.refresh();
-			fail("expected exception");
-		} catch (FeatureMethodExecutionException ex) {
-			assertThat(ex.getMessage(),
-					equalTo("@FeatureConfiguration classes must not contain @Bean-annotated methods. " +
-							"FeatureConfigWithBeanMethod.testBean() is annotated with @Bean and must " +
-							"be removed in order to proceed. Consider moving this method into a dedicated " +
-							"@Configuration class and injecting the bean as a parameter into any @Feature " +
-							"method(s) that need it."));
-		}
-	}
-
 
 	@FeatureConfiguration
 	static class FeatureConfig {
@@ -93,20 +73,6 @@ public class FeatureMethodErrorTests {
 	static class VoidFeatureConfig {
 		@Feature
 		public void f() {
-		}
-	}
-
-
-	@FeatureConfiguration
-	static class FeatureConfigWithBeanMethod {
-		@Feature
-		public FeatureSpecification f() {
-			return new StubSpecification();
-		}
-
-		@Bean
-		public TestBean testBean() {
-			return new TestBean();
 		}
 	}
 
