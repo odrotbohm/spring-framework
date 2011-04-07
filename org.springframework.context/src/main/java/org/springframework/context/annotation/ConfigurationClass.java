@@ -53,8 +53,6 @@ final class ConfigurationClass {
 
 	private final Set<BeanMethod> beanMethods = new LinkedHashSet<BeanMethod>();
 
-	private final Set<FeatureMethod> featureMethods = new LinkedHashSet<FeatureMethod>();
-
 	private String beanName;
 
 
@@ -101,14 +99,6 @@ final class ConfigurationClass {
 
 	public void addImportedResource(String importedResource, Class<?> readerClass) {
 		this.importedResources.put(importedResource, readerClass);
-	}
-
-	public void addFeatureMethod(FeatureMethod method) {
-		this.featureMethods.add(method);
-	}
-
-	public Set<FeatureMethod> getFeatureMethods() {
-		return this.featureMethods;
 	}
 
 	public Map<String, Class<?>> getImportedResources() {
