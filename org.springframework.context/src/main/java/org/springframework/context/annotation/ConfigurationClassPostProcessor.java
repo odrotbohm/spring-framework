@@ -198,43 +198,28 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 */
 	private void processConfigurationClasses(BeanDefinitionRegistry registry) {
 		ConfigurationClassBeanDefinitionReader reader = getConfigurationClassBeanDefinitionReader(registry);
-		processConfigBeanDefinitions(registry, reader);
+		ConfigurationClassParser parser = new ConfigurationClassParser(this.metadataReaderFactory, this.problemReporter, this.environment);
+		processConfigBeanDefinitions(parser, reader, registry);
 		enhanceConfigurationClasses((ConfigurableListableBeanFactory)registry);
-		processFeatureConfigurationClasses((ConfigurableListableBeanFactory) registry);
+		processFeatureMethods(parser, (ConfigurableListableBeanFactory) registry);
 	}
 
 	/**
-	 * Process any @FeatureConfiguration classes
+	 * Process any @Feature methods
 	 */
-	private void processFeatureConfigurationClasses(final ConfigurableListableBeanFactory beanFactory) {
-		Map<String, Object> featureConfigBeans = retrieveFeatureConfigurationBeans(beanFactory);
+	private void processFeatureMethods(ConfigurationClassParser parser, final ConfigurableListableBeanFactory beanFactory) {
+		for (ConfigurationClass configClass : parser.getConfigurationClasses()) {
+			if (configClass.getMetadata().getAnnotatedMethods(Feature.class.getName()).isEmpty()) {
+				// this @Configuration class has no @Feature methods -> skip retrieving/instantiating it below
+				continue;
+			}
 
-		if (featureConfigBeans.size() == 0) {
-			return;
-		}
-
-		for (final Object featureConfigBean : featureConfigBeans.values()) {
-			checkForBeanMethods(featureConfigBean.getClass());
-		}
-
-		if (!cglibAvailable) {
-			throw new IllegalStateException("CGLIB is required to process @FeatureConfiguration classes. " +
-					"Either add CGLIB to the classpath or remove the following @FeatureConfiguration bean definitions: " +
-					featureConfigBeans.keySet());
-		}
-
-		final SpecificationContext specificationContext = createSpecificationContext(beanFactory);
-
-		for (final Object featureConfigBean : featureConfigBeans.values()) {
-			ReflectionUtils.doWithMethods(featureConfigBean.getClass(),
-					new ReflectionUtils.MethodCallback() {
-						public void doWith(Method featureMethod) throws IllegalArgumentException, IllegalAccessException {
-							processFeatureMethod(featureMethod, featureConfigBean, specificationContext, beanFactory);
-						} },
-					new ReflectionUtils.MethodFilter() {
-						public boolean matches(Method candidateMethod) {
-							return candidateMethod.isAnnotationPresent(Feature.class);
-						} });
+			Object configInstance = beanFactory.getBean(configClass.getBeanName());
+			for (Method method : configInstance.getClass().getMethods()) {
+				if (AnnotationUtils.findAnnotation(method, Feature.class) != null) {
+					processFeatureMethod(method, configInstance, createSpecificationContext(beanFactory), beanFactory);
+				}
+			}
 		}
 	}
 
@@ -312,37 +297,37 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * based on return type rather than actually invoking the method and processing the the specification
 	 * object that returns.
 	 */
-	private void processFeatureMethod(final Method featureMethod, Object configInstance,
+	private void processFeatureMethod(Method method, Object configInstance,
 			SpecificationContext specificationContext, ConfigurableListableBeanFactory beanFactory) {
 		try {
 			// get the return type
-			if (!(FeatureSpecification.class.isAssignableFrom(featureMethod.getReturnType()))) {
+			if (!(FeatureSpecification.class.isAssignableFrom(method.getReturnType()))) {
 				// TODO SPR-7420: raise a Problem instead?
 				throw new IllegalArgumentException(
 						format("Return type for @Feature method %s.%s() must be assignable to FeatureSpecification",
-								featureMethod.getDeclaringClass().getSimpleName(), featureMethod.getName()));
+								method.getDeclaringClass().getSimpleName(), method.getName()));
 			}
 
 			List<Object> beanArgs = new ArrayList<Object>();
-			Class<?>[] parameterTypes = featureMethod.getParameterTypes();
+			Class<?>[] parameterTypes = method.getParameterTypes();
 			for (int i = 0; i < parameterTypes.length; i++) {
-				MethodParameter mp = new MethodParameter(featureMethod, i);
+				MethodParameter mp = new MethodParameter(method, i);
 				DependencyDescriptor dd = new DependencyDescriptor(mp, true, false);
 				beanArgs.add(beanFactory.resolveDependency(dd, ""));
 			}
 
 			// reflectively invoke that method
 			FeatureSpecification spec;
-			featureMethod.setAccessible(true);
-			spec = (FeatureSpecification) featureMethod.invoke(configInstance, beanArgs.toArray(new Object[beanArgs.size()]));
+			method.setAccessible(true);
+			spec = (FeatureSpecification) method.invoke(configInstance, beanArgs.toArray(new Object[beanArgs.size()]));
 
 			Assert.notNull(spec,
 					format("The specification returned from @Feature method %s.%s() must not be null",
-							featureMethod.getDeclaringClass().getSimpleName(), featureMethod.getName()));
+							method.getDeclaringClass().getSimpleName(), method.getName()));
 
 			if (spec instanceof SourceAwareSpecification) {
-				((SourceAwareSpecification)spec).source(featureMethod);
-				((SourceAwareSpecification)spec).sourceName(featureMethod.getName());
+				((SourceAwareSpecification)spec).source(method);
+				((SourceAwareSpecification)spec).sourceName(method.getName());
 			}
 			spec.execute(specificationContext);
 		} catch (Exception ex) {
@@ -373,7 +358,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * Build and validate a configuration model based on the registry of
 	 * {@link Configuration} classes.
 	 */
-	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry, ConfigurationClassBeanDefinitionReader reader) {
+	public void processConfigBeanDefinitions(ConfigurationClassParser parser, ConfigurationClassBeanDefinitionReader reader, BeanDefinitionRegistry registry) {
 		Set<BeanDefinitionHolder> configCandidates = new LinkedHashSet<BeanDefinitionHolder>();
 		for (String beanName : registry.getBeanDefinitionNames()) {
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
@@ -387,8 +372,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			return;
 		}
 
-		// Populate a new configuration model by parsing each @Configuration classes
-		ConfigurationClassParser parser = new ConfigurationClassParser(this.metadataReaderFactory, this.problemReporter, this.environment);
+		// Parse each @Configuration class
 		for (BeanDefinitionHolder holder : configCandidates) {
 			BeanDefinition bd = holder.getBeanDefinition();
 			try {

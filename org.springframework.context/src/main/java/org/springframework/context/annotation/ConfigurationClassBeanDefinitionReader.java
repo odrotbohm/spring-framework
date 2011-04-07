@@ -200,7 +200,7 @@ public class ConfigurationClassBeanDefinitionReader {
 	}
 
 	/**
-	 * Read a particular {@link BeanMethod}, registering bean definitions
+	 * Read the given {@link BeanMethod}, registering bean definitions
 	 * with the BeanDefinitionRegistry based on its contents.
 	 */
 	private void loadBeanDefinitionsForBeanMethod(BeanMethod beanMethod) {
@@ -365,7 +365,8 @@ public class ConfigurationClassBeanDefinitionReader {
 				return true;
 			}
 			else if (metadata.isAnnotated(Component.class.getName()) ||
-					metadata.hasAnnotatedMethods(Bean.class.getName())) {
+					metadata.hasAnnotatedMethods(Bean.class.getName()) ||
+					metadata.hasAnnotatedMethods(Feature.class.getName())) {
 				beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 				return true;
 			}
