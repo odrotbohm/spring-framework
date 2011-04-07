@@ -223,14 +223,13 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					featureConfigBeans.keySet());
 		}
 
-		final EarlyBeanReferenceProxyCreator proxyCreator = new EarlyBeanReferenceProxyCreator(beanFactory);
 		final SpecificationContext specificationContext = createSpecificationContext(beanFactory);
 
 		for (final Object featureConfigBean : featureConfigBeans.values()) {
 			ReflectionUtils.doWithMethods(featureConfigBean.getClass(),
 					new ReflectionUtils.MethodCallback() {
 						public void doWith(Method featureMethod) throws IllegalArgumentException, IllegalAccessException {
-							processFeatureMethod(featureMethod, featureConfigBean, specificationContext, proxyCreator);
+							processFeatureMethod(featureMethod, featureConfigBean, specificationContext, beanFactory);
 						} },
 					new ReflectionUtils.MethodFilter() {
 						public boolean matches(Method candidateMethod) {
@@ -312,11 +311,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * consider introducing some kind of check to see if we're in a tooling context and make guesses
 	 * based on return type rather than actually invoking the method and processing the the specification
 	 * object that returns.
-	 * @param beanFactory
-	 * @throws SecurityException 
 	 */
 	private void processFeatureMethod(final Method featureMethod, Object configInstance,
-			SpecificationContext specificationContext, EarlyBeanReferenceProxyCreator proxyCreator) {
+			SpecificationContext specificationContext, ConfigurableListableBeanFactory beanFactory) {
 		try {
 			// get the return type
 			if (!(FeatureSpecification.class.isAssignableFrom(featureMethod.getReturnType()))) {
@@ -331,8 +328,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			for (int i = 0; i < parameterTypes.length; i++) {
 				MethodParameter mp = new MethodParameter(featureMethod, i);
 				DependencyDescriptor dd = new DependencyDescriptor(mp, true, false);
-				Object proxiedBean = proxyCreator.createProxyIfPossible(dd);
-				beanArgs.add(proxiedBean);
+				beanArgs.add(beanFactory.resolveDependency(dd, ""));
 			}
 
 			// reflectively invoke that method
