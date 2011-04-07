@@ -75,9 +75,8 @@ class FeatureMethodWithResourceLoaderParameter {
 		// prove that the injected Environment is that of the enclosing app context
 		assertThat(e.getProperty("foo"), is("bar"));
 		// prove that the injected ResourceLoader is actually the enclosing application context
-		Object target = ((EarlyBeanReferenceProxy)rl).dereferenceTargetBean();
-		assertThat(target, instanceOf(AnnotationConfigApplicationContext.class));
-		assertThat(((AnnotationConfigApplicationContext)target).getDisplayName(), is("enclosing app ctx"));
+		assertThat(rl, instanceOf(AnnotationConfigApplicationContext.class));
+		assertThat(((AnnotationConfigApplicationContext)rl).getDisplayName(), is("enclosing app ctx"));
 		return new StubSpecification();
 	}
 }
