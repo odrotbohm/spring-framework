@@ -7,6 +7,7 @@ Changes in version 3.1 M2 (2011-??-??)
 --------------------------------------
 
 * deprecated AbstractJUnit38SpringContextTests and AbstractTransactionalJUnit38SpringContextTests
+* pruned @FeatureConfiguration (introduced in M1) in favor of unified @Configuration classes
 
 
 Changes in version 3.1 M1 (2011-02-11)
