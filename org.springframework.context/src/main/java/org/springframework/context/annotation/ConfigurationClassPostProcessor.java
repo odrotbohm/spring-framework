@@ -21,7 +21,6 @@ import static java.lang.String.format;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,7 +31,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -56,14 +54,10 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
-import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * {@link BeanFactoryPostProcessor} used for bootstrapping processing of
@@ -221,73 +215,6 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				}
 			}
 		}
-	}
-
-	/**
-	 * Alternative to {@link ListableBeanFactory#getBeansWithAnnotation(Class)} that avoids
-	 * instantiating FactoryBean objects.  FeatureConfiguration types cannot be registered as
-	 * FactoryBeans, so ignoring them won't cause a problem.  On the other hand, using gBWA()
-	 * at this early phase of the container would cause all @Bean methods to be invoked, as they
-	 * are ultimately FactoryBeans underneath.
-	 */
-	private Map<String, Object> retrieveFeatureConfigurationBeans(ConfigurableListableBeanFactory beanFactory) {
-		Map<String, Object> fcBeans = new HashMap<String, Object>();
-		for (String beanName : beanFactory.getBeanDefinitionNames()) {
-			BeanDefinition beanDef = beanFactory.getBeanDefinition(beanName);
-			if (isFeatureConfiguration(beanDef)) {
-				fcBeans.put(beanName, beanFactory.getBean(beanName));
-			}
-		}
-		return fcBeans;
-	}
-
-	private boolean isFeatureConfiguration(BeanDefinition candidate) {
-		if (!(candidate instanceof AbstractBeanDefinition) || (candidate.getBeanClassName() == null)) {
-			return false;
-		}
-		AbstractBeanDefinition beanDef = (AbstractBeanDefinition) candidate;
-		if (beanDef.hasBeanClass()) {
-			Class<?> beanClass = beanDef.getBeanClass();
-			if (AnnotationUtils.findAnnotation(beanClass, FeatureConfiguration.class) != null) {
-				return true;
-			}
-		}
-		else {
-			// in the case of @FeatureConfiguration classes included with @Import the bean class name
-			// will still be in String form.  Since we don't know whether the current bean definition
-			// is a @FeatureConfiguration or not, carefully check for the annotation using ASM instead
-			// eager classloading.
-			String className = null;
-			try {
-				className = beanDef.getBeanClassName();
-				MetadataReader metadataReader = new SimpleMetadataReaderFactory().getMetadataReader(className);
-				AnnotationMetadata annotationMetadata = metadataReader.getAnnotationMetadata();
-				if (annotationMetadata.isAnnotated(FeatureConfiguration.class.getName())) {
-					return true;
-				}
-			}
-			catch (IOException ex) {
-				throw new IllegalStateException("Could not create MetadataReader for class " + className, ex);
-			}
-		}
-		return false;
-	}
-
-	private void checkForBeanMethods(final Class<?> featureConfigClass) {
-		ReflectionUtils.doWithMethods(featureConfigClass,
-				new ReflectionUtils.MethodCallback() {
-					public void doWith(Method beanMethod) throws IllegalArgumentException, IllegalAccessException {
-						throw new FeatureMethodExecutionException(
-								format("@FeatureConfiguration classes must not contain @Bean-annotated methods. " +
-										"%s.%s() is annotated with @Bean and must be removed in order to proceed. " +
-										"Consider moving this method into a dedicated @Configuration class and " +
-										"injecting the bean as a parameter into any @Feature method(s) that need it.",
-										beanMethod.getDeclaringClass().getSimpleName(), beanMethod.getName()));
-					} },
-				new ReflectionUtils.MethodFilter() {
-					public boolean matches(Method candidateMethod) {
-						return BeanAnnotationHelper.isBeanAnnotated(candidateMethod);
-					} });
 	}
 
 	/**

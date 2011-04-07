@@ -424,8 +424,8 @@ public class ConfigurationClassBeanDefinitionReader {
 	 */
 	private static class InvalidConfigurationImportProblem extends Problem {
 		public InvalidConfigurationImportProblem(String className, Resource resource, AnnotationMetadata metadata) {
-			super(String.format("%s was @Import'ed but is not annotated with @FeatureConfiguration or " +
-					"@Configuration nor does it declare any @Bean methods. Update the class to " +
+			super(String.format("%s was @Import'ed but is not annotated with @Configuration " +
+					"nor does it declare any @Bean or @Feature methods. Update the class to " +
 					"meet one of these requirements or do not attempt to @Import it.", className),
 					new Location(resource, metadata));
 		}
