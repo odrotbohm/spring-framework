@@ -153,6 +153,10 @@ class ConfigurationClassParser {
 		for (MethodMetadata methodMetadata : beanMethods) {
 			configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
 		}
+		Set<MethodMetadata> featureMethods = metadata.getAnnotatedMethods(Feature.class.getName());
+		for (MethodMetadata methodMetadata : featureMethods) {
+			configClass.addFeatureMethod(new FeatureMethod(methodMetadata, configClass));
+		}
 	}
 
 	private void processImport(ConfigurationClass configClass, String[] classesToImport) throws IOException {
