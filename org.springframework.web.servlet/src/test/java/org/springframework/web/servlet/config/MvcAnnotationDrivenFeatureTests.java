@@ -27,7 +27,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Feature;
-import org.springframework.context.annotation.FeatureConfiguration;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -52,7 +51,7 @@ public class MvcAnnotationDrivenFeatureTests {
 	@Test
 	public void testMessageCodesResolver() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(MvcFeature.class, MvcBeans.class);
+		ctx.register(MvcConfig.class);
 		ctx.refresh();
 		RequestMappingHandlerMethodAdapter adapter = ctx.getBean(RequestMappingHandlerMethodAdapter.class);
 		assertNotNull(adapter);
@@ -76,22 +75,8 @@ public class MvcAnnotationDrivenFeatureTests {
 
 }
 
-@FeatureConfiguration
-class MvcFeature {
-	@Feature
-	public MvcAnnotationDriven annotationDriven(MvcBeans mvcBeans) {
-		return new MvcAnnotationDriven()
-			.conversionService(mvcBeans.conversionService())
-			.messageCodesResolver(mvcBeans.messageCodesResolver())
-			.validator(mvcBeans.validator())
-			.messageConverters(new StringHttpMessageConverter())
-			.argumentResolvers(new TestWebArgumentResolver())
-			.argumentResolvers(new TestHandlerMethodArgumentResolver());
-	}
-}
-
 @Configuration
-class MvcBeans {
+class MvcConfig {
 	@Bean
 	public FormattingConversionService conversionService() {
 		return new DefaultFormattingConversionService();
@@ -102,6 +87,15 @@ class MvcBeans {
 	}
 	@Bean MessageCodesResolver messageCodesResolver() {
 		return new TestMessageCodesResolver();
+	}
+	@Feature
+	public MvcAnnotationDriven annotationDriven() {
+		return new MvcAnnotationDriven()
+			.conversionService(conversionService())
+			.messageCodesResolver(messageCodesResolver())
+			.validator(validator())
+			.messageConverters(new StringHttpMessageConverter())
+			.argumentResolvers(new TestWebArgumentResolver());
 	}
 }
 
