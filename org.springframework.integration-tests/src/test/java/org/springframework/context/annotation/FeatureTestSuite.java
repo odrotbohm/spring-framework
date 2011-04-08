@@ -43,14 +43,12 @@ import org.springframework.web.servlet.config.MvcViewControllersTests;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-	EarlyBeanReferenceProxyCreatorTests.class,
 	SimpleFeatureMethodProcessingTests.class,
 	BeanFactoryAwareFeatureConfigurationTests.class,
 	FeatureMethodBeanReferenceTests.class,
 	FeatureMethodQualifiedBeanReferenceTests.class,
 	FeatureMethodErrorTests.class,
 	FeatureConfigurationClassTests.class,
-	FeatureMethodEarlyBeanProxyTests.class,
 	FeatureConfigurationImportTests.class,
 	FeatureConfigurationImportResourceTests.class,
 
