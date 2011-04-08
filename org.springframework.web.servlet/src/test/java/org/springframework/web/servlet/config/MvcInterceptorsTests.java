@@ -31,8 +31,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.parsing.Problem;
 import org.springframework.beans.factory.parsing.ProblemReporter;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Feature;
-import org.springframework.context.annotation.FeatureConfiguration;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.handler.MappedInterceptor;
 import org.springframework.web.servlet.handler.UserRoleAuthorizationInterceptor;
@@ -109,10 +109,9 @@ public class MvcInterceptorsTests {
 		assertTrue(captured.getValue().getMessage().startsWith("Empty path pattern specified for "));
 	}
 
-	@FeatureConfiguration
-	private static class MvcInterceptorsFeature {
+	@Configuration
+	static class MvcInterceptorsFeature {
 
-		@SuppressWarnings("unused")
 		@Feature
 		public MvcInterceptors interceptors() {
 			return new MvcInterceptors()

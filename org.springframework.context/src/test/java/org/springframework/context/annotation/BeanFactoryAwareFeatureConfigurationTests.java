@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
+import org.springframework.beans.factory.Aware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -28,9 +29,9 @@ import org.springframework.context.annotation.configuration.StubSpecification;
 import org.springframework.context.config.FeatureSpecification;
 
 /**
- * Tests that @FeatureConfiguration classes may implement Aware interfaces,
- * such as BeanFactoryAware.  This is not generally recommended but occasionally
- * useful, particularly in testing.
+ * Tests that @Configuration classes having @Feature methods may take advantage
+ * of {@link Aware} interfaces, such as {@link BeanFactoryAware}. This is not
+ * generally recommended but occasionally useful, particularly in testing.
  *
  * @author Chris Beams
  * @since 3.1
@@ -46,7 +47,7 @@ public class BeanFactoryAwareFeatureConfigurationTests {
 		assertThat(fc.beanFactory, is(ctx.getBeanFactory()));
 	}
 
-	@FeatureConfiguration
+	@Configuration
 	static class FeatureConfig implements BeanFactoryAware {
 
 		ConfigurableListableBeanFactory beanFactory;

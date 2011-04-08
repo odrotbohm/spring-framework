@@ -46,7 +46,7 @@ public class FeatureMethodBeanReferenceTests {
 	}
 
 
-	@FeatureConfiguration
+	@Configuration
 	static class FeatureConfig {
 		TestBean testBean;
 

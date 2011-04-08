@@ -26,8 +26,8 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Feature;
-import org.springframework.context.annotation.FeatureConfiguration;
 import org.springframework.core.io.Resource;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter;
@@ -73,10 +73,9 @@ public class MvcResourcesTests {
 		}
 	}
 
-	@FeatureConfiguration
-	private static class MvcResourcesFeature {
+	@Configuration
+	static class MvcResourcesFeature {
 
-		@SuppressWarnings("unused")
 		@Feature
 		public MvcResources resources() {
 			return new MvcResources("/resources/**", new String[] { "/foo", "/bar" }).cachePeriod(86400).order(1);
@@ -84,10 +83,9 @@ public class MvcResourcesTests {
 
 	}
 
-	@FeatureConfiguration
-	private static class InvalidMvcResourcesFeature {
+	@Configuration
+	static class InvalidMvcResourcesFeature {
 
-		@SuppressWarnings("unused")
 		@Feature
 		public MvcResources resources() {
 			return new MvcResources(" ", new String[] {});
