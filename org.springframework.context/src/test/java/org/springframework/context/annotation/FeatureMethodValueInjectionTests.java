@@ -70,7 +70,7 @@ public class FeatureMethodValueInjectionTests {
 	}
 
 
-	@FeatureConfiguration
+	@Configuration
 	static class SpelValueInjectionFeatureConfig {
 		@Feature
 		public StubSpecification feature(@Value("#{environment['foo']}") String foo) {
@@ -79,7 +79,7 @@ public class FeatureMethodValueInjectionTests {
 	}
 
 
-	@FeatureConfiguration
+	@Configuration
 	static class SpelIntValueInjectionFeatureConfig {
 		@Feature
 		public StubSpecification feature(@Value("#{environment['num']}") int num) {
@@ -107,7 +107,7 @@ public class FeatureMethodValueInjectionTests {
 	}
 
 
-	@FeatureConfiguration
+	@Configuration
 	static class StringBeanInjectionByTypeFeatureConfig {
 		@Feature
 		public StubSpecification feature(String string) {
@@ -117,7 +117,7 @@ public class FeatureMethodValueInjectionTests {
 	}
 
 
-	@FeatureConfiguration
+	@Configuration
 	static class StringBeanInjectionByQualifierFeatureConfig {
 		@Feature
 		public StubSpecification feature(@Qualifier("stringBean2") String string) {

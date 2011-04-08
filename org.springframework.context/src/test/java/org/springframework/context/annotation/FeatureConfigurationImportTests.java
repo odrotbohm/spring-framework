@@ -25,8 +25,8 @@ import org.springframework.context.annotation.configuration.StubSpecification;
 import org.springframework.context.config.FeatureSpecification;
 
 /**
- * Tests proving that @Configuration classes may @Import @FeatureConfiguration
- * classes, and vice versa.
+ * Tests proving that @Configuration classes may @Import each other when
+ * having any combination of @Bean and @Feature methods
  *
  * @author Chris Beams
  * @since 3.1
@@ -39,7 +39,7 @@ public class FeatureConfigurationImportTests {
 			new AnnotationConfigApplicationContext(ImportingConfig.class);
 		ImportedFeatureConfig ifc = ctx.getBean(ImportedFeatureConfig.class);
 		assertThat(
-				"@FeatureConfiguration class was imported and registered " +
+				"@Configuration class was imported and registered " +
 				"as a bean but its @Feature method was never called",
 				ifc.featureMethodWasCalled, is(true));
 	}
@@ -51,7 +51,7 @@ public class FeatureConfigurationImportTests {
 		ImportingFeatureConfig ifc = ctx.getBean(ImportingFeatureConfig.class);
 		ImportedConfig ic = ctx.getBean(ImportedConfig.class);
 		assertThat(
-				"@FeatureConfiguration class was registered directly against " +
+				"@Configuration class was registered directly against " +
 				"the container but its @Feature method was never called",
 				ifc.featureMethodWasCalled, is(true));
 		assertThat(
@@ -67,7 +67,7 @@ public class FeatureConfigurationImportTests {
 	}
 
 
-	@FeatureConfiguration
+	@Configuration
 	static class ImportedFeatureConfig {
 		boolean featureMethodWasCalled = false;
 
@@ -90,7 +90,7 @@ public class FeatureConfigurationImportTests {
 	}
 
 
-	@FeatureConfiguration
+	@Configuration
 	@Import(ImportedConfig.class)
 	static class ImportingFeatureConfig {
 		boolean featureMethodWasCalled = false;

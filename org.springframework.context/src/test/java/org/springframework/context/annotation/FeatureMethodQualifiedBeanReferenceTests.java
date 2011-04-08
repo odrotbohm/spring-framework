@@ -43,7 +43,7 @@ public class FeatureMethodQualifiedBeanReferenceTests {
 		ctx.refresh();
 	}
 
-	@FeatureConfiguration
+	@Configuration
 	static class Features {
 
 		@Feature

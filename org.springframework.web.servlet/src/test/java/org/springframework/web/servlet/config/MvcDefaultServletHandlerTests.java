@@ -21,8 +21,8 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Feature;
-import org.springframework.context.annotation.FeatureConfiguration;
 import org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter;
 import org.springframework.web.servlet.resource.DefaultServletHttpRequestHandler;
 
@@ -47,10 +47,9 @@ public class MvcDefaultServletHandlerTests {
 		assertEquals("foo", defaultServletHandlerName);
 	}
 
-	@FeatureConfiguration
-	private static class MvcDefaultServletHandlerFeature {
+	@Configuration
+	static class MvcDefaultServletHandlerFeature {
 
-		@SuppressWarnings("unused")
 		@Feature
 		public MvcDefaultServletHandler defaultServletHandler() {
 			return new MvcDefaultServletHandler("foo");

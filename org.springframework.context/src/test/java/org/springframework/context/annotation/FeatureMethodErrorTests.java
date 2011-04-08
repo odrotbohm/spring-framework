@@ -60,7 +60,7 @@ public class FeatureMethodErrorTests {
 	}
 
 
-	@FeatureConfiguration
+	@Configuration
 	static class FeatureConfig {
 		@Feature
 		public Object f() {
@@ -69,7 +69,7 @@ public class FeatureMethodErrorTests {
 	}
 
 
-	@FeatureConfiguration
+	@Configuration
 	static class VoidFeatureConfig {
 		@Feature
 		public void f() {

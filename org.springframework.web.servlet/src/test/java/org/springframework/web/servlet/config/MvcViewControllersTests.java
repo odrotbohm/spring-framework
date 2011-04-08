@@ -28,8 +28,8 @@ import java.util.Map;
 import org.junit.Test;
 import org.springframework.beans.factory.parsing.FailFastProblemReporter;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Feature;
-import org.springframework.context.annotation.FeatureConfiguration;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.mvc.ParameterizableViewController;
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter;
@@ -92,10 +92,9 @@ public class MvcViewControllersTests {
 	}
 
 
-	@FeatureConfiguration
-	private static class MvcViewControllersFeature {
+	@Configuration
+	static class MvcViewControllersFeature {
 
-		@SuppressWarnings("unused")
 		@Feature
 		public MvcViewControllers mvcViewControllers() {
 			return new MvcViewControllers("/", "home").viewController("/account");
@@ -104,10 +103,9 @@ public class MvcViewControllersTests {
 	}
 
 
-	@FeatureConfiguration
-	private static class EmptyViewNameViewControllersFeature {
+	@Configuration
+	static class EmptyViewNameViewControllersFeature {
 
-		@SuppressWarnings("unused")
 		@Feature
 		public MvcViewControllers mvcViewControllers() {
 			return new MvcViewControllers("/some/path", "");
@@ -116,10 +114,9 @@ public class MvcViewControllersTests {
 	}
 
 
-	@FeatureConfiguration
-	private static class EmptyPathViewControllersFeature {
+	@Configuration
+	static class EmptyPathViewControllersFeature {
 
-		@SuppressWarnings("unused")
 		@Feature
 		public MvcViewControllers mvcViewControllers() {
 			return new MvcViewControllers("", "someViewName");

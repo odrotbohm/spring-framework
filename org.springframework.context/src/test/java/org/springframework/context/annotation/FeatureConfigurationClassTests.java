@@ -41,7 +41,7 @@ public class FeatureConfigurationClassTests {
 }
 
 
-@FeatureConfiguration
+@Configuration
 class FeatureMethodWithResourceLoaderParameter {
 	@Feature
 	public FeatureSpecification feature(ResourceLoader rl,
