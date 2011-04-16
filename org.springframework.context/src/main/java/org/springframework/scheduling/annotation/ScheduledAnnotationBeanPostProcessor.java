@@ -140,6 +140,9 @@ public class ScheduledAnnotationBeanPostProcessor
 			return;
 		}
 
+		// TODO SPR-8262: check for schedulers first and avoid STR lookup if none.
+		// TODO SPR-8262: check for any registered tasks at all and avoid all by-type lookup if none
+
 		Map<String, ScheduledTaskRegistrar> registrars = applicationContext.getBeansOfType(ScheduledTaskRegistrar.class);
 		if (registrars.size() == 0) {
 			this.registrar = new ScheduledTaskRegistrar();
