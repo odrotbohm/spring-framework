@@ -16,10 +16,12 @@
 
 package org.springframework.scheduling.annotation;
 
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
 
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Ignore;
@@ -28,6 +30,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.Trigger;
+import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
@@ -231,4 +235,43 @@ public class ScheduledConfigurationClassTests {
 		}
 	}
 
+
+	@Test
+	public void withTriggerTask() throws InterruptedException {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(TriggerTaskConfig.class);
+		ctx.refresh();
+
+		Thread.sleep(100);
+		assertThat(ctx.getBean(AtomicInteger.class).get(), greaterThan(1));
+		ctx.close();
+	}
+
+
+	@Configuration
+	static class TriggerTaskConfig {
+
+		@Bean
+		public AtomicInteger counter() {
+			return new AtomicInteger();
+		}
+
+		@Bean
+		public TaskScheduler scheduler() {
+			ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+			scheduler.initialize();
+			scheduler.schedule(
+				new Runnable() {
+					public void run() {
+						counter().incrementAndGet();
+					}
+				},
+				new Trigger() {
+					public Date nextExecutionTime(TriggerContext triggerContext) {
+						return new Date(new Date().getTime()+10);
+					}
+				});
+			return scheduler;
+		}
+	}
 }
