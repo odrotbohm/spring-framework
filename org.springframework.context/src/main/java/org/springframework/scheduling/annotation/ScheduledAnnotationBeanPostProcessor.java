@@ -19,6 +19,7 @@ package org.springframework.scheduling.annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.DisposableBean;
@@ -30,6 +31,7 @@ import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.Assert;
@@ -58,7 +60,7 @@ public class ScheduledAnnotationBeanPostProcessor
 
 	private ApplicationContext applicationContext;
 
-	private final ScheduledTaskRegistrar registrar = new ScheduledTaskRegistrar();
+	private ScheduledTaskRegistrar registrar;
 
 	private final Map<Runnable, String> cronTasks = new HashMap<Runnable, String>();
 
@@ -134,15 +136,42 @@ public class ScheduledAnnotationBeanPostProcessor
 	}
 
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		if (event.getApplicationContext() == this.applicationContext) {
+		if (event.getApplicationContext() != this.applicationContext) {
+			return;
+		}
+
+		Map<String, ScheduledTaskRegistrar> registrars = applicationContext.getBeansOfType(ScheduledTaskRegistrar.class);
+		if (registrars.size() == 0) {
+			this.registrar = new ScheduledTaskRegistrar();
+		} else if (registrars.size() == 1) {
+			this.registrar = registrars.values().iterator().next();
+		} else if (registrars.size() >= 2){
+			throw new IllegalStateException("Only one ScheduledTaskRegistrar may exist within the context. " +
+					"Found the following beans: " + registrars.keySet());
+		}
+
+		if (registrar.getScheduler() == null) {
 			if (this.scheduler != null) {
 				this.registrar.setScheduler(this.scheduler);
+			} else {
+				Map<String, ? super Object> schedulers = new HashMap<String, Object>();
+				schedulers.putAll(applicationContext.getBeansOfType(TaskScheduler.class));
+				schedulers.putAll(applicationContext.getBeansOfType(ScheduledExecutorService.class));
+				if (schedulers.size() == 0) {
+					// do nothing -> fall back to default scheduler
+				} else if (schedulers.size() == 1) {
+					this.registrar.setScheduler(schedulers.values().iterator().next());
+				} else if (schedulers.size() >= 2){
+					throw new IllegalStateException("More than one TaskScheduler and/or ScheduledExecutorService  " +
+							"exist within the context. Configure a ScheduledTaskRegistrar to distinguish which one should " +
+							"be used for @Scheduled annotation processing. Found the following beans: " + schedulers.keySet());
+				}
 			}
-			this.registrar.setCronTasks(this.cronTasks);
-			this.registrar.setFixedDelayTasks(this.fixedDelayTasks);
-			this.registrar.setFixedRateTasks(this.fixedRateTasks);
-			this.registrar.afterPropertiesSet();
 		}
+		this.registrar.setCronTasks(this.cronTasks);
+		this.registrar.setFixedDelayTasks(this.fixedDelayTasks);
+		this.registrar.setFixedRateTasks(this.fixedRateTasks);
+		this.registrar.afterPropertiesSet();
 	}
 
 	public void destroy() throws Exception {
