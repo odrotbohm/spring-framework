@@ -18,20 +18,21 @@ package org.springframework.scheduling.annotation;
 
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ContainerCapability;
 import org.springframework.core.type.AnnotationMetadata;
 
 public class SchedulingCapability implements ContainerCapability {
 
 	public void enable(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata) {
-		if (registry.containsBeanDefinition(ScheduledAnnotationBeanPostProcessor.DEFAULT_BEAN_NAME)) {
+		if (registry.containsBeanDefinition(AnnotationConfigUtils.SCHEDULED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			throw new IllegalStateException(
 					"Only one ScheduledAnnotationBeanPostProcessor may exist within the context. " +
 					"Did you declare @EnableScheduling more than once?");
 		}
 
 		registry.registerBeanDefinition(
-				ScheduledAnnotationBeanPostProcessor.DEFAULT_BEAN_NAME,
+				AnnotationConfigUtils.SCHEDULED_ANNOTATION_PROCESSOR_BEAN_NAME,
 				new RootBeanDefinition(ScheduledAnnotationBeanPostProcessor.class));
 	}
 

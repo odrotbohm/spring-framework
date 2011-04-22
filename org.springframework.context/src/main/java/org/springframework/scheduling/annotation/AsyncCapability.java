@@ -25,21 +25,18 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ContainerCapability;
 import org.springframework.context.config.AdviceMode;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.scheduling.config.AnnotationDrivenBeanDefinitionParser;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 public class AsyncCapability implements ContainerCapability {
 
-	public static final String ASYNC_EXECUTION_ASPECT_CLASS_NAME =
-			"org.springframework.scheduling.aspectj.AnnotationAsyncExecutionAspect";
-
 	public void enable(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata) {
-		if (registry.containsBeanDefinition(AsyncAnnotationBeanPostProcessor.DEFAULT_BEAN_NAME)) {
+		if (registry.containsBeanDefinition(AnnotationConfigUtils.ASYNC_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			throw new IllegalStateException(
 					"Only one AsyncAnnotationBeanPostProcessor may exist within the context. " +
 					"Did you declare @EnableAsync more than once?");
@@ -70,14 +67,14 @@ public class AsyncCapability implements ContainerCapability {
 			}
 			pvs.addPropertyValue("order", asyncCapableAttributes.get("order"));
 			def.setPropertyValues(pvs);
-			registry.registerBeanDefinition(AsyncAnnotationBeanPostProcessor.DEFAULT_BEAN_NAME, def);
+			registry.registerBeanDefinition(AnnotationConfigUtils.ASYNC_ANNOTATION_PROCESSOR_BEAN_NAME, def);
 		}
 	}
 
 	private void registerAsyncExecutionAspect(Map<String, Object> asyncCapableAttributes, BeanDefinitionRegistry registry) {
-		if (!registry.containsBeanDefinition(AnnotationDrivenBeanDefinitionParser.ASYNC_EXECUTION_ASPECT_BEAN_NAME)) {
+		if (!registry.containsBeanDefinition(AnnotationConfigUtils.ASYNC_EXECUTION_ASPECT_BEAN_NAME)) {
 			BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(
-					ASYNC_EXECUTION_ASPECT_CLASS_NAME);
+					AnnotationConfigUtils.ASYNC_EXECUTION_ASPECT_CLASS_NAME);
 
 			builder.setFactoryMethod("aspectOf");
 			String executor = (String)asyncCapableAttributes.get("executorName");

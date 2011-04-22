@@ -57,7 +57,10 @@ public class TransactionManagementCapability implements ContainerCapability {
 	public static final String TRANSACTION_ASPECT_BEAN_NAME =
 			"org.springframework.transaction.config.internalTransactionAspect";
 
-	private static final String TRANSACTION_ASPECT_CLASS_NAME =
+	/**
+	 * The class name of the AspectJ transaction management aspect.
+	 */
+	public static final String TRANSACTION_ASPECT_CLASS_NAME =
 			"org.springframework.transaction.aspectj.AnnotationTransactionAspect";
 
 
