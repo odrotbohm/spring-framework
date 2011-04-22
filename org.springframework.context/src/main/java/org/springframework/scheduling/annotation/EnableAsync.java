@@ -52,15 +52,6 @@ public @interface EnableAsync {
 	String executorName() default "";
 
 	/**
-	 * Indicate the order in which the
-	 * {@link org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor}
-	 * should be applied. Defaults to Order.LOWEST_PRIORITY in order to run
-	 * after all other post-processors, so that it can add an advisor to
-	 * existing proxies rather than double-proxy.
-	 */
-	int order() default Ordered.LOWEST_PRECEDENCE;
-
-	/**
 	 * Indicate whether class-based (CGLIB) proxies are to be created as opposed
 	 * to standard Java interface-based proxies. The default is {@code false}
 	 *
@@ -75,4 +66,13 @@ public @interface EnableAsync {
 	 * The default is {@link AdviceMode#PROXY}.
 	 */
 	AdviceMode mode() default AdviceMode.PROXY;
+
+	/**
+	 * Indicate the order in which the
+	 * {@link org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor}
+	 * should be applied. Defaults to Order.LOWEST_PRIORITY in order to run
+	 * after all other post-processors, so that it can add an advisor to
+	 * existing proxies rather than double-proxy.
+	 */
+	int order() default Ordered.LOWEST_PRECEDENCE;
 }

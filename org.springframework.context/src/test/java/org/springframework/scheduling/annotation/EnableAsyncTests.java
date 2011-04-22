@@ -24,6 +24,8 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 /**
  * Tests use of @EnableAsync on @Configuration classes.
@@ -58,6 +60,38 @@ public class EnableAsyncTests {
 	static class AsyncBean {
 		@Async
 		public void work() {
+		}
+	}
+
+
+	@Test
+	public void asyncProcessorIsOrderedLowestPrecedenceByDefault() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(AsyncConfig.class);
+		ctx.refresh();
+
+		AsyncAnnotationBeanPostProcessor bpp = ctx.getBean(AsyncAnnotationBeanPostProcessor.class);
+		assertThat(bpp.getOrder(), is(Ordered.LOWEST_PRECEDENCE));
+	}
+
+
+	@Test
+	public void orderAttributeIsPropagated() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(OrderedAsyncConfig.class);
+		ctx.refresh();
+
+		AsyncAnnotationBeanPostProcessor bpp = ctx.getBean(AsyncAnnotationBeanPostProcessor.class);
+		assertThat(bpp.getOrder(), is(Ordered.HIGHEST_PRECEDENCE));
+	}
+
+
+	@Configuration
+	@EnableAsync(order=Ordered.HIGHEST_PRECEDENCE)
+	static class OrderedAsyncConfig {
+		@Bean
+		public AsyncBean asyncBean() {
+			return new AsyncBean();
 		}
 	}
 }
