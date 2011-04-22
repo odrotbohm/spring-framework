@@ -137,12 +137,41 @@ public class ConfigurationClassBeanDefinitionReader {
 	 */
 	private void loadBeanDefinitionsForConfigurationClass(ConfigurationClass configClass) {
 		AnnotationMetadata metadata = configClass.getMetadata();
-		processFeatureAnnotations(metadata);
+		enableContainerCapabilities(metadata);
 		doLoadBeanDefinitionForConfigurationClassIfNecessary(configClass);
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+	}
+
+	private void enableContainerCapabilities(AnnotationMetadata metadata) {
+		try {
+			for (String annotationType : metadata.getAnnotationTypes()) {
+				MetadataReader metadataReader = new SimpleMetadataReaderFactory().getMetadataReader(annotationType);
+				Map<String, Object> enableAnnotation =
+					metadataReader.getAnnotationMetadata().getAnnotationAttributes(Enable.class.getName(), false);
+				if (enableAnnotation != null) {
+					ContainerCapability capability =
+						BeanUtils.instantiateClass(((Class<?>)enableAnnotation.get("value")), ContainerCapability.class);
+					if (capability instanceof Aware) {
+						if (capability instanceof EnvironmentAware) {
+							((EnvironmentAware) capability).setEnvironment(this.environment);
+						}
+						if (capability instanceof ResourceLoaderAware) {
+							((ResourceLoaderAware) capability).setResourceLoader(this.resourceLoader);
+						}
+					}
+					capability.enable(this.registry, metadata);
+				}
+			}
+		} catch (BeanDefinitionParsingException ex) {
+			throw ex;
+		}
+		catch (Exception ex) {
+			// TODO SPR-7420: what exception to throw?
+			throw new RuntimeException(ex);
+		}
 	}
 
 	private void processFeatureAnnotations(AnnotationMetadata metadata) {
