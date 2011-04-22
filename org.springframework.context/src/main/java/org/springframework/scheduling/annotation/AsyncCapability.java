@@ -65,10 +65,10 @@ public class AsyncCapability implements ContainerCapability {
 			if (StringUtils.hasText(executorBeanName)) {
 				pvs.add("executor", new RuntimeBeanReference(executorBeanName));
 			}
-			pvs.add("order", asyncCapableAttributes.get("order"));
 			if (((Boolean)asyncCapableAttributes.get("proxyTargetClass"))) {
 				pvs.addPropertyValue("proxyTargetClass", true);
 			}
+			pvs.addPropertyValue("order", asyncCapableAttributes.get("order"));
 			def.setPropertyValues(pvs);
 			registry.registerBeanDefinition(AsyncAnnotationBeanPostProcessor.DEFAULT_BEAN_NAME, def);
 		}
