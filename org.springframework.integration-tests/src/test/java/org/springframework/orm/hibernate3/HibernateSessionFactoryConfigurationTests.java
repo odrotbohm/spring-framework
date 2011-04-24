@@ -50,8 +50,8 @@ import org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBui
 import org.springframework.orm.hibernate3.scannable.Foo;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.config.TxAnnotationDriven;
 
 /**
  * Integration tests for configuring Hibernate SessionFactory types
@@ -198,7 +198,7 @@ public class HibernateSessionFactoryConfigurationTests {
 
 
 	@Configuration
-	@TxAnnotationDriven(transactionManager="txManager")
+	@EnableTransactionManagement(transactionManagerName="txManager")
 	static class RepositoryConfig {
 		@Inject SessionFactory sessionFactory;
 

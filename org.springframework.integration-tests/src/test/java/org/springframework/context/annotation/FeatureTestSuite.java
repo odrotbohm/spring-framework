@@ -32,8 +32,9 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 import org.springframework.transaction.TxNamespaceHandlerTests;
 import org.springframework.transaction.annotation.AnnotationTransactionNamespaceHandlerTests;
+import org.springframework.transaction.annotation.EnableTransactionManagementTests;
+import org.springframework.transaction.annotation.EnableTransactionManagementIntegrationTests;
 import org.springframework.transaction.config.AnnotationDrivenTests;
-import org.springframework.transaction.config.TxAnnotationDrivenFeatureTests;
 import org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParserTests;
 import org.springframework.web.servlet.config.MvcAnnotationDrivenFeatureTests;
 import org.springframework.web.servlet.config.MvcDefaultServletHandlerTests;
@@ -58,7 +59,8 @@ import org.springframework.web.servlet.config.MvcViewControllersTests;
 	ComponentScanAnnotationIntegrationTests.class,
 
 	// tx-related
-	TxAnnotationDrivenFeatureTests.class,
+	EnableTransactionManagementTests.class,
+	EnableTransactionManagementIntegrationTests.class,
 	TxNamespaceHandlerTests.class,
 	AnnotationTransactionNamespaceHandlerTests.class,
 	AnnotationDrivenTests.class,
