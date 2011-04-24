@@ -16,14 +16,9 @@
 
 package org.springframework.context.annotation;
 
-import static java.lang.String.format;
-
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,7 +30,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.parsing.FailFastProblemReporter;
 import org.springframework.beans.factory.parsing.PassThroughSourceExtractor;
 import org.springframework.beans.factory.parsing.ProblemReporter;
@@ -45,12 +39,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
-import org.springframework.context.config.FeatureSpecification;
-import org.springframework.context.config.SourceAwareSpecification;
-import org.springframework.context.config.SpecificationContext;
-import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
@@ -188,89 +177,13 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 	/**
-	 * Find and process all @Configuration classes with @Feature methods in the given registry.
+	 * Find and process all @Configuration classes in the given registry.
 	 */
 	private void processConfigurationClasses(BeanDefinitionRegistry registry) {
 		ConfigurationClassBeanDefinitionReader reader = getConfigurationClassBeanDefinitionReader(registry);
 		ConfigurationClassParser parser = new ConfigurationClassParser(this.metadataReaderFactory, this.problemReporter, this.environment);
 		processConfigBeanDefinitions(parser, reader, registry);
 		enhanceConfigurationClasses((ConfigurableListableBeanFactory)registry);
-		processFeatureMethods(parser, (ConfigurableListableBeanFactory) registry);
-	}
-
-	/**
-	 * Process any @Feature methods
-	 */
-	private void processFeatureMethods(ConfigurationClassParser parser, final ConfigurableListableBeanFactory beanFactory) {
-		for (ConfigurationClass configClass : parser.getConfigurationClasses()) {
-			if (configClass.getMetadata().getAnnotatedMethods(Feature.class.getName()).isEmpty()) {
-				// this @Configuration class has no @Feature methods -> skip retrieving/instantiating it below
-				continue;
-			}
-
-			Object configInstance = beanFactory.getBean(configClass.getBeanName());
-			for (Method method : configInstance.getClass().getMethods()) {
-				if (AnnotationUtils.findAnnotation(method, Feature.class) != null) {
-					processFeatureMethod(method, configInstance, createSpecificationContext(beanFactory), beanFactory);
-				}
-			}
-		}
-	}
-
-	/**
-	 * TODO SPR-7420: this method invokes user-supplied code, which is not going to fly for STS
-	 * 
-	 * consider introducing some kind of check to see if we're in a tooling context and make guesses
-	 * based on return type rather than actually invoking the method and processing the the specification
-	 * object that returns.
-	 */
-	private void processFeatureMethod(Method method, Object configInstance,
-			SpecificationContext specificationContext, ConfigurableListableBeanFactory beanFactory) {
-		try {
-			// get the return type
-			if (!(FeatureSpecification.class.isAssignableFrom(method.getReturnType()))) {
-				// TODO SPR-7420: raise a Problem instead?
-				throw new IllegalArgumentException(
-						format("Return type for @Feature method %s.%s() must be assignable to FeatureSpecification",
-								method.getDeclaringClass().getSimpleName(), method.getName()));
-			}
-
-			List<Object> beanArgs = new ArrayList<Object>();
-			Class<?>[] parameterTypes = method.getParameterTypes();
-			for (int i = 0; i < parameterTypes.length; i++) {
-				MethodParameter mp = new MethodParameter(method, i);
-				DependencyDescriptor dd = new DependencyDescriptor(mp, true, false);
-				beanArgs.add(beanFactory.resolveDependency(dd, ""));
-			}
-
-			// reflectively invoke that method
-			FeatureSpecification spec;
-			method.setAccessible(true);
-			spec = (FeatureSpecification) method.invoke(configInstance, beanArgs.toArray(new Object[beanArgs.size()]));
-
-			Assert.notNull(spec,
-					format("The specification returned from @Feature method %s.%s() must not be null",
-							method.getDeclaringClass().getSimpleName(), method.getName()));
-
-			if (spec instanceof SourceAwareSpecification) {
-				((SourceAwareSpecification)spec).source(method);
-				((SourceAwareSpecification)spec).sourceName(method.getName());
-			}
-			spec.execute(specificationContext);
-		} catch (Exception ex) {
-			throw new FeatureMethodExecutionException(ex);
-		}
-	}
-
-	private SpecificationContext createSpecificationContext(ConfigurableListableBeanFactory beanFactory) {
-		final BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
-		SpecificationContext specificationContext = new SpecificationContext();
-		specificationContext.setEnvironment(this.environment);
-		specificationContext.setResourceLoader(this.resourceLoader);
-		specificationContext.setRegistry(registry);
-		specificationContext.setRegistrar(new SimpleComponentRegistrar(registry));
-		specificationContext.setProblemReporter(this.problemReporter);
-		return specificationContext;
 	}
 
 	private ConfigurationClassBeanDefinitionReader getConfigurationClassBeanDefinitionReader(BeanDefinitionRegistry registry) {
