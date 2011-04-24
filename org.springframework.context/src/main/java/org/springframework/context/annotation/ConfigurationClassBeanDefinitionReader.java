@@ -168,7 +168,7 @@ public class ConfigurationClassBeanDefinitionReader {
 					capability.enable(this.registry, metadata);
 				}
 			}
-		} catch (BeanDefinitionParsingException ex) {
+		} catch (RuntimeException ex) {
 			throw ex;
 		}
 		catch (Exception ex) {
