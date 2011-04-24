@@ -42,17 +42,15 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.config.TxAnnotationDriven;
 import org.springframework.transaction.interceptor.BeanFactoryTransactionAttributeSourceAdvisor;
 
 /**
- * Integration tests for @TxAnnotationDriven, designed for use
- * with @Configuration classes.
+ * Integration tests for the @EnableTransactionManagement annotation.
  *
  * @author Chris Beams
  * @since 3.1
  */
-public class TxAnnotationDrivenTests {
+public class EnableTransactionManagementIntegrationTests {
 
 	@Test
 	public void repositoryIsNotTxProxy() {
@@ -148,7 +146,7 @@ public class TxAnnotationDrivenTests {
 
 
 	@Configuration
-	@TxAnnotationDriven
+	@EnableTransactionManagement
 	static class DefaultTxManagerNameConfig {
 		@Bean
 		PlatformTransactionManager transactionManager(DataSource dataSource) {
@@ -158,7 +156,7 @@ public class TxAnnotationDrivenTests {
 
 
 	@Configuration
-	@TxAnnotationDriven(transactionManager="txManager")
+	@EnableTransactionManagement(transactionManagerName="txManager")
 	static class CustomTxManagerNameConfig {
 		@Bean
 		PlatformTransactionManager txManager(DataSource dataSource) {
@@ -168,7 +166,7 @@ public class TxAnnotationDrivenTests {
 
 
 	@Configuration
-	@TxAnnotationDriven(transactionManager="typoManager")
+	@EnableTransactionManagement(transactionManagerName="typoManager")
 	static class BogusTxManagerNameConfig {
 		@Bean
 		PlatformTransactionManager txManager(DataSource dataSource) {
@@ -178,7 +176,7 @@ public class TxAnnotationDrivenTests {
 
 
 	@Configuration
-	@TxAnnotationDriven
+	@EnableTransactionManagement
 	static class NonConventionalTxManagerNameConfig {
 		@Bean
 		PlatformTransactionManager txManager(DataSource dataSource) {
@@ -188,7 +186,7 @@ public class TxAnnotationDrivenTests {
 
 
 	@Configuration
-	@TxAnnotationDriven(proxyTargetClass=true)
+	@EnableTransactionManagement(proxyTargetClass=true)
 	static class ProxyTargetClassTxConfig {
 		@Bean
 		PlatformTransactionManager transactionManager(DataSource dataSource) {
@@ -198,7 +196,7 @@ public class TxAnnotationDrivenTests {
 
 
 	@Configuration
-	@TxAnnotationDriven(mode=AdviceMode.ASPECTJ)
+	@EnableTransactionManagement(mode=AdviceMode.ASPECTJ)
 	static class AspectJTxConfig {
 		@Bean
 		PlatformTransactionManager transactionManager(DataSource dataSource) {
