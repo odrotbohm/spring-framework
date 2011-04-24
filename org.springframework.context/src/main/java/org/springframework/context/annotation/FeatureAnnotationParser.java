@@ -26,18 +26,6 @@ import org.springframework.core.type.AnnotationMetadata;
  * {@link FeatureSpecificationExecutor} to provide a source-agnostic approach to
  * handling configuration metadata.
  *
- * <p>For example, Spring's component-scanning can be configured via XML using
- * the {@code context:component-scan} element or via the {@link ComponentScan}
- * annotation. In either case, the metadata is the same -- only the source
- * format differs.  {@link ComponentScanBeanDefinitionParser} is used to create
- * a specification from the {@code <context:component-scan>} XML element, while
- * {@link ComponentScanAnnotationParser} creates a specification from the
- * the annotation style. They both produce a {@link ComponentScanSpecification}
- * object that is ultimately delegated to a {@link ComponentScanExecutor}
- * which understands how to configure a {@link ClassPathBeanDefinitionScanner},
- * perform actual scanning, and register actual bean definitions against the
- * container.
- *
  * <p>Implementations must be instantiable via a no-arg constructor.
  *
  * TODO SPR-7420: documentation (clean up)

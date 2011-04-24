@@ -54,7 +54,6 @@ import org.springframework.web.servlet.config.MvcViewControllersTests;
 	FeatureConfigurationImportResourceTests.class,
 
 	// context:component-scan related
-	ComponentScanSpecificationTests.class,
 	ComponentScanAnnotationTests.class,
 	ComponentScanAnnotationIntegrationTests.class,
 
