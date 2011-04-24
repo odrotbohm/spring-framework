@@ -36,11 +36,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagementTes
 import org.springframework.transaction.annotation.EnableTransactionManagementIntegrationTests;
 import org.springframework.transaction.config.AnnotationDrivenTests;
 import org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParserTests;
-import org.springframework.web.servlet.config.MvcAnnotationDrivenFeatureTests;
-import org.springframework.web.servlet.config.MvcDefaultServletHandlerTests;
 import org.springframework.web.servlet.config.MvcNamespaceTests;
-import org.springframework.web.servlet.config.MvcResourcesTests;
-import org.springframework.web.servlet.config.MvcViewControllersTests;
 
 @RunWith(Suite.class)
 @SuiteClasses({
@@ -67,10 +63,6 @@ import org.springframework.web.servlet.config.MvcViewControllersTests;
 
 	// mvc-related
 	AnnotationDrivenBeanDefinitionParserTests.class,
-	MvcAnnotationDrivenFeatureTests.class,
-	MvcViewControllersTests.class,
-	MvcResourcesTests.class,
-	MvcDefaultServletHandlerTests.class,
 	MvcNamespaceTests.class
 })
  */
