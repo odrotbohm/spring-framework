@@ -16,24 +16,40 @@
 
 package org.springframework.scheduling.annotation;
 
+import java.util.Map;
+
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ContainerCapability;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 public class SchedulingCapability implements ContainerCapability {
 
 	public void enable(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata) {
+		Map<String, Object> attributes = annotationMetadata.getAnnotationAttributes(EnableScheduling.class.getName());
+		Assert.notEmpty(attributes,
+				"@EnableScheduling annotation was not found on " + annotationMetadata.getClassName());
+
 		if (registry.containsBeanDefinition(AnnotationConfigUtils.SCHEDULED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			throw new IllegalStateException(
 					"Only one ScheduledAnnotationBeanPostProcessor may exist within the context. " +
 					"Did you declare @EnableScheduling more than once?");
 		}
 
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(
+				ScheduledAnnotationBeanPostProcessor.class);
+		String schedulerName = (String)attributes.get("schedulerName");
+		if (StringUtils.hasText(schedulerName)) {
+			// setting a property *value* here instead of ref to enable lazy bean lookup
+			// and give the declaring @Configuration class time to be post-processed by SABPP
+			builder.addPropertyValue("scheduler", schedulerName);
+		}
 		registry.registerBeanDefinition(
 				AnnotationConfigUtils.SCHEDULED_ANNOTATION_PROCESSOR_BEAN_NAME,
-				new RootBeanDefinition(ScheduledAnnotationBeanPostProcessor.class));
+				builder.getBeanDefinition());
 	}
 
 }

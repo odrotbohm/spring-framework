@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -224,31 +225,17 @@ public class EnableSchedulingTests {
 	}
 
 
-	@Test(expected=IllegalStateException.class)
-	public void withAmbiguousTaskSchedulersButNoActualTasks() {
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(MultipleSchedulerBeansWithoutScheduledTasks.class, EnableSchedulingConfig.class);
-		ctx.refresh();
-	}
-
 	@Test
-	public void SABPPMayBeDisabledToAvoidAmbiguousTaskSchedulersException() {
+	public void withAmbiguousTaskSchedulers_butNoActualTasks() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(MultipleSchedulerBeansWithoutScheduledTasks.class);
+		ctx.register(SchedulingEnabled_withAmbiguousTaskSchedulers_butNoActualTasks.class);
 		ctx.refresh();
-		ctx.getBean("taskScheduler1");
-		ctx.getBean("taskScheduler2");
 	}
 
 
 	@Configuration
 	@EnableScheduling
-	static class EnableSchedulingConfig {
-	}
-
-
-	@Configuration
-	static class MultipleSchedulerBeansWithoutScheduledTasks {
+	static class SchedulingEnabled_withAmbiguousTaskSchedulers_butNoActualTasks {
 
 		@Bean
 		public TaskScheduler taskScheduler1() {
@@ -261,6 +248,138 @@ public class EnableSchedulingTests {
 		public TaskScheduler taskScheduler2() {
 			ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 			scheduler.setThreadNamePrefix("explicitScheduler2");
+			return scheduler;
+		}
+	}
+
+
+	@Test(expected=IllegalStateException.class)
+	public void withAmbiguousTaskSchedulers_andSingleTask() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(SchedulingEnabled_withAmbiguousTaskSchedulers_andSingleTask.class);
+		try {
+			ctx.refresh();
+		} catch (IllegalStateException ex) {
+			assertThat(ex.getMessage(), startsWith("More than one TaskScheduler and/or"));
+			throw ex;
+		}
+	}
+
+
+	@Configuration
+	@EnableScheduling
+	static class SchedulingEnabled_withAmbiguousTaskSchedulers_andSingleTask {
+
+		@Scheduled(fixedRate=10L)
+		public void task() {
+		}
+
+		@Bean
+		public TaskScheduler taskScheduler1() {
+			ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+			scheduler.setThreadNamePrefix("explicitScheduler1");
+			return scheduler;
+		}
+
+		@Bean
+		public TaskScheduler taskScheduler2() {
+			ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+			scheduler.setThreadNamePrefix("explicitScheduler2");
+			return scheduler;
+		}
+	}
+
+	@Test
+	public void withAmbiguousTaskSchedulers_andSingleTask_disambiguatedByScheduledTaskRegistrarBean() throws InterruptedException {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(SchedulingEnabled_withAmbiguousTaskSchedulers_andSingleTask_disambiguatedByScheduledTaskRegistrar.class);
+		ctx.refresh();
+		Thread.sleep(20);
+		ThreadAwareWorker worker = ctx.getBean(ThreadAwareWorker.class);
+		ctx.close();
+		assertThat(worker.executedByThread, startsWith("explicitScheduler2-"));
+	}
+
+
+	static class ThreadAwareWorker {
+		String executedByThread;
+	}
+
+
+	@Configuration
+	@EnableScheduling
+	static class SchedulingEnabled_withAmbiguousTaskSchedulers_andSingleTask_disambiguatedByScheduledTaskRegistrar {
+
+		@Scheduled(fixedRate=10)
+		public void task() {
+			worker().executedByThread = Thread.currentThread().getName();
+		}
+
+		@Bean
+		public ThreadAwareWorker worker() {
+			return new ThreadAwareWorker();
+		}
+
+		@Bean
+		public ScheduledTaskRegistrar taskRegistrar() {
+			ScheduledTaskRegistrar registrar = new ScheduledTaskRegistrar();
+			registrar.setScheduler(taskScheduler2());
+			return registrar;
+		}
+
+		@Bean
+		public TaskScheduler taskScheduler1() {
+			ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+			scheduler.setThreadNamePrefix("explicitScheduler1-");
+			return scheduler;
+		}
+
+		@Bean
+		public TaskScheduler taskScheduler2() {
+			ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+			scheduler.setThreadNamePrefix("explicitScheduler2-");
+			return scheduler;
+		}
+	}
+
+
+	@Test
+	public void withAmbiguousTaskSchedulers_andSingleTask_disambiguatedBySchedulerNameAttribute() throws InterruptedException {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(SchedulingEnabled_withAmbiguousTaskSchedulers_andSingleTask_disambiguatedBySchedulerNameAttribute.class);
+		ctx.refresh();
+		Thread.sleep(20);
+		ThreadAwareWorker worker = ctx.getBean(ThreadAwareWorker.class);
+		ctx.close();
+		assertThat(worker.executedByThread, startsWith("explicitScheduler2-"));
+	}
+
+
+	@Configuration
+	@EnableScheduling(schedulerName="taskScheduler2")
+	static class SchedulingEnabled_withAmbiguousTaskSchedulers_andSingleTask_disambiguatedBySchedulerNameAttribute {
+
+		@Scheduled(fixedRate=10)
+		public void task() {
+			worker().executedByThread = Thread.currentThread().getName();
+		}
+
+		@Bean
+		public ThreadAwareWorker worker() {
+			return new ThreadAwareWorker();
+		}
+
+		@Bean
+		public TaskScheduler taskScheduler1() {
+			ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+			scheduler.setThreadNamePrefix("explicitScheduler1-");
+			return scheduler;
+		}
+
+		@Bean
+		public TaskScheduler taskScheduler2() {
+			ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+			scheduler.setThreadNamePrefix("explicitScheduler2-");
 			return scheduler;
 		}
 	}

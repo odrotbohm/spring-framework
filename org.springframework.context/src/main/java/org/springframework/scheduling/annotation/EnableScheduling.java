@@ -28,4 +28,17 @@ import org.springframework.context.annotation.Enable;
 @Enable(value=SchedulingCapability.class)
 public @interface EnableScheduling {
 
+	/**
+	 * Indicate the name of the {@code TaskScheduler} or {@code ScheduledExecutorService}
+	 * bean to use for processing @{@link Scheduled} tasks.
+	 * <p>By default a {@code TaskScheduler} or {@code ScheduledExecutoryService} bean
+	 * will be looked up by type. In cases where two or more such beans are present in
+	 * the container, this attribute may be used to distinguish which one should be used
+	 * for annotation-driven task scheduling.
+	 * <p>As another alternative to using this attribute, consider registering a
+	 * {@link org.springframework.scheduling.config.ScheduledTaskRegistrar} bean and
+	 * wiring the scheduler bean against it directly.
+	 */
+	String schedulerName() default "";
+
 }
