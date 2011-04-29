@@ -43,7 +43,6 @@ import org.springframework.http.converter.xml.XmlAwareFormHttpMessageConverter;
 import org.springframework.util.ClassUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.context.ServletContextAware;
@@ -163,7 +162,8 @@ class MvcConfiguration implements ApplicationContextAware, ServletContextAware {
 			return validator;
 		}
 		else if (ClassUtils.isPresent("javax.validation.Validator", getClass().getClassLoader())) {
-			LocalValidatorFactoryBean jsr303Validator = new LocalValidatorFactoryBean();
+			org.springframework.validation.beanvalidation.LocalValidatorFactoryBean jsr303Validator =
+				new org.springframework.validation.beanvalidation.LocalValidatorFactoryBean();
 			configurers.configureValidator(jsr303Validator);
 			return jsr303Validator;
 		} 

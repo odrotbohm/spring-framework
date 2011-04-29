@@ -70,7 +70,7 @@ public interface MvcConfigurer {
 	 * type. Note that this method is invoked only if JSR-303 is available on the classpath and if  
 	 * {@link #getCustomValidator()} is not used (i.e. returns {@code null}).
 	 */
-	void configureValidator(LocalValidatorFactoryBean validator);
+	void configureValidator(Validator validator);
 
 	/**
 	 * Provide a custom {@link Validator} type to replacing the one that would be created by default otherwise.

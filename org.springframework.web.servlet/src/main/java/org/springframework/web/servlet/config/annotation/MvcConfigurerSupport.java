@@ -21,7 +21,6 @@ import java.util.List;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.validation.Validator;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
@@ -52,7 +51,7 @@ public abstract class MvcConfigurerSupport implements MvcConfigurer {
 	 * {@inheritDoc}
 	 * <p>This implementation is empty.
 	 */
-	public void configureValidator(LocalValidatorFactoryBean validator) {
+	public void configureValidator(Validator validator) {
 	}
 
 	/**

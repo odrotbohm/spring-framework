@@ -56,7 +56,7 @@ class MvcConfigurerComposite implements MvcConfigurer {
 		}
 	}
 
-	public void configureValidator(LocalValidatorFactoryBean validator) {
+	public void configureValidator(Validator validator) {
 		for (MvcConfigurer configurer : configurers) {
 			configurer.configureValidator(validator);
 		}
