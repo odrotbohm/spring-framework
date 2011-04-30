@@ -23,14 +23,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.context.annotation.Enable;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.config.AdviceMode;
 import org.springframework.core.Ordered;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@Import(AsyncConfiguration.class)
 @Documented
-@Enable(AsyncCapability.class)
 public @interface EnableAsync {
 
 	/**

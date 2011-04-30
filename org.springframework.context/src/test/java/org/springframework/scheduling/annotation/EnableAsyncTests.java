@@ -18,14 +18,21 @@ package org.springframework.scheduling.annotation;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import org.junit.Test;
+import org.springframework.aop.Advisor;
+import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 
 /**
  * Tests use of @EnableAsync on @Configuration classes.
@@ -92,6 +99,48 @@ public class EnableAsyncTests {
 		@Bean
 		public AsyncBean asyncBean() {
 			return new AsyncBean();
+		}
+	}
+
+
+	@Test
+	public void customAsyncAnnotationIsPropagated() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(CustomAsyncAnnotationConfig.class);
+		ctx.refresh();
+
+		Object bean = ctx.getBean(CustomAsyncBean.class);
+		assertTrue(AopUtils.isAopProxy(bean));
+		boolean isAsyncAdvised = false;
+		for (Advisor advisor : ((Advised)bean).getAdvisors()) {
+			if (advisor instanceof AsyncAnnotationAdvisor) {
+				isAsyncAdvised = true;
+				break;
+			}
+		}
+		assertTrue("bean was not async advised as expected", isAsyncAdvised);
+	}
+
+
+	@Configuration
+	@EnableAsync(annotation=CustomAsync.class)
+	static class CustomAsyncAnnotationConfig {
+		@Bean
+		public CustomAsyncBean asyncBean() {
+			return new CustomAsyncBean();
+		}
+	}
+
+
+	@Target(ElementType.METHOD)
+	@Retention(RetentionPolicy.RUNTIME)
+	@interface CustomAsync {
+	}
+
+
+	static class CustomAsyncBean {
+		@CustomAsync
+		public void work() {
 		}
 	}
 }
