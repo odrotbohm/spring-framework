@@ -27,7 +27,12 @@ import java.lang.annotation.Target;
 import java.util.Map;
 
 import org.junit.Test;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor;
 
 /**
  * Tests that an ImportAware @Configuration classes gets injected with the
@@ -44,6 +49,8 @@ public class ImportAwareTests {
 		ctx.register(ImportingConfig.class);
 		ctx.refresh();
 
+		ctx.getBean("importedConfigBean");
+
 		ImportedConfig importAwareConfig = ctx.getBean(ImportedConfig.class);
 		AnnotationMetadata importMetadata = importAwareConfig.importMetadata;
 		assertThat("import metadata was not injected", importMetadata, notNullValue());
@@ -58,6 +65,8 @@ public class ImportAwareTests {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		ctx.register(IndirectlyImportingConfig.class);
 		ctx.refresh();
+
+		ctx.getBean("importedConfigBean");
 
 		ImportedConfig importAwareConfig = ctx.getBean(ImportedConfig.class);
 		AnnotationMetadata importMetadata = importAwareConfig.importMetadata;
@@ -97,5 +106,32 @@ public class ImportAwareTests {
 			this.importMetadata = importMetadata;
 		}
 
+		@Bean
+		public BPP importedConfigBean() {
+			return new BPP();
+		}
+
+		@Bean
+		public AsyncAnnotationBeanPostProcessor asyncBPP() {
+			return new AsyncAnnotationBeanPostProcessor();
+		}
+	}
+
+
+	static class BPP implements BeanFactoryAware, BeanPostProcessor {
+
+		public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+			// TODO Auto-generated method stub
+			return bean;
+		}
+
+		public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+			// TODO Auto-generated method stub
+			return bean;
+		}
+
+		public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+			System.out.println("ImportAwareTests.BPP.setBeanFactory()");
+		}
 	}
 }

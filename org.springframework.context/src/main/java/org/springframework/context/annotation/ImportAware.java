@@ -33,6 +33,6 @@ public interface ImportAware extends Aware {
 	/**
 	 * Set the annotation metadata of the importing @{@code Configuration} class.
 	 */
-	void setImportMetadata(AnnotationMetadata metadata);
+	void setImportMetadata(AnnotationMetadata importMetadata);
 
 }

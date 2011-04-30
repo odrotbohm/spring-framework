@@ -48,6 +48,7 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ConfigurationClassParser.ImportRegistry;
 import org.springframework.core.Ordered;
+import org.springframework.core.PriorityOrdered;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
@@ -297,7 +298,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 
-	private static class ImportAwareBeanPostProcessor implements BeanFactoryAware, BeanPostProcessor {
+	private static class ImportAwareBeanPostProcessor implements PriorityOrdered, BeanFactoryAware, BeanPostProcessor {
 
 		private BeanFactory beanFactory;
 
@@ -327,6 +328,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 			return bean;
+		}
+
+		public int getOrder() {
+			return Ordered.HIGHEST_PRECEDENCE;
 		}
 	}
 }
