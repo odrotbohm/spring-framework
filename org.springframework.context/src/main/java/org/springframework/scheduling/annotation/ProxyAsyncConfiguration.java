@@ -17,35 +17,31 @@
 package org.springframework.scheduling.annotation;
 
 import java.lang.annotation.Annotation;
-import java.util.Map;
 
+import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
 
+/**
+ * Enables proxy-based asynchronous method execution.
+ *
+ * @author Chris Beams
+ * @since 3.1
+ * @see EnableAsync
+ * @see EnableAsync#mode
+ */
 @Configuration
-public class AsyncConfiguration implements ImportAware {
+public class ProxyAsyncConfiguration extends AbstractAsyncConfiguration {
 
-	private Map<String, Object> enableAsync;
-
-	public void setImportMetadata(AnnotationMetadata importMetadata) {
-		enableAsync = importMetadata.getAnnotationAttributes(EnableAsync.class.getName(), false);
-		Assert.notNull(enableAsync,
-				"@EnableAsync is not present on importing class " +
-				importMetadata.getClassName());
-	}
-
-	@Bean
+	@Override
+	@Bean(name=AnnotationConfigUtils.ASYNC_ANNOTATION_PROCESSOR_BEAN_NAME)
 	//@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-	public AsyncAnnotationBeanPostProcessor asyncAnnotationBeanPostProcessor() {
+	public AsyncAnnotationBeanPostProcessor asyncAdvisor() {
 		Assert.notNull(enableAsync, "@EnableAsync annotation metadata was not injected");
 
 		AsyncAnnotationBeanPostProcessor bpp = new AsyncAnnotationBeanPostProcessor();
-
-		bpp.setOrder(((Integer) enableAsync.get("order")));
 
 		@SuppressWarnings("unchecked")
 		Class<? extends Annotation> customAsyncAnnotation =
@@ -53,6 +49,14 @@ public class AsyncConfiguration implements ImportAware {
 		if (customAsyncAnnotation != AnnotationUtils.getDefaultValue(EnableAsync.class, "annotation")) {
 			bpp.setAsyncAnnotationType(customAsyncAnnotation);
 		}
+
+		if (this.executor != null) {
+			bpp.setExecutor(this.executor);
+		}
+
+		bpp.setProxyTargetClass((Boolean) enableAsync.get("proxyTargetClass"));
+
+		bpp.setOrder(((Integer) enableAsync.get("order")));
 
 		return bpp;
 	}

@@ -17,6 +17,7 @@
 package org.springframework.scheduling.annotation;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -24,15 +25,19 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.concurrent.Executor;
 
 import org.junit.Test;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.config.AdviceMode;
 import org.springframework.core.Ordered;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
  * Tests use of @EnableAsync on @Configuration classes.
@@ -65,8 +70,15 @@ public class EnableAsyncTests {
 
 
 	static class AsyncBean {
+		private Thread threadOfExecution;
+
 		@Async
 		public void work() {
+			this.threadOfExecution = Thread.currentThread();
+		}
+
+		public Thread getThreadOfExecution() {
+			return threadOfExecution;
 		}
 	}
 
@@ -142,5 +154,58 @@ public class EnableAsyncTests {
 		@CustomAsync
 		public void work() {
 		}
+	}
+
+
+	/**
+	 * Fails with classpath errors on trying to classload AnnotationAsyncExecutionAspect
+	 */
+	@Test(expected=BeanDefinitionStoreException.class)
+	public void aspectModeAspectJAttemptsToRegisterAsyncAspect() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(AspectJAsyncAnnotationConfig.class);
+		ctx.refresh();
+	}
+
+
+	@Configuration
+	@EnableAsync(mode=AdviceMode.ASPECTJ)
+	static class AspectJAsyncAnnotationConfig {
+		@Bean
+		public AsyncBean asyncBean() {
+			return new AsyncBean();
+		}
+	}
+
+
+	@Test
+	public void customExecutorIsPropagated() throws InterruptedException {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(CustomExecutorAsyncConfig.class);
+		ctx.refresh();
+
+		AsyncBean asyncBean = ctx.getBean(AsyncBean.class);
+		asyncBean.work();
+		Thread.sleep(500);
+		ctx.close();
+		assertThat(asyncBean.getThreadOfExecution().getName(), startsWith("Custom-"));
+	}
+
+
+	@Configuration
+	@EnableAsync
+	static class CustomExecutorAsyncConfig implements AsyncConfigurationCustomizer {
+		@Bean
+		public AsyncBean asyncBean() {
+			return new AsyncBean();
+		}
+
+		public Executor getExecutor() {
+			ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+			executor.setThreadNamePrefix("Custom-");
+			executor.initialize();
+			return executor;
+		}
+
 	}
 }

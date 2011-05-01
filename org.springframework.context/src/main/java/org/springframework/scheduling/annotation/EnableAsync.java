@@ -27,9 +27,60 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.config.AdviceMode;
 import org.springframework.core.Ordered;
 
+/**
+ * Enables Spring's asynchronous method execution capability. To be used
+ * on @{@link Configuration} classes as follows:
+ *
+ * <pre class="code">
+ * &#064;Configuration
+ * &#064;EnableAsync
+ * public class AppConfig {
+ *     &#064;Bean
+ *     public MyAsyncBean asyncBean() {
+ *         return new MyAsyncBean();
+ *     }
+ * }</pre>
+ *
+ * <p>The various attributes of the annotation control how advice
+ * is applied ({@link #mode()}), and if the mode is {@link AdviceMode#PROXY}
+ * (the default), the other attributes control the behavior of the proxying.
+ *
+ * <p>Note that if the {@linkplain #mode} is set to {@link AdviceMode#ASPECTJ}
+ * the {@code org.springframework.aspects} module must be present on the classpath.
+ *
+ * <p>By default, a {@link org.springframework.core.task.SimpleAsyncTaskExecutor
+ * SimpleAsyncTaskExecutor} will be used to process async method invocations. To
+ * customize this behavior, implement {@link AsyncConfigurationCustomizer} and
+ * provide your own {@link java.util.concurrent.Executor Executor} through the
+ * {@link AsyncConfigurationCustomizer#getExecutor() getExecutor()} method.
+ *
+ * <pre class="code">
+ * &#064;Configuration
+ * &#064;EnableAsync
+ * public class AppConfig implements AsyncConfigurationCustomizer {
+ *
+ *     &#064;Bean
+ *     public MyAsyncBean asyncBean() {
+ *         return new MyAsyncBean();
+ *     }
+ *
+ *     public Executor getExecutor() {
+ *         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+ *         executor.setThreadNamePrefix("Custom-");
+ *         executor.initialize();
+ *         return executor;
+ *     }
+ * }</pre>
+ *
+ * @author Chris Beams
+ * @since 3.1
+ * @see Async
+ * @see AsyncConfigurationCustomizer
+ * @see AsyncConfigurationSelector
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Import(AsyncConfiguration.class)
+@Import(AsyncConfigurationSelector.class)
 @Documented
 public @interface EnableAsync {
 
@@ -42,14 +93,6 @@ public @interface EnableAsync {
 	 * (or all methods of a given class) should be invoked asynchronously.
 	 */
 	Class<? extends Annotation> annotation() default Annotation.class;
-
-	/**
-	 * Indicate the name of the {@link java.util.Executor} bean to use
-	 * when invoking asynchronous methods. If not provided, an instance
-	 * of {@link org.springframework.core.task.SimpleAsyncTaskExecutor}
-	 * will be used by default.
-	 */
-	String executorName() default "";
 
 	/**
 	 * Indicate whether class-based (CGLIB) proxies are to be created as opposed
