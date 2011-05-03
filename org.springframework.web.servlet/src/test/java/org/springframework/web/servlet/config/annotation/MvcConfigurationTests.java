@@ -36,8 +36,8 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver;
+import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMethodAdapter;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMethodExceptionResolver;
 import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
 
 /**
@@ -113,7 +113,7 @@ public class MvcConfigurationTests {
 		mvcConfiguration.handlerExceptionResolver();
 
 		assertEquals(3, exceptionResolvers.getValue().size());
-		assertTrue(exceptionResolvers.getValue().get(0) instanceof RequestMappingHandlerMethodExceptionResolver);
+		assertTrue(exceptionResolvers.getValue().get(0) instanceof ExceptionHandlerExceptionResolver);
 		assertTrue(exceptionResolvers.getValue().get(1) instanceof ResponseStatusExceptionResolver);
 		assertTrue(exceptionResolvers.getValue().get(2) instanceof DefaultHandlerExceptionResolver);
 		assertTrue(converters.getValue().size() > 0);

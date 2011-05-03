@@ -60,8 +60,8 @@ import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter;
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter;
 import org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver;
+import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMethodAdapter;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMethodExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMethodMapping;
 import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
 import org.springframework.web.servlet.resource.DefaultServletHttpRequestHandler;
@@ -238,7 +238,7 @@ class MvcConfiguration implements ApplicationContextAware, ServletContextAware {
 	}
 
 	private HandlerExceptionResolver annotationHandlerExceptionResolver() throws Exception {
-		RequestMappingHandlerMethodExceptionResolver resolver = new RequestMappingHandlerMethodExceptionResolver();
+		ExceptionHandlerExceptionResolver resolver = new ExceptionHandlerExceptionResolver();
 
 		List<HttpMessageConverter<?>> converters = getDefaultHttpMessageConverters();
 		configurers.configureMessageConverters(converters);
