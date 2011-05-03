@@ -22,7 +22,9 @@ import java.util.List;
 import javax.servlet.ServletContext;
 import javax.xml.transform.Source;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -157,15 +159,21 @@ class MvcConfiguration implements ApplicationContextAware, ServletContextAware {
 
 	@Bean(name="mvcValidator")
 	Validator validator() {
-		Validator validator = configurers.getCustomValidator();
+		Validator validator = configurers.getValidator();
 		if (validator != null) {
 			return validator;
 		}
 		else if (ClassUtils.isPresent("javax.validation.Validator", getClass().getClassLoader())) {
-			org.springframework.validation.beanvalidation.LocalValidatorFactoryBean jsr303Validator =
-				new org.springframework.validation.beanvalidation.LocalValidatorFactoryBean();
-			configurers.configureValidator(jsr303Validator);
-			return jsr303Validator;
+			Class<?> clazz;
+			try {
+				String className = "org.springframework.validation.beanvalidation.LocalValidatorFactoryBean";
+				clazz = ClassUtils.forName(className, MvcConfiguration.class.getClassLoader());
+			} catch (ClassNotFoundException e) {
+				throw new BeanInitializationException("Could not find default validator");
+			} catch (LinkageError e) {
+				throw new BeanInitializationException("Could not find default validator");
+			}
+			return (Validator) BeanUtils.instantiate(clazz);
 		} 
 		else {
 			return new Validator() {

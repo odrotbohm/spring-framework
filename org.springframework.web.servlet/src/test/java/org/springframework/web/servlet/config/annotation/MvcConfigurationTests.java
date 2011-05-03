@@ -60,13 +60,11 @@ public class MvcConfigurationTests {
 	
 	@Test
 	public void annotationHandlerAdapter() {
-		Capture<LocalValidatorFactoryBean> validator = new Capture<LocalValidatorFactoryBean>();
 		Capture<FormattingConversionService> conversionService = new Capture<FormattingConversionService>();
 		Capture<List<HandlerMethodArgumentResolver>> resolvers = new Capture<List<HandlerMethodArgumentResolver>>();
 		Capture<List<HttpMessageConverter<?>>> converters = new Capture<List<HttpMessageConverter<?>>>();
 
-		expect(configurer.getCustomValidator()).andReturn(null);
-		configurer.configureValidator(capture(validator));
+		expect(configurer.getValidator()).andReturn(null);
 		configurer.registerFormatters(capture(conversionService));
 		configurer.addCustomArgumentResolvers(capture(resolvers));
 		configurer.configureMessageConverters(capture(converters));
@@ -85,7 +83,7 @@ public class MvcConfigurationTests {
 
 	@Test
 	public void getCustomValidator() {
-		expect(configurer.getCustomValidator()).andReturn(new LocalValidatorFactoryBean());
+		expect(configurer.getValidator()).andReturn(new LocalValidatorFactoryBean());
 		replay(configurer);
 
 		mvcConfiguration.validator();
@@ -95,10 +93,7 @@ public class MvcConfigurationTests {
 	
 	@Test
 	public void configureValidator() {
-		Capture<LocalValidatorFactoryBean> validator = new Capture<LocalValidatorFactoryBean>();
-
-		expect(configurer.getCustomValidator()).andReturn(null);
-		configurer.configureValidator(capture(validator));
+		expect(configurer.getValidator()).andReturn(null);
 		replay(configurer);
 
 		mvcConfiguration.validator();

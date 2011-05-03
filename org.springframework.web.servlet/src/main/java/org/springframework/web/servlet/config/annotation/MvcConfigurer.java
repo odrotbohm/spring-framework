@@ -24,8 +24,6 @@ import org.springframework.format.Formatter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.validation.Validator;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -65,21 +63,11 @@ public interface MvcConfigurer {
 	void configureMessageConverters(List<HttpMessageConverter<?>> converters);
 
 	/**
-	 * Configure the default JSR-303 validator to use after data binding on @{@link ModelAttribute} method arguments.
-	 * Alternatively, see {@link #getCustomValidator()} if you want to provide your own custom {@link Validator} 
-	 * type. Note that this method is invoked only if JSR-303 is available on the classpath and if  
-	 * {@link #getCustomValidator()} is not used (i.e. returns {@code null}).
+	 * Provide a custom {@link Validator} type replacing the one that would be created by default otherwise. If this 
+	 * method returns {@code null}, and assuming a JSR-303 implementation is available on the classpath, a validator
+	 * of type {@link org.springframework.validation.beanvalidation.LocalValidatorFactoryBean} is created by default. 
 	 */
-	void configureValidator(Validator validator);
-
-	/**
-	 * Provide a custom {@link Validator} type to replacing the one that would be created by default otherwise.
-	 * <p>If this method returns a validator instance, the method {@link #configureValidator(LocalValidatorFactoryBean)} 
-	 * is not invoked. Therefore the returned validator should have its properties set as necessary. 
-	 * <p>If this method returns {@code null}, then the {@link LocalValidatorFactoryBean} is created and used 
-	 * assuming JSR-303 is available on the classpath. 
-	 */
-	Validator getCustomValidator();
+	Validator getValidator();
 
 	/**
 	 * Add custom {@link HandlerMethodArgumentResolver}s to use for resolving method argument values 

@@ -58,7 +58,7 @@ public abstract class MvcConfigurerSupport implements MvcConfigurer {
 	 * {@inheritDoc}
 	 * <p>This implementation returns {@code null}
 	 */
-	public Validator getCustomValidator() {
+	public Validator getValidator() {
 		return null;
 	}
 

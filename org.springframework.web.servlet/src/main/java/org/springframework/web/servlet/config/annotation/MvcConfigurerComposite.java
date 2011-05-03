@@ -24,7 +24,6 @@ import java.util.Map;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.validation.Validator;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
@@ -53,12 +52,6 @@ class MvcConfigurerComposite implements MvcConfigurer {
 	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
 		for (MvcConfigurer configurer : configurers) {
 			configurer.configureMessageConverters(converters);
-		}
-	}
-
-	public void configureValidator(Validator validator) {
-		for (MvcConfigurer configurer : configurers) {
-			configurer.configureValidator(validator);
 		}
 	}
 
@@ -98,10 +91,10 @@ class MvcConfigurerComposite implements MvcConfigurer {
 		}
 	}
 
-	public Validator getCustomValidator() {
+	public Validator getValidator() {
 		Map<MvcConfigurer, Validator> validators = new HashMap<MvcConfigurer, Validator>(); 
 		for (MvcConfigurer configurer : configurers) {
-			Validator validator = configurer.getCustomValidator();
+			Validator validator = configurer.getValidator();
 			if (validator != null) {
 				validators.put(configurer, validator);
 			}
