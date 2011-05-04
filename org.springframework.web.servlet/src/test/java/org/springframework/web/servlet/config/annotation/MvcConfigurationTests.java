@@ -21,6 +21,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver;
@@ -72,7 +74,9 @@ public class MvcConfigurationTests {
 
 		RequestMappingHandlerMethodAdapter adapter = mvcConfiguration.requestMappingHandlerAdapter();
 
-		// TODO: use getBindingInitializer() to check conversionService, validator
+		ConfigurableWebBindingInitializer initializer = (ConfigurableWebBindingInitializer) adapter.getWebBindingInitializer();
+		assertSame(conversionService.getValue(), initializer.getConversionService());
+		assertTrue(initializer.getValidator() instanceof LocalValidatorFactoryBean);
 		
 		assertEquals(0, resolvers.getValue().size());
 		assertTrue(converters.getValue().size() > 0);

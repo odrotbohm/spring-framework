@@ -44,12 +44,15 @@ public class ServletModelAttributeMethodProcessor extends ModelAttributeMethodPr
 	}
 
 	/**
-	 * Expects the data binder to be an instance of {@link ServletRequestDataBinder}.
+	 * {@inheritDoc}
+	 * <p>This method downcasts the binder instance to {@link ServletRequestDataBinder} and invokes
+	 * its bind method passing a {@link ServletRequest} to it.
 	 */
 	@Override
 	protected void doBind(WebDataBinder binder, NativeWebRequest request) {
 		ServletRequest servletRequest = request.getNativeRequest(ServletRequest.class);
-		((ServletRequestDataBinder) binder).bind(servletRequest);
+		ServletRequestDataBinder servletBinder = (ServletRequestDataBinder) binder;
+		servletBinder.bind(servletRequest);
 	}
 
 }

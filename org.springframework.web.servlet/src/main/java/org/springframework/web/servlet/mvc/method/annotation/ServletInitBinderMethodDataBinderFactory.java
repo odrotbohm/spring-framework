@@ -30,7 +30,9 @@ import org.springframework.web.method.support.InvocableHandlerMethod;
 import org.springframework.web.servlet.HandlerMapping;
 
 /**
- * An {@link InitBinderMethodDataBinderFactory} that creates a {@link ServletRequestDataBinder}. 
+ * An {@link InitBinderMethodDataBinderFactory} variation instantiating a data binder of type 
+ * {@link ServletRequestDataBinder} and further extending it with the ability to add URI template variables 
+ * to the values used in data binding.
  * 
  * @author Rossen Stoyanchev
  * @since 3.1
@@ -48,33 +50,43 @@ public class ServletInitBinderMethodDataBinderFactory extends InitBinderMethodDa
 	}
 
 	/**
-	 * Creates a Servlet data binder.
+	 * {@inheritDoc}
+	 * <p>This method creates a {@link ServletRequestDataBinder} instance that also adds URI template variables to
+	 * the values used in data binding.
+	 * <p>Subclasses wishing to override this method to provide their own ServletRequestDataBinder type can use the
+	 * {@link #addUriTemplateVariables(MutablePropertyValues)} method to include URI template variables as follows:
+	 * <pre>
+	 * return new CustomServletRequestDataBinder(target, objectName) {
+	 *    protected void doBind(MutablePropertyValues mpvs) {
+	 *        addUriTemplateVariables(mpvs);
+	 *        super.doBind(mpvs);
+	 *    }
+	 * };
+	 * </pre>
 	 */
 	@Override
 	protected WebDataBinder createBinderInstance(Object target, String objectName) {
-		return new ServletRequestPathVarDataBinder(target, objectName);
+		return new ServletRequestDataBinder(target, objectName) {
+
+			protected void doBind(MutablePropertyValues mpvs) {
+				addUriTemplateVariables(mpvs);
+				super.doBind(mpvs);
+			}
+		};
 	}
 
 	/**
-	 * Adds URI template variables to the map of request values used to do data binding. 
+	 * Adds URI template variables to the given property values. 
+	 * @param mpvs the PropertyValues to add URI template variables to
 	 */
-	private static class ServletRequestPathVarDataBinder extends ServletRequestDataBinder {
-
-		public ServletRequestPathVarDataBinder(Object target, String objectName) {
-			super(target, objectName);
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		protected void doBind(MutablePropertyValues mpvs) {
-			RequestAttributes requestAttrs = RequestContextHolder.getRequestAttributes();
-			if (requestAttrs != null) {
-				String key = HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE;
-				int scope = RequestAttributes.SCOPE_REQUEST;
-				Map<String, String> uriTemplateVars = (Map<String, String>) requestAttrs.getAttribute(key, scope);
-				mpvs.addPropertyValues(uriTemplateVars);
-			}
-			super.doBind(mpvs);
+	@SuppressWarnings("unchecked")
+	protected void addUriTemplateVariables(MutablePropertyValues mpvs) {
+		RequestAttributes requestAttrs = RequestContextHolder.getRequestAttributes();
+		if (requestAttrs != null) {
+			String key = HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE;
+			int scope = RequestAttributes.SCOPE_REQUEST;
+			Map<String, String> uriTemplateVars = (Map<String, String>) requestAttrs.getAttribute(key, scope);
+			mpvs.addPropertyValues(uriTemplateVars);
 		}
 	}
 	

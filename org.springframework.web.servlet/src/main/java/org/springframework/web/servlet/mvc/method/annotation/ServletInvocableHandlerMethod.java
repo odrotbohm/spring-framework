@@ -30,7 +30,6 @@ import org.springframework.web.method.support.HandlerMethodReturnValueHandlerCom
 import org.springframework.web.method.support.InvocableHandlerMethod;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.mvc.method.annotation.support.ServletResponseMethodArgumentResolver;
 
 /**
  * Extends {@link InvocableHandlerMethod} with the ability to handle the value returned from the method through 
