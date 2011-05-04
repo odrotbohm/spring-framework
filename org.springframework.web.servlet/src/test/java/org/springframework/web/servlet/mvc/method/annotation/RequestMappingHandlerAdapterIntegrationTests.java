@@ -95,11 +95,11 @@ import org.springframework.web.servlet.mvc.method.annotation.support.ServletWebA
  * 
  * @author Rossen Stoyanchev
  */
-public class RequestMappingHandlerMethodAdapterIntegrationTests {
+public class RequestMappingHandlerAdapterIntegrationTests {
 
 	private final Object handler = new Handler();
 	
-	private RequestMappingHandlerMethodAdapter handlerAdapter;
+	private RequestMappingHandlerAdapter handlerAdapter;
 	
 	private MockHttpServletRequest request;
 	
@@ -116,7 +116,7 @@ public class RequestMappingHandlerMethodAdapterIntegrationTests {
 		GenericWebApplicationContext context = new GenericWebApplicationContext();
 		context.refresh();
 
-		handlerAdapter = new RequestMappingHandlerMethodAdapter();
+		handlerAdapter = new RequestMappingHandlerAdapter();
 		handlerAdapter.setWebBindingInitializer(bindingInitializer);
 		handlerAdapter.setCustomArgumentResolvers(customResolvers);
 		handlerAdapter.setApplicationContext(context);
@@ -161,7 +161,7 @@ public class RequestMappingHandlerMethodAdapterIntegrationTests {
 
 		System.setProperty("systemHeader", "systemHeaderValue");
 
-		/* Set up path variables as RequestMappingHandlerMethodMapping would... */
+		/* Set up path variables as RequestMappingHandlerMapping would... */
 		Map<String, String> uriTemplateVars = new HashMap<String, String>();
 		uriTemplateVars.put("pathvar", "pathvarValue");
 		request.setAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, uriTemplateVars);

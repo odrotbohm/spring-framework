@@ -53,7 +53,7 @@ import org.springframework.web.servlet.mvc.method.condition.RequestConditionFact
  * @author Rossen Stoyanchev
  * @since 3.1.0
  */
-public class RequestMappingHandlerMethodMapping extends AbstractHandlerMethodMapping<RequestMappingInfo> {
+public class RequestMappingHandlerMapping extends AbstractHandlerMethodMapping<RequestMappingInfo> {
 
 	private PathMatcher pathMatcher = new AntPathMatcher();
 
@@ -214,7 +214,7 @@ public class RequestMappingHandlerMethodMapping extends AbstractHandlerMethodMap
 	 * <ul><li>Each RequestMappingInfo has been fully matched to the request <li>The RequestMappingInfo contains 
 	 * matched patterns only <li>Patterns are ordered with the best matching pattern at the top </ul>
 	 *
-	 * @see RequestMappingHandlerMethodMapping#getMatchingMapping(RequestMappingInfo, String, HttpServletRequest)
+	 * @see RequestMappingHandlerMapping#getMatchingMapping(RequestMappingInfo, String, HttpServletRequest)
 	 */
 	private class RequestMappingInfoComparator implements Comparator<RequestMappingInfo> {
 

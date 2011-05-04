@@ -71,7 +71,7 @@ import org.springframework.web.servlet.mvc.method.annotation.support.ViewMethodR
  * {@link ExceptionMethodMapping} assists with actually locating a method for a thrown exception.  
  * 
  * <p>Once located the invocation of the exception-handling method is done using much of the same classes
- * used for {@link RequestMapping} methods, which is described under {@link RequestMappingHandlerMethodAdapter}.
+ * used for {@link RequestMapping} methods, which is described under {@link RequestMappingHandlerAdapter}.
  *  
  * <p>See {@link ExceptionHandler} for information on supported method arguments and return values for 
  * exception-handling methods. 

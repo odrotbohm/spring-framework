@@ -601,10 +601,10 @@ public class UriTemplateServletHandlerMethodTests {
 				GenericWebApplicationContext wac = new GenericWebApplicationContext();
 				wac.registerBeanDefinition("controller", new RootBeanDefinition(controllerClass));
 				
-				Class<?> mappingType = RequestMappingHandlerMethodMapping.class;
+				Class<?> mappingType = RequestMappingHandlerMapping.class;
 				wac.registerBeanDefinition("handlerMapping", new RootBeanDefinition(mappingType));
 				
-				Class<?> adapterType = RequestMappingHandlerMethodAdapter.class;
+				Class<?> adapterType = RequestMappingHandlerAdapter.class;
 				wac.registerBeanDefinition("handlerAdapter", new RootBeanDefinition(adapterType));
 				
 				Class<?> resolverType = ExceptionHandlerExceptionResolver.class;

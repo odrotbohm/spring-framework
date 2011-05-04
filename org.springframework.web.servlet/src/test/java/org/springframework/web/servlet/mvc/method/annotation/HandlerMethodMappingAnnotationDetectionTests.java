@@ -80,13 +80,13 @@ public class HandlerMethodMappingAnnotationDetectionTests {
 	public void detectAndMapHandlerMethod() throws Exception {
 		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/type/handle");
 
-		RequestMappingHandlerMethodMapping mapping = createHandlerMapping(handler.getClass(), useAutoProxy);
+		RequestMappingHandlerMapping mapping = createHandlerMapping(handler.getClass(), useAutoProxy);
 		HandlerMethod handlerMethod = (HandlerMethod) mapping.getHandler(request).getHandler();
 
 		assertNotNull("Failed to detect and map @RequestMapping handler method", handlerMethod);
 	}
 
-	private RequestMappingHandlerMethodMapping createHandlerMapping(Class<?> controllerType, boolean useAutoProxy) {
+	private RequestMappingHandlerMapping createHandlerMapping(Class<?> controllerType, boolean useAutoProxy) {
 		GenericWebApplicationContext wac = new GenericWebApplicationContext();
 		wac.registerBeanDefinition("controller", new RootBeanDefinition(controllerType));
 		if (useAutoProxy) {
@@ -96,7 +96,7 @@ public class HandlerMethodMappingAnnotationDetectionTests {
 			wac.getBeanFactory().registerSingleton("advsr", new DefaultPointcutAdvisor(new SimpleTraceInterceptor()));
 		}
 
-		RequestMappingHandlerMethodMapping mapping = new RequestMappingHandlerMethodMapping();
+		RequestMappingHandlerMapping mapping = new RequestMappingHandlerMapping();
 		mapping.setApplicationContext(wac);
 		return mapping;
 	}
