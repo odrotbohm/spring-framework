@@ -59,7 +59,7 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.method.HandlerMethodSelector;
-import org.springframework.web.method.annotation.InitBinderMethodDataBinderFactory;
+import org.springframework.web.method.annotation.InitBinderDataBinderFactory;
 import org.springframework.web.method.annotation.ModelFactory;
 import org.springframework.web.method.annotation.SessionAttributesHandler;
 import org.springframework.web.method.annotation.support.ErrorsMethodArgumentResolver;
@@ -106,7 +106,7 @@ import org.springframework.web.util.WebUtils;
  * methods through registered {@link HandlerMethodReturnValueHandler}s resulting in a {@link ModelAndView}. 
  * 
  * <p>{@link ModelFactory} is another contributor that assists with the invocation of all {@link ModelAttribute} 
- * methods to populate a model while {@link InitBinderMethodDataBinderFactory} assists with the invocation of 
+ * methods to populate a model while {@link ServletRequestDataBinderFactory} assists with the invocation of 
  * {@link InitBinder} methods for initializing data binder instances when needed.
  * 
  * <p>This class is the central point that assembles all of mentioned contributors and invokes the actual 
@@ -535,7 +535,7 @@ public class RequestMappingHandlerMethodAdapter extends AbstractHandlerMethodAda
 			initBinderMethods.add(binderMethod);
 		}
 
-		return new ServletInitBinderMethodDataBinderFactory(initBinderMethods, this.webBindingInitializer);
+		return new ServletRequestDataBinderFactory(initBinderMethods, this.webBindingInitializer);
 	}
 
 	private ModelFactory createModelFactory(HandlerMethod handlerMethod, WebDataBinderFactory binderFactory) {
