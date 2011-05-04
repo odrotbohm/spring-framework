@@ -50,14 +50,14 @@ import org.springframework.core.Ordered;
  *
  * <p>By default, a {@link org.springframework.core.task.SimpleAsyncTaskExecutor
  * SimpleAsyncTaskExecutor} will be used to process async method invocations. To
- * customize this behavior, implement {@link AsyncConfigurationCustomizer} and
+ * customize this behavior, implement {@link AsyncConfigurer} and
  * provide your own {@link java.util.concurrent.Executor Executor} through the
- * {@link AsyncConfigurationCustomizer#getExecutor() getExecutor()} method.
+ * {@link AsyncConfigurer#getExecutor() getExecutor()} method.
  *
  * <pre class="code">
  * &#064;Configuration
  * &#064;EnableAsync
- * public class AppConfig implements AsyncConfigurationCustomizer {
+ * public class AppConfig implements AsyncConfigurer {
  *
  *     &#064;Bean
  *     public MyAsyncBean asyncBean() {
@@ -75,7 +75,7 @@ import org.springframework.core.Ordered;
  * @author Chris Beams
  * @since 3.1
  * @see Async
- * @see AsyncConfigurationCustomizer
+ * @see AsyncConfigurer
  * @see AsyncConfigurationSelector
  */
 @Target(ElementType.TYPE)

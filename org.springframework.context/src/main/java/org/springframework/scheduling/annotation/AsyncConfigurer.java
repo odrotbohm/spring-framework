@@ -30,7 +30,7 @@ import java.util.concurrent.Executor;
  * @see AbstractAsyncConfiguration
  * @see EnableAsync
  */
-public interface AsyncConfigurationCustomizer {
+public interface AsyncConfigurer {
 
 	/**
 	 * The {@link Executor} instance to be used when processing async

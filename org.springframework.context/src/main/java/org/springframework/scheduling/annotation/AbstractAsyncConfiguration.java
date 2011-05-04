@@ -55,19 +55,19 @@ public abstract class AbstractAsyncConfiguration implements ImportAware {
 	public abstract Object asyncAdvisor();
 
 	/**
-	 * Collect any {@link AsyncConfigurationCustomizer} beans through autowiring.
+	 * Collect any {@link AsyncConfigurer} beans through autowiring.
 	 */
 	@Autowired(required = false)
-	void setCustomizers(Collection<AsyncConfigurationCustomizer> customizers) {
-		if (customizers == null || customizers.isEmpty()) {
+	void setConfigurers(Collection<AsyncConfigurer> configurers) {
+		if (configurers == null || configurers.isEmpty()) {
 			return;
 		}
 
-		if (customizers.size() > 1) {
-			throw new IllegalStateException("only one AsyncCustomizationConfigurer may exist");
+		if (configurers.size() > 1) {
+			throw new IllegalStateException("only one AsyncConfigurer may exist");
 		}
 
-		AsyncConfigurationCustomizer customizer = customizers.iterator().next();
-		this.executor = customizer.getExecutor();
+		AsyncConfigurer configurer = configurers.iterator().next();
+		this.executor = configurer.getExecutor();
 	}
 }

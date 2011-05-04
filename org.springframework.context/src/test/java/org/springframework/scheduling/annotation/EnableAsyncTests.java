@@ -194,7 +194,7 @@ public class EnableAsyncTests {
 
 	@Configuration
 	@EnableAsync
-	static class CustomExecutorAsyncConfig implements AsyncConfigurationCustomizer {
+	static class CustomExecutorAsyncConfig implements AsyncConfigurer {
 		@Bean
 		public AsyncBean asyncBean() {
 			return new AsyncBean();
