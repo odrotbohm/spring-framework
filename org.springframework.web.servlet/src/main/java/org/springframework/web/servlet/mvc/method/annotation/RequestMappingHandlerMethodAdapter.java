@@ -59,7 +59,6 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.method.HandlerMethodSelector;
-import org.springframework.web.method.annotation.InitBinderDataBinderFactory;
 import org.springframework.web.method.annotation.ModelFactory;
 import org.springframework.web.method.annotation.SessionAttributesHandler;
 import org.springframework.web.method.annotation.support.ErrorsMethodArgumentResolver;

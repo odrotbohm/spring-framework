@@ -128,6 +128,12 @@ public class ModelAttributeMethodProcessor implements HandlerMethodArgumentResol
 		return binderFactory.createBinder(webRequest, target, attrName);
 	}
 	
+	/**
+	 * Bind the request to the target object contained in the provided binder instance. 
+	 * 
+	 * @param binder the binder with the target object to apply request values to
+	 * @param request the current request
+	 */
 	protected void doBind(WebDataBinder binder, NativeWebRequest request) {
 		((WebRequestDataBinder) binder).bind(request);
 	}
