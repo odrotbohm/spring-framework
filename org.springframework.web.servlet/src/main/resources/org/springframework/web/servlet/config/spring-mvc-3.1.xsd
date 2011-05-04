@@ -45,7 +45,7 @@
 							</xsd:annotation>
 						</xsd:attribute>
 					</xsd:complexType>
-				</xsd:element>			
+				</xsd:element>
 				<xsd:element name="argument-resolvers" minOccurs="0">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
@@ -60,7 +60,27 @@
 							<xsd:element ref="beans:bean" minOccurs="1" maxOccurs="unbounded">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[
-	The HttpMessageConverter bean definition.
+	The HandlerMethodArgumentResolver or WebArgumentResolver bean definition.
+									]]></xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>			
+				<xsd:element name="return-value-handlers" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+	Configures one or more HandlerMethodReturnValueHandler types to use for handling the return value from handler methods.
+	Using this configuration element is optional.
+	Using it does not override the built-in support for handling return values. 
+						]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element ref="beans:bean" minOccurs="1" maxOccurs="unbounded">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[
+	The HandlerMethodReturnValueHandler bean definition.
 									]]></xsd:documentation>
 								</xsd:annotation>
 							</xsd:element>
