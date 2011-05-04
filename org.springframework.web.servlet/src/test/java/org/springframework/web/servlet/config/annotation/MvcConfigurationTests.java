@@ -70,7 +70,7 @@ public class MvcConfigurationTests {
 		configurer.configureMessageConverters(capture(converters));
 		replay(configurer);
 
-		RequestMappingHandlerMethodAdapter adapter = mvcConfiguration.annotationHandlerAdapter();
+		RequestMappingHandlerMethodAdapter adapter = mvcConfiguration.requestMappingHandlerAdapter();
 
 		// TODO: use getBindingInitializer() to check conversionService, validator
 		
