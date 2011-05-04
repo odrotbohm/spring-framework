@@ -62,7 +62,7 @@ public class ResourceConfigurer {
 	
 	private Integer cachePeriod;
 
-	private int order = Integer.MAX_VALUE - 1;
+	private int order = Integer.MAX_VALUE -1;
 	
 	private final ServletContext servletContext;
 
@@ -142,7 +142,7 @@ public class ResourceConfigurer {
 
 	/**
 	 * Specify the order in which to serve static resources relative to other {@link HandlerMapping} instances in the
-	 * Spring MVC web application context. The default order is {@link Integer#MAX_VALUE} - 1.
+	 * Spring MVC web application context. The default value is {@code Integer.MAX_VALUE-1}.
 	 */
 	public ResourceConfigurer setOrder(int order) {
 		this.order = order;

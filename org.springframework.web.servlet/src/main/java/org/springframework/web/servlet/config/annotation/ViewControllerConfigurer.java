@@ -61,8 +61,7 @@ public class ViewControllerConfigurer {
 
 	/**
 	 * Specify the order in which to check view controller path mappings relative to other {@link HandlerMapping} 
-	 * instances in the Spring MVC web application context. The default order is 1 (i.e.1 higher than the order 
-	 * used for serving requests using annotated controller methods).
+	 * instances in the Spring MVC web application context. The default value is 1.
 	 */
 	public void setOrder(int order) {
 		this.order = order;

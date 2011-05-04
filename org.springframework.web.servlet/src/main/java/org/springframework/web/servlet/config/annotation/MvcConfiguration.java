@@ -46,12 +46,15 @@ import org.springframework.util.ClassUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import org.springframework.web.HttpRequestHandler;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping;
 import org.springframework.web.servlet.handler.ConversionServiceExposingInterceptor;
 import org.springframework.web.servlet.handler.HandlerExceptionResolverComposite;
 import org.springframework.web.servlet.handler.MappedInterceptors;
@@ -64,39 +67,50 @@ import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExc
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMethodAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMethodMapping;
 import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
-import org.springframework.web.servlet.resource.DefaultServletHttpRequestHandler;
 
 /**
- * Provides default Spring MVC configuration and registers Spring MVC infrastructure components expected by the 
- * {@link DispatcherServlet}. Also provides support for configuration options equivalent to those of the 
- * Spring MVC XML namespace. See @{@link EnableMvcConfiguration} for details on how to enable and customize the 
- * configuration provided by this class.
+ * Provides default configuration for Spring MVC applications. Registers Spring MVC infrastructure components to be
+ * detected by the {@link DispatcherServlet}. Further below is a list of registered instances. This configuration is 
+ * enabled through the {@link EnableMvcConfiguration} annotation.
  * 
- * <p>Many of the methods in this class delegate to a list of one or more {@link MvcConfigurer}s detected by 
- * type in the Spring context giving each an opportunity to customize the configuration - e.g. register 
- * additional converters, add message converters, configure resource handling, and so on.  
- *
- * <p>Registers the following Spring beans:
+ * <p>A number of options are available for customizing the default configuration provided by this class. 
+ * See {@link EnableMvcConfiguration} and {@link MvcConfigurer} for details. 
+ * 
+ * <p>Registers these handler mappings:
  * <ul>
- * 	<li>A {@link RequestMappingHandlerMethodMapping} ordered at 0 for mapping requests to annotated controller methods.
- * 	<li>A {@link RequestMappingHandlerMethodAdapter} for processing requests using annotated controller methods. 
- * 	<li>A {@link HttpRequestHandlerAdapter} for processing requests with {@link HttpRequestHandler}s.
- * 	<li>A {@link SimpleControllerHandlerAdapter} for processing requests with interface-based {@link Controller}s.
- * 	<li>A {@link FormattingConversionService} for use with annotated controller methods and the spring:eval JSP tag.
- * 	<li>A {@link Validator} for validating model attributes on annotated controller methods.
- * 	<li>An {@link HandlerExceptionResolverComposite} with a list of the following exception resolvers: 
- * 		<ul>
- * 			<li>{@link RequestMappingHandlerMethodExceptionResolver},
- * 			<li>{@link ResponseStatusExceptionResolver}
- * 			<li>{@link DefaultHandlerExceptionResolver}.
- * 		</ul>
- * 	<li>A {@link MappedInterceptors} with a list of Spring MVC lifecycle interceptors 
- * 	<li>A {@link SimpleUrlHandlerMapping} with view controller mappings ordered at 1.
- * 	<li>A {@link SimpleUrlHandlerMapping} with static resource request mappings ordered at the lowest precedence -1.
- * 	<li>A {@link SimpleUrlHandlerMapping} with a {@link DefaultServletHttpRequestHandler} ordered at the lowest precedence.
+ * 	<li>{@link RequestMappingHandlerMethodMapping} ordered at 0 for mapping requests to annotated controller methods.
+ * 	<li>{@link SimpleUrlHandlerMapping} ordered at 1 to map URL paths directly to view names.
+ * 	<li>{@link BeanNameUrlHandlerMapping} ordered at 2 to map URL paths to controller bean names.
+ * 	<li>{@link SimpleUrlHandlerMapping} ordered at {@code Integer.MAX_VALUE-1} to serve static resource requests.
+ * 	<li>{@link SimpleUrlHandlerMapping} ordered at {@code Integer.MAX_VALUE} to forward requests to the default servlet.
+ * </ul>
+ * 
+ * <p><strong>Note:</strong> that the SimpleUrlHandlerMapping instances above will have empty URL maps and 
+ * hence no effect until explicitly configured via {@link MvcConfigurer}.
+ * 
+ * <p>Registers these handler adapters:
+ * <ul>
+ * 	<li>{@link RequestMappingHandlerMethodAdapter} for processing requests using annotated controller methods. 
+ * 	<li>{@link HttpRequestHandlerAdapter} for processing requests with {@link HttpRequestHandler}s.
+ * 	<li>{@link SimpleControllerHandlerAdapter} for processing requests with interface-based {@link Controller}s.
+ * </ul>
+ * 
+ * <p>Registers a {@link HandlerExceptionResolverComposite} with this chain of exception resolvers:
+ * <ul>
+ * 	<li>{@link ExceptionHandlerExceptionResolver} for handling exceptions through @{@link ExceptionHandler} methods.
+ * 	<li>{@link ResponseStatusExceptionResolver} for exceptions annotated with @{@link ResponseStatus}.
+ * 	<li>{@link DefaultHandlerExceptionResolver} for resolving known Spring exception types
+ * </ul>
+ * 
+ * <p>Registers the following others:
+ * <ul>
+ * 	<li>{@link FormattingConversionService} for use with annotated controller methods and the spring:eval JSP tag.
+ * 	<li>{@link Validator} for validating model attributes on annotated controller methods.
+ * 	<li>{@link MappedInterceptors} containing a list Spring MVC lifecycle interceptors.
  * </ul>
  * 
  * @see EnableMvcConfiguration
+ * @see MvcConfigurer
  * 
  * @author Rossen Stoyanchev
  * @since 3.1
@@ -124,10 +138,40 @@ class MvcConfiguration implements ApplicationContextAware, ServletContextAware {
 	}
 
 	@Bean
-	RequestMappingHandlerMethodMapping annotationHandlerMapping() {
+	RequestMappingHandlerMethodMapping requestMappingHandlerMapping() {
 		RequestMappingHandlerMethodMapping mapping = new RequestMappingHandlerMethodMapping();
 		mapping.setOrder(0);
 		return mapping;
+	}
+	
+	@Bean
+	HandlerMapping viewControllerHandlerMapping() {
+		ViewControllerConfigurer configurer = new ViewControllerConfigurer();
+		configurer.setOrder(1);
+		configurers.addViewControllers(configurer);
+		return configurer.getHandlerMapping();
+	}
+
+	@Bean
+	BeanNameUrlHandlerMapping beanNameHandlerMapping() {
+		BeanNameUrlHandlerMapping mapping = new BeanNameUrlHandlerMapping();
+		mapping.setOrder(2);
+		return mapping;
+	}
+
+	@Bean
+	HandlerMapping resourceHandlerMapping() {
+		ResourceConfigurer configurer = new ResourceConfigurer(applicationContext, servletContext);
+		configurer.setOrder(Integer.MAX_VALUE-1);
+		configurers.configureResourceHandling(configurer);
+		return configurer.getHandlerMapping();
+	}
+
+	@Bean
+	HandlerMapping defaultServletHandlerMapping() {
+		DefaultServletHandlerConfigurer configurer = new DefaultServletHandlerConfigurer(servletContext);
+		configurers.configureDefaultServletHandling(configurer);
+		return configurer.getHandlerMapping();
 	}
 
 	@Bean
@@ -255,28 +299,6 @@ class MvcConfiguration implements ApplicationContextAware, ServletContextAware {
 		configurer.addInterceptor(new ConversionServiceExposingInterceptor(conversionService()));
 		configurers.addInterceptors(configurer);
 		return configurer.getMappedInterceptors();
-	}
-
-	@Bean
-	HandlerMapping viewControllerHandlerMapping() {
-		ViewControllerConfigurer configurer = new ViewControllerConfigurer();
-		configurer.setOrder(annotationHandlerMapping().getOrder() + 1);
-		configurers.addViewControllers(configurer);
-		return configurer.getHandlerMapping();
-	}
-
-	@Bean
-	HandlerMapping resourceHandlerMapping() {
-		ResourceConfigurer configurer = new ResourceConfigurer(applicationContext, servletContext);
-		configurers.configureResourceHandling(configurer);
-		return configurer.getHandlerMapping();
-	}
-
-	@Bean
-	HandlerMapping defaultServletHandlerMapping() {
-		DefaultServletHandlerConfigurer configurer = new DefaultServletHandlerConfigurer(servletContext);
-		configurers.configureDefaultServletHandling(configurer);
-		return configurer.getHandlerMapping();
 	}
 
 }
