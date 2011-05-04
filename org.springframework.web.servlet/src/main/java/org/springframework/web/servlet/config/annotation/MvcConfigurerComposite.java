@@ -25,6 +25,7 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.validation.Validator;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 /**
@@ -58,6 +59,12 @@ class MvcConfigurerComposite implements MvcConfigurer {
 	public void addCustomArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
 		for (MvcConfigurer configurer : configurers) {
 			configurer.addCustomArgumentResolvers(argumentResolvers);
+		}
+	}
+
+	public void addCustomReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
+		for (MvcConfigurer configurer : configurers) {
+			configurer.addCustomReturnValueHandlers(returnValueHandlers);
 		}
 	}
 

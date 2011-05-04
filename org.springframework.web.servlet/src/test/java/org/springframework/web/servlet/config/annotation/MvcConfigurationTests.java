@@ -36,6 +36,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
@@ -64,11 +65,13 @@ public class MvcConfigurationTests {
 	public void annotationHandlerAdapter() {
 		Capture<FormattingConversionService> conversionService = new Capture<FormattingConversionService>();
 		Capture<List<HandlerMethodArgumentResolver>> resolvers = new Capture<List<HandlerMethodArgumentResolver>>();
+		Capture<List<HandlerMethodReturnValueHandler>> handlers = new Capture<List<HandlerMethodReturnValueHandler>>();
 		Capture<List<HttpMessageConverter<?>>> converters = new Capture<List<HttpMessageConverter<?>>>();
 
 		expect(configurer.getValidator()).andReturn(null);
 		configurer.registerFormatters(capture(conversionService));
 		configurer.addCustomArgumentResolvers(capture(resolvers));
+		configurer.addCustomReturnValueHandlers(capture(handlers));
 		configurer.configureMessageConverters(capture(converters));
 		replay(configurer);
 
@@ -79,6 +82,7 @@ public class MvcConfigurationTests {
 		assertTrue(initializer.getValidator() instanceof LocalValidatorFactoryBean);
 		
 		assertEquals(0, resolvers.getValue().size());
+		assertEquals(0, handlers.getValue().size());
 		assertTrue(converters.getValue().size() > 0);
 		assertEquals(converters.getValue(), adapter.getMessageConverters());
 		

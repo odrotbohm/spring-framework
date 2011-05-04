@@ -51,6 +51,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
@@ -186,6 +187,10 @@ class MvcConfiguration implements ApplicationContextAware, ServletContextAware {
 		List<HandlerMethodArgumentResolver> argumentResolvers = new ArrayList<HandlerMethodArgumentResolver>();
 		configurers.addCustomArgumentResolvers(argumentResolvers);
 		adapter.setCustomArgumentResolvers(argumentResolvers);
+		
+		List<HandlerMethodReturnValueHandler> returnValueHandlers = new ArrayList<HandlerMethodReturnValueHandler>();
+		configurers.addCustomReturnValueHandlers(returnValueHandlers);
+		adapter.setCustomReturnValueHandlers(returnValueHandlers);
 
 		List<HttpMessageConverter<?>> converters = getDefaultHttpMessageConverters();
 		configurers.configureMessageConverters(converters);

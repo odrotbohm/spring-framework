@@ -27,6 +27,7 @@ import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -70,11 +71,18 @@ public interface MvcConfigurer {
 	Validator getValidator();
 
 	/**
-	 * Add custom {@link HandlerMethodArgumentResolver}s to use for resolving method argument values 
+	 * Add custom {@link HandlerMethodArgumentResolver}s to use for resolving argument values 
 	 * on @{@link RequestMapping} and @{@link ExceptionHandler} methods. 
 	 * @param argumentResolvers the list of custom converters, initially empty
 	 */
 	void addCustomArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers);
+
+	/**
+	 * Add custom {@link HandlerMethodReturnValueHandler}s to use for handling return values 
+	 * from @{@link RequestMapping} and @{@link ExceptionHandler} methods. 
+	 * @param returnValueHandlers the list of custom handlers, initially empty
+	 */
+	void addCustomReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers);
 	
 	/**
 	 * Customize the list of {@link HandlerExceptionResolver}s to use for handling controller exceptions.
