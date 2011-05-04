@@ -175,7 +175,7 @@ class MvcConfiguration implements ApplicationContextAware, ServletContextAware {
 	}
 
 	@Bean
-	RequestMappingHandlerMethodAdapter annotationHandlerAdapter() {
+	RequestMappingHandlerMethodAdapter requestMappingHandlerAdapter() {
 		RequestMappingHandlerMethodAdapter adapter = new RequestMappingHandlerMethodAdapter();
 
 		ConfigurableWebBindingInitializer bindingInitializer = new ConfigurableWebBindingInitializer();
@@ -270,7 +270,7 @@ class MvcConfiguration implements ApplicationContextAware, ServletContextAware {
 	@Bean
 	HandlerExceptionResolver handlerExceptionResolver() throws Exception {
 		List<HandlerExceptionResolver> resolvers = new ArrayList<HandlerExceptionResolver>();
-		resolvers.add(annotationHandlerExceptionResolver());
+		resolvers.add(createExceptionHandlerExceptionResolver());
 		resolvers.add(new ResponseStatusExceptionResolver());
 		resolvers.add(new DefaultHandlerExceptionResolver());
 		configurers.configureHandlerExceptionResolvers(resolvers);
@@ -281,7 +281,7 @@ class MvcConfiguration implements ApplicationContextAware, ServletContextAware {
 		return composite;
 	}
 
-	private HandlerExceptionResolver annotationHandlerExceptionResolver() throws Exception {
+	private HandlerExceptionResolver createExceptionHandlerExceptionResolver() throws Exception {
 		ExceptionHandlerExceptionResolver resolver = new ExceptionHandlerExceptionResolver();
 
 		List<HttpMessageConverter<?>> converters = getDefaultHttpMessageConverters();
