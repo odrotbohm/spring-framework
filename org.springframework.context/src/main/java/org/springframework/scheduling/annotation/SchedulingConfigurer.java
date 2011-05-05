@@ -16,8 +16,10 @@
 
 package org.springframework.scheduling.annotation;
 
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+
 public interface SchedulingConfigurer {
 
-	Object getScheduler();
+	void configureTasks(ScheduledTaskRegistrar taskRegistrar);
 
 }

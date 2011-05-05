@@ -46,9 +46,12 @@ import org.springframework.util.StringValueResolver;
  *
  * @author Mark Fisher
  * @author Juergen Hoeller
+ * @author Chris Beams
  * @since 3.0
  * @see Scheduled
+ * @see SchedulingConfigurer
  * @see org.springframework.scheduling.TaskScheduler
+ * @see org.springframework.scheduling.config.ScheduledTaskRegistrar
  */
 public class ScheduledAnnotationBeanPostProcessor
 		implements BeanPostProcessor, Ordered, EmbeddedValueResolverAware, ApplicationContextAware,
@@ -140,39 +143,24 @@ public class ScheduledAnnotationBeanPostProcessor
 			return;
 		}
 
-		if (this.cronTasks.isEmpty() && this.fixedDelayTasks.isEmpty() && this.fixedRateTasks.isEmpty()) {
+		Map<String, SchedulingConfigurer> configurers = applicationContext.getBeansOfType(SchedulingConfigurer.class);
+
+		if (this.cronTasks.isEmpty() && this.fixedDelayTasks.isEmpty() &&
+				this.fixedRateTasks.isEmpty() && configurers.isEmpty()) {
 			return;
 		}
 
-		Map<String, SchedulingConfigurer> configurers = applicationContext.getBeansOfType(SchedulingConfigurer.class);
-		switch (configurers.size()) {
-			case 0:
-				// do nothing -> a default scheduler will be configured below
-				break;
-			case 1:
-				this.scheduler = configurers.values().iterator().next().getScheduler();
-				break;
-			default:
-				throw new IllegalStateException(
-						"only one SchedulingConfigurer may exist, but found the following in the context: " +
-						configurers.keySet());
+		this.registrar = new ScheduledTaskRegistrar();
+		this.registrar.setCronTasks(this.cronTasks);
+		this.registrar.setFixedDelayTasks(this.fixedDelayTasks);
+		this.registrar.setFixedRateTasks(this.fixedRateTasks);
+
+		if (this.scheduler != null) {
+			this.registrar.setScheduler(this.scheduler);
 		}
 
-		Map<String, ScheduledTaskRegistrar> registrars = applicationContext.getBeansOfType(ScheduledTaskRegistrar.class);
-		if (this.scheduler != null) {
-			this.registrar = new ScheduledTaskRegistrar();
-			if (scheduler instanceof String) {
-				this.registrar.setScheduler(this.applicationContext.getBean((String)this.scheduler));
-			} else {
-				this.registrar.setScheduler(this.scheduler);
-			}
-		} else if (registrars.size() == 0) {
-			this.registrar = new ScheduledTaskRegistrar();
-		} else if (registrars.size() == 1) {
-			this.registrar = registrars.values().iterator().next();
-		} else if (registrars.size() >= 2){
-			throw new IllegalStateException("Only one ScheduledTaskRegistrar may exist within the context. " +
-					"Found the following beans: " + registrars.keySet());
+		for (SchedulingConfigurer configurer : configurers.values()) {
+			configurer.configureTasks(this.registrar);
 		}
 
 		if (registrar.getScheduler() == null) {
@@ -185,15 +173,12 @@ public class ScheduledAnnotationBeanPostProcessor
 				this.registrar.setScheduler(schedulers.values().iterator().next());
 			} else if (schedulers.size() >= 2){
 				throw new IllegalStateException("More than one TaskScheduler and/or ScheduledExecutorService  " +
-						"exist within the context. Remove all but one of the beans; or configure a " +
-						"ScheduledTaskRegistrar bean to distinguish which one should be used for @Scheduled " +
-						"annotation processing; or use the @EnableScheduling(schedulerName) attribute. " +
-						"Found the following beans: " + schedulers.keySet());
+						"exist within the context. Remove all but one of the beans; or implement the " +
+						"SchedulingConfigurer interface and call ScheduledTaskRegistrar#setScheduler " +
+						"explicitly within the configureTasks() callback. Found the following beans: " + schedulers.keySet());
 			}
 		}
-		this.registrar.setCronTasks(this.cronTasks);
-		this.registrar.setFixedDelayTasks(this.fixedDelayTasks);
-		this.registrar.setFixedRateTasks(this.fixedRateTasks);
+
 		this.registrar.afterPropertiesSet();
 	}
 

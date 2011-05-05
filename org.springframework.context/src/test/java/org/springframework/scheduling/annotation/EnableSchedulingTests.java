@@ -16,19 +16,15 @@
 
 package org.springframework.scheduling.annotation;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.aop.support.AopUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,12 +70,10 @@ public class EnableSchedulingTests {
 
 
 	@Test
-	@Ignore // TODO SPR-8262: waiting for Juergen's feedback on annotation inheritability
 	public void withSubclass() throws InterruptedException {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		ctx.register(FixedRateTaskConfigSubclass.class);
 		ctx.refresh();
-		assertThat(AopUtils.isCglibProxy(ctx.getBean(FixedRateTaskConfigSubclass.class)), is(true));
 
 		Thread.sleep(100);
 		assertThat(ctx.getBean(AtomicInteger.class).get(), greaterThanOrEqualTo(10));
@@ -87,6 +81,7 @@ public class EnableSchedulingTests {
 	}
 
 
+	@Configuration
 	static class FixedRateTaskConfigSubclass extends FixedRateTaskConfig {
 	}
 
@@ -187,16 +182,9 @@ public class EnableSchedulingTests {
 
 
 	@EnableScheduling @Configuration
-	static class ExplicitScheduledTaskRegistrarConfig {
+	static class ExplicitScheduledTaskRegistrarConfig implements SchedulingConfigurer {
 
 		String threadName;
-
-		@Bean
-		public ScheduledTaskRegistrar taskRegistrar() {
-			ScheduledTaskRegistrar taskRegistrar = new ScheduledTaskRegistrar();
-			taskRegistrar.setScheduler(taskScheduler1());
-			return taskRegistrar;
-		}
 
 		@Bean
 		public TaskScheduler taskScheduler1() {
@@ -222,6 +210,15 @@ public class EnableSchedulingTests {
 			threadName = Thread.currentThread().getName();
 			counter().incrementAndGet();
 		}
+
+		public Object getScheduler() {
+			return null;
+		}
+
+		public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+			taskRegistrar.setScheduler(taskScheduler1());
+		}
+
 	}
 
 
@@ -308,7 +305,7 @@ public class EnableSchedulingTests {
 
 	@Configuration
 	@EnableScheduling
-	static class SchedulingEnabled_withAmbiguousTaskSchedulers_andSingleTask_disambiguatedByScheduledTaskRegistrar {
+	static class SchedulingEnabled_withAmbiguousTaskSchedulers_andSingleTask_disambiguatedByScheduledTaskRegistrar implements SchedulingConfigurer {
 
 		@Scheduled(fixedRate=10)
 		public void task() {
@@ -320,11 +317,8 @@ public class EnableSchedulingTests {
 			return new ThreadAwareWorker();
 		}
 
-		@Bean
-		public ScheduledTaskRegistrar taskRegistrar() {
-			ScheduledTaskRegistrar registrar = new ScheduledTaskRegistrar();
-			registrar.setScheduler(taskScheduler2());
-			return registrar;
+		public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+			taskRegistrar.setScheduler(taskScheduler2());
 		}
 
 		@Bean
@@ -383,8 +377,8 @@ public class EnableSchedulingTests {
 			return scheduler;
 		}
 
-		public Object getScheduler() {
-			return taskScheduler2();
+		public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+			taskRegistrar.setScheduler(taskScheduler2());
 		}
 	}
 
