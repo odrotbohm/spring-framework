@@ -21,12 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.context.annotation.Enable;
-
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Enable(value=SchedulingCapability.class)
-public @interface EnableScheduling {
+import org.springframework.context.annotation.Import;
 
 	/**
 	 * Indicate the name of the {@code TaskScheduler} or {@code ScheduledExecutorService}
@@ -39,6 +34,9 @@ public @interface EnableScheduling {
 	 * {@link org.springframework.scheduling.config.ScheduledTaskRegistrar} bean and
 	 * wiring the scheduler bean against it directly.
 	 */
-	String schedulerName() default "";
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Import(SchedulingConfiguration.class)
+public @interface EnableScheduling {
 
 }

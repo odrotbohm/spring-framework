@@ -130,7 +130,7 @@ public class EnableSchedulingTests {
 
 
 	@Test(expected=IllegalStateException.class)
-	public void withExplicitSchedulerAmbiguity_andSchedulingCapabilityEnabled() {
+	public void withExplicitSchedulerAmbiguity_andSchedulingEnabled() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		ctx.register(AmbiguousExplicitSchedulerConfig.class);
 		try {
@@ -356,8 +356,8 @@ public class EnableSchedulingTests {
 
 
 	@Configuration
-	@EnableScheduling(schedulerName="taskScheduler2")
-	static class SchedulingEnabled_withAmbiguousTaskSchedulers_andSingleTask_disambiguatedBySchedulerNameAttribute {
+	@EnableScheduling
+	static class SchedulingEnabled_withAmbiguousTaskSchedulers_andSingleTask_disambiguatedBySchedulerNameAttribute implements SchedulingConfigurer {
 
 		@Scheduled(fixedRate=10)
 		public void task() {
@@ -381,6 +381,10 @@ public class EnableSchedulingTests {
 			ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 			scheduler.setThreadNamePrefix("explicitScheduler2-");
 			return scheduler;
+		}
+
+		public Object getScheduler() {
+			return taskScheduler2();
 		}
 	}
 

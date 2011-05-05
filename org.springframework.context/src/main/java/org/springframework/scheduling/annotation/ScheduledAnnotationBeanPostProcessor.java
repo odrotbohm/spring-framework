@@ -144,6 +144,20 @@ public class ScheduledAnnotationBeanPostProcessor
 			return;
 		}
 
+		Map<String, SchedulingConfigurer> configurers = applicationContext.getBeansOfType(SchedulingConfigurer.class);
+		switch (configurers.size()) {
+			case 0:
+				// do nothing -> a default scheduler will be configured below
+				break;
+			case 1:
+				this.scheduler = configurers.values().iterator().next().getScheduler();
+				break;
+			default:
+				throw new IllegalStateException(
+						"only one SchedulingConfigurer may exist, but found the following in the context: " +
+						configurers.keySet());
+		}
+
 		Map<String, ScheduledTaskRegistrar> registrars = applicationContext.getBeansOfType(ScheduledTaskRegistrar.class);
 		if (this.scheduler != null) {
 			this.registrar = new ScheduledTaskRegistrar();
