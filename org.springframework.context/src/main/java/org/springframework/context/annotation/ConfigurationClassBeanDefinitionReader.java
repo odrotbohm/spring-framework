@@ -96,6 +96,8 @@ public class ConfigurationClassBeanDefinitionReader {
 
 	private Environment environment;
 
+	private final ComponentScanAnnotationParser componentScanParser;
+
 	/**
 	 * Create a new {@link ConfigurationClassBeanDefinitionReader} instance that will be used
 	 * to populate the given {@link BeanDefinitionRegistry}.
@@ -112,6 +114,8 @@ public class ConfigurationClassBeanDefinitionReader {
 		this.metadataReaderFactory = metadataReaderFactory;
 		this.resourceLoader = resourceLoader;
 		this.environment = environment;
+
+		this.componentScanParser = new ComponentScanAnnotationParser(resourceLoader, environment, registry);
 	}
 
 
@@ -131,24 +135,13 @@ public class ConfigurationClassBeanDefinitionReader {
 	 */
 	private void loadBeanDefinitionsForConfigurationClass(ConfigurationClass configClass) {
 		AnnotationMetadata metadata = configClass.getMetadata();
-		doComponentScanning(metadata);
+		componentScanParser.parse(metadata);
 		enableContainerCapabilities(metadata);
 		doLoadBeanDefinitionForConfigurationClassIfNecessary(configClass);
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
-	}
-
-	private void doComponentScanning(AnnotationMetadata metadata) {
-		Map<String, Object> componentScanAttribs =
-			metadata.getAnnotationAttributes(ComponentScan.class.getName(), false);
-		if (componentScanAttribs != null) {
-			ComponentScanCapability csc = new ComponentScanCapability();
-			csc.setEnvironment(environment);
-			csc.setResourceLoader(resourceLoader);
-			csc.enable(registry, metadata);
-		}
 	}
 
 	private void enableContainerCapabilities(AnnotationMetadata metadata) {

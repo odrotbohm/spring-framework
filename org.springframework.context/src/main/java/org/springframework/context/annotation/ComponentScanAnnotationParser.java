@@ -24,8 +24,6 @@ import java.util.Map;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
@@ -44,24 +42,24 @@ import org.springframework.util.StringUtils;
  * @see ClassPathBeanDefinitionScanner#scan(String...)
  * @see ComponentScanBeanDefinitionParser
  */
-public class ComponentScanCapability
-		implements ResourceLoaderAware, EnvironmentAware, ContainerCapability {
+class ComponentScanAnnotationParser {
 
-	private ResourceLoader resourceLoader;
-	private Environment environment;
+	private final ResourceLoader resourceLoader;
+	private final Environment environment;
+	private final BeanDefinitionRegistry registry;
 
-	public void setResourceLoader(ResourceLoader resourceLoader) {
+	public ComponentScanAnnotationParser(ResourceLoader resourceLoader, Environment environment, BeanDefinitionRegistry registry) {
 		this.resourceLoader = resourceLoader;
-	}
-
-	public void setEnvironment(Environment environment) {
 		this.environment = environment;
+		this.registry = registry; 
 	}
 
-	public void enable(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata) {
+	public void parse(AnnotationMetadata annotationMetadata) {
 		Map<String, Object> attribs = annotationMetadata.getAnnotationAttributes(ComponentScan.class.getName());
-		Assert.notNull(attribs, String.format("@ComponentScan annotation not found " +
-				"while parsing metadata for class [%s].", annotationMetadata.getClassName()));
+		if (attribs == null) {
+			// @ComponentScan annotation is not present -> do nothing
+			return;
+		}
 
 		ClassPathBeanDefinitionScanner scanner =
 			new ClassPathBeanDefinitionScanner(registry, (Boolean)attribs.get("useDefaultFilters"));
