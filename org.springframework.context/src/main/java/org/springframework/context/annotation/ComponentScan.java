@@ -47,7 +47,6 @@ import org.springframework.core.type.filter.TypeFilter;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Enable(ComponentScanCapability.class)
 public @interface ComponentScan {
 
 	/**

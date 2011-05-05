@@ -131,12 +131,24 @@ public class ConfigurationClassBeanDefinitionReader {
 	 */
 	private void loadBeanDefinitionsForConfigurationClass(ConfigurationClass configClass) {
 		AnnotationMetadata metadata = configClass.getMetadata();
+		doComponentScanning(metadata);
 		enableContainerCapabilities(metadata);
 		doLoadBeanDefinitionForConfigurationClassIfNecessary(configClass);
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+	}
+
+	private void doComponentScanning(AnnotationMetadata metadata) {
+		Map<String, Object> componentScanAttribs =
+			metadata.getAnnotationAttributes(ComponentScan.class.getName(), false);
+		if (componentScanAttribs != null) {
+			ComponentScanCapability csc = new ComponentScanCapability();
+			csc.setEnvironment(environment);
+			csc.setResourceLoader(resourceLoader);
+			csc.enable(registry, metadata);
+		}
 	}
 
 	private void enableContainerCapabilities(AnnotationMetadata metadata) {
