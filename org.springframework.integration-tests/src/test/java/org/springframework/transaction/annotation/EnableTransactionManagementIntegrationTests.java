@@ -84,15 +84,6 @@ public class EnableTransactionManagementIntegrationTests {
 		assertTxProxying(ctx);
 	}
 
-	@Test(expected=NoSuchBeanDefinitionException.class)
-	public void repositoryIsTxProxy_withBogusTxManagerName() {
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(Config.class, BogusTxManagerNameConfig.class);
-		ctx.refresh();
-
-		assertTxProxying(ctx);
-	}
-
 	@Ignore @Test // TODO SPR-8207
 	public void repositoryIsTxProxy_withNonConventionalTxManagerName_fallsBackToByTypeLookup() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
@@ -156,18 +147,8 @@ public class EnableTransactionManagementIntegrationTests {
 
 
 	@Configuration
-	@EnableTransactionManagement(transactionManagerName="txManager")
+	@EnableTransactionManagement
 	static class CustomTxManagerNameConfig {
-		@Bean
-		PlatformTransactionManager txManager(DataSource dataSource) {
-			return new DataSourceTransactionManager(dataSource);
-		}
-	}
-
-
-	@Configuration
-	@EnableTransactionManagement(transactionManagerName="typoManager")
-	static class BogusTxManagerNameConfig {
 		@Bean
 		PlatformTransactionManager txManager(DataSource dataSource) {
 			return new DataSourceTransactionManager(dataSource);

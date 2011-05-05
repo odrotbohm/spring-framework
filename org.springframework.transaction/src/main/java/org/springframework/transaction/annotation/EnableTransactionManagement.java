@@ -33,16 +33,6 @@ import org.springframework.core.Ordered;
 public @interface EnableTransactionManagement {
 
 	/**
-	 * Indicate the name of the
-	 * {@link org.springframework.transaction.PlatformTransactionManager} bean to use.
-	 * By default a {@code PlatformTransactionManager} object will be looked up by
-	 * type. In cases where two or more transaction manager beans are present in the
-	 * container, this attribute may be used to distinguish which one should be used
-	 * for annotation-driven transaction management.
-	 */
-	String transactionManagerName() default "";
-
-	/**
 	 * Indicate whether class-based (CGLIB) proxies are to be created as opposed
 	 * to standard Java interface-based proxies. The default is {@code false}.
 	 *

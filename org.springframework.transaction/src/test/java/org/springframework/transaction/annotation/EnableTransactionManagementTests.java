@@ -44,7 +44,7 @@ public class EnableTransactionManagementTests {
 	@Test
 	public void transactionProxyIsCreated() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(TxCapableConfig.class, TxManagerConfig.class);
+		ctx.register(EnableTxConfig.class, TxManagerConfig.class);
 		ctx.refresh();
 		TransactionalTestBean bean = ctx.getBean(TransactionalTestBean.class);
 		assertThat("testBean is not a proxy", AopUtils.isAopProxy(bean), is(true));
@@ -55,7 +55,7 @@ public class EnableTransactionManagementTests {
 	@Test
 	public void txManagerIsResolvedOnInvocationOfTransactionalMethod() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(TxCapableConfig.class, TxManagerConfig.class);
+		ctx.register(EnableTxConfig.class, TxManagerConfig.class);
 		ctx.refresh();
 		TransactionalTestBean bean = ctx.getBean(TransactionalTestBean.class);
 
@@ -66,7 +66,7 @@ public class EnableTransactionManagementTests {
 	@Test
 	public void txManagerIsResolvedCorrectlyWhenMultipleManagersArePresent() {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(TxCapableConfig.class, MultiTxManagerConfig.class);
+		ctx.register(EnableTxConfig.class, MultiTxManagerConfig.class);
 		ctx.refresh();
 		TransactionalTestBean bean = ctx.getBean(TransactionalTestBean.class);
 
@@ -81,7 +81,7 @@ public class EnableTransactionManagementTests {
 	@Test
 	public void proxyTypeAspectJCausesRegistrationOfAnnotationTransactionAspect() {
 		try {
-			new AnnotationConfigApplicationContext(AspectJTxCapableConfig.class, TxManagerConfig.class);
+			new AnnotationConfigApplicationContext(EnableAspectJTxConfig.class, TxManagerConfig.class);
 			fail("should have thrown CNFE when trying to load AnnotationTransactionAspect. " +
 					"Do you actually have org.springframework.aspects on the classpath?");
 		} catch (Exception ex) {
@@ -91,14 +91,14 @@ public class EnableTransactionManagementTests {
 
 
 	@Configuration
-	@EnableTransactionManagement(transactionManagerName="txManager")
-	static class TxCapableConfig {
+	@EnableTransactionManagement
+	static class EnableTxConfig {
 	}
 
 
 	@Configuration
 	@EnableTransactionManagement(mode=AdviceMode.ASPECTJ)
-	static class AspectJTxCapableConfig {
+	static class EnableAspectJTxConfig {
 	}
 
 

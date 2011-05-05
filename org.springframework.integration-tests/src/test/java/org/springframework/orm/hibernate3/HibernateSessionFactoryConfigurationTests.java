@@ -198,7 +198,7 @@ public class HibernateSessionFactoryConfigurationTests {
 
 
 	@Configuration
-	@EnableTransactionManagement(transactionManagerName="txManager")
+	@EnableTransactionManagement
 	static class RepositoryConfig {
 		@Inject SessionFactory sessionFactory;
 
