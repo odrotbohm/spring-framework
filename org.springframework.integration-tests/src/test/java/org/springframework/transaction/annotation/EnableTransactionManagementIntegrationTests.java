@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +40,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.CallCountingTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.interceptor.BeanFactoryTransactionAttributeSourceAdvisor;
 
@@ -113,7 +113,81 @@ public class EnableTransactionManagementIntegrationTests {
 			// this test is a bit fragile, but gets the job done, proving that an
 			// attempt was made to look up the AJ aspect. It's due to classpath issues
 			// in .integration-tests that it's not found.
-			assertThat(ex.getMessage().endsWith("org.springframework.transaction.aspectj.AnnotationTransactionAspect"), is(true));
+			assertTrue(ex.getMessage().endsWith("AspectJTransactionManagementConfiguration.class] cannot be opened because it does not exist"));
+		}
+	}
+
+	@Test
+	public void implicitTxManager() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(ImplicitTxManagerConfig.class);
+		ctx.refresh();
+
+		FooRepository fooRepository = ctx.getBean(FooRepository.class);
+		fooRepository.findAll();
+
+		CallCountingTransactionManager txManager = ctx.getBean(CallCountingTransactionManager.class);
+		assertThat(txManager.begun, equalTo(1));
+		assertThat(txManager.commits, equalTo(1));
+		assertThat(txManager.rollbacks, equalTo(0));
+	}
+
+	@Test
+	public void explicitTxManager() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.register(ExplicitTxManagerConfig.class);
+		ctx.refresh();
+
+		FooRepository fooRepository = ctx.getBean(FooRepository.class);
+		fooRepository.findAll();
+
+		CallCountingTransactionManager txManager1 = ctx.getBean("txManager1", CallCountingTransactionManager.class);
+		assertThat(txManager1.begun, equalTo(1));
+		assertThat(txManager1.commits, equalTo(1));
+		assertThat(txManager1.rollbacks, equalTo(0));
+
+		CallCountingTransactionManager txManager2 = ctx.getBean("txManager2", CallCountingTransactionManager.class);
+		assertThat(txManager2.begun, equalTo(0));
+		assertThat(txManager2.commits, equalTo(0));
+		assertThat(txManager2.rollbacks, equalTo(0));
+	}
+
+
+	@Configuration
+	@EnableTransactionManagement
+	static class ImplicitTxManagerConfig {
+		@Bean
+		public PlatformTransactionManager txManager() {
+			return new CallCountingTransactionManager();
+		}
+
+		@Bean
+		public FooRepository fooRepository() {
+			return new DummyFooRepository();
+		}
+	}
+
+
+	@Configuration
+	@EnableTransactionManagement
+	static class ExplicitTxManagerConfig implements TransactionManagementConfigurer {
+		@Bean
+		public PlatformTransactionManager txManager1() {
+			return new CallCountingTransactionManager();
+		}
+
+		@Bean
+		public PlatformTransactionManager txManager2() {
+			return new CallCountingTransactionManager();
+		}
+
+		public PlatformTransactionManager createTransactionManager() {
+			return txManager1();
+		}
+
+		@Bean
+		public FooRepository fooRepository() {
+			return new DummyFooRepository();
 		}
 	}
 
@@ -214,6 +288,15 @@ public class EnableTransactionManagementIntegrationTests {
 
 		public void setDataSource(DataSource dataSource) {
 		}
+
+		@Transactional
+		public List<Object> findAll() {
+			return Collections.emptyList();
+		}
+	}
+
+	@Repository
+	static class DummyFooRepository implements FooRepository {
 
 		@Transactional
 		public List<Object> findAll() {

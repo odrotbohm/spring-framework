@@ -85,7 +85,8 @@ public class EnableTransactionManagementTests {
 			fail("should have thrown CNFE when trying to load AnnotationTransactionAspect. " +
 					"Do you actually have org.springframework.aspects on the classpath?");
 		} catch (Exception ex) {
-			assertThat(ex.getMessage().endsWith("org.springframework.transaction.aspectj.AnnotationTransactionAspect"), is(true));
+			System.out.println(ex);
+			assertThat(ex.getMessage().endsWith("AspectJTransactionManagementConfiguration.class] cannot be opened because it does not exist"), is(true));
 		}
 	}
 
@@ -119,11 +120,15 @@ public class EnableTransactionManagementTests {
 
 
 	@Configuration
-	static class MultiTxManagerConfig extends TxManagerConfig {
+	static class MultiTxManagerConfig extends TxManagerConfig implements TransactionManagementConfigurer {
 
 		@Bean
 		public PlatformTransactionManager txManager2() {
 			return new CallCountingTransactionManager();
+		}
+
+		public PlatformTransactionManager createTransactionManager() {
+			return txManager2();
 		}
 	}
 }
