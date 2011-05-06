@@ -27,7 +27,6 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
-import org.springframework.transaction.annotation.TransactionManagementCapability;
 import org.springframework.transaction.interceptor.BeanFactoryTransactionAttributeSourceAdvisor;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
@@ -53,20 +52,20 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 	/**
 	 * The bean name of the internally managed transaction advisor (mode="proxy").
 	 * @deprecated as of Spring 3.1 in favor of
-	 * {@link TransactionManagementCapability#TRANSACTION_ADVISOR_BEAN_NAME}
+	 * {@link TransactionManagementConfigUtils#TRANSACTION_ADVISOR_BEAN_NAME}
 	 */
 	@Deprecated
 	public static final String TRANSACTION_ADVISOR_BEAN_NAME =
-			TransactionManagementCapability.TRANSACTION_ADVISOR_BEAN_NAME;
+			TransactionManagementConfigUtils.TRANSACTION_ADVISOR_BEAN_NAME;
 
 	/**
 	 * The bean name of the internally managed transaction aspect (mode="aspectj").
 	 * @deprecated as of Spring 3.1 in favor of
-	 * {@link TransactionManagementCapability#TRANSACTION_ASPECT_BEAN_NAME}
+	 * {@link TransactionManagementConfigUtils#TRANSACTION_ASPECT_BEAN_NAME}
 	 */
 	@Deprecated
 	public static final String TRANSACTION_ASPECT_BEAN_NAME =
-			TransactionManagementCapability.TRANSACTION_ASPECT_BEAN_NAME;
+			TransactionManagementConfigUtils.TRANSACTION_ASPECT_BEAN_NAME;
 
 
 	/**
@@ -88,8 +87,8 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 	}
 
 	private void registerTransactionAspect(Element element, ParserContext parserContext) {
-		String txAspectBeanName = TransactionManagementCapability.TRANSACTION_ASPECT_BEAN_NAME;
-		String txAspectClassName = TransactionManagementCapability.TRANSACTION_ASPECT_CLASS_NAME;
+		String txAspectBeanName = TransactionManagementConfigUtils.TRANSACTION_ASPECT_BEAN_NAME;
+		String txAspectClassName = TransactionManagementConfigUtils.TRANSACTION_ASPECT_CLASS_NAME;
 		if (!parserContext.getRegistry().containsBeanDefinition(txAspectBeanName)) {
 			RootBeanDefinition def = new RootBeanDefinition();
 			def.setBeanClassName(txAspectClassName);
@@ -113,7 +112,7 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 		public static void configureAutoProxyCreator(Element element, ParserContext parserContext) {
 			AopNamespaceUtils.registerAutoProxyCreatorIfNecessary(parserContext, element);
 
-			String txAdvisorBeanName = TransactionManagementCapability.TRANSACTION_ADVISOR_BEAN_NAME;
+			String txAdvisorBeanName = TransactionManagementConfigUtils.TRANSACTION_ADVISOR_BEAN_NAME;
 			if (!parserContext.getRegistry().containsBeanDefinition(txAdvisorBeanName)) {
 				Object eleSource = parserContext.extractSource(element);
 
