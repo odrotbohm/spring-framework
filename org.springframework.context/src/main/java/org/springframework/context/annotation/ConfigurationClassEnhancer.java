@@ -256,7 +256,9 @@ class ConfigurationClassEnhancer {
 		 * @return whether <var>beanName</var> already exists in the factory
 		 */
 		private boolean factoryContainsBean(String beanName) {
-			return (this.beanFactory.containsBean(beanName) && !this.beanFactory.isCurrentlyInCreation(beanName));
+			boolean containsBean = this.beanFactory.containsBean(beanName);
+			boolean currentlyInCreation = this.beanFactory.isCurrentlyInCreation(beanName);
+			return (containsBean && !currentlyInCreation);
 		}
 
 		/**
