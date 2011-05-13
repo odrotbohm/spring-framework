@@ -48,7 +48,7 @@ import org.springframework.orm.jpa.JpaDialect;
  * @see org.eclipse.persistence.jpa.PersistenceProvider
  * @see org.eclipse.persistence.jpa.JpaEntityManager
  */
-public class EclipseLinkJpaVendorAdapter extends AbstractJpaVendorAdapter {
+public class EclipseLinkJpaVendorAdapter extends AbstractJpaVendorAdapter<EclipseLinkJpaVendorAdapter> {
 
 	private final PersistenceProvider persistenceProvider = new org.eclipse.persistence.jpa.PersistenceProvider();
 

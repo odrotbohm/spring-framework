@@ -31,7 +31,7 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
  * @author Rod Johnson
  * @since 2.0
  */
-public abstract class AbstractJpaVendorAdapter implements JpaVendorAdapter {
+public abstract class AbstractJpaVendorAdapter<This extends AbstractJpaVendorAdapter<This>> implements JpaVendorAdapter {
 
 	private Database database = Database.DEFAULT;
 
@@ -41,13 +41,16 @@ public abstract class AbstractJpaVendorAdapter implements JpaVendorAdapter {
 
 	private boolean showSql = false;
 
+	@SuppressWarnings("unchecked")
+	private final This instance = (This) this;
 
 	/**
 	 * Specify the target database to operate on, as a value of the <code>Database</code> enum:
 	 * DB2, DERBY, H2, HSQL, INFORMIX, MYSQL, ORACLE, POSTGRESQL, SQL_SERVER, SYBASE
 	 */
-	public void setDatabase(Database database) {
+	public This setDatabase(Database database) {
 		this.database = database;
+		return this.instance;
 	}
 
 	/**
@@ -61,8 +64,9 @@ public abstract class AbstractJpaVendorAdapter implements JpaVendorAdapter {
 	 * Specify the name of the target database to operate on.
 	 * The supported values are vendor-dependent platform identifiers.
 	 */
-	public void setDatabasePlatform(String databasePlatform) {
+	public This setDatabasePlatform(String databasePlatform) {
 		this.databasePlatform = databasePlatform;
+		return this.instance;
 	}
 
 	/**
@@ -80,8 +84,9 @@ public abstract class AbstractJpaVendorAdapter implements JpaVendorAdapter {
 	 * vendor-specific settings as "jpaProperties".
 	 * @see org.springframework.orm.jpa.AbstractEntityManagerFactoryBean#setJpaProperties
 	 */
-	public void setGenerateDdl(boolean generateDdl) {
+	public This setGenerateDdl(boolean generateDdl) {
 		this.generateDdl = generateDdl;
+		return this.instance;
 	}
 
 	/**
@@ -98,8 +103,9 @@ public abstract class AbstractJpaVendorAdapter implements JpaVendorAdapter {
 	 * vendor-specific settings as "jpaProperties".
 	 * @see org.springframework.orm.jpa.AbstractEntityManagerFactoryBean#setJpaProperties
 	 */
-	public void setShowSql(boolean showSql) {
+	public This setShowSql(boolean showSql) {
 		this.showSql = showSql;
+		return this.instance;
 	}
 
 	/**
