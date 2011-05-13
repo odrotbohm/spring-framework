@@ -27,7 +27,7 @@ import org.springframework.jdbc.support.SQLExceptionTranslator;
  * instances to Spring's {@link DataAccessException} hierarchy.
  *
  * <p>When configuring the Spring container via XML, note that this translator is
- * automatically used internally by {@link SessionFactoryBean} types. When configuring
+ * automatically used internally by {@code *SessionFactoryBean} types. When configuring
  * the container with {@code @Configuration} classes, a {@code @Bean} of this type
  * must be registered manually.
  *
