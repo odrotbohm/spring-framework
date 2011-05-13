@@ -16,13 +16,17 @@
 
 package org.springframework.orm.jpa.eclipselink;
 
+import org.eclipse.persistence.jpa.JpaEntityManager;
+import org.springframework.orm.jpa.AbstractContainerEntityManagerFactoryIntegrationTests;
+import org.springframework.orm.jpa.EntityManagerFactoryInfo;
+
 /**
  * EclipseLink-specific JPA tests using the {@link EntityManagerFactoryBuilder} API.
  *
  * @author Chris Beams
  * @since 3.1
  */
-public class EclipseLinkEntityManagerFactoryBuilderIntegrationTests extends EclipseLinkEntityManagerFactoryIntegrationTests {
+public class EclipseLinkEntityManagerFactoryBuilderIntegrationTests extends AbstractContainerEntityManagerFactoryIntegrationTests {
 
 	public static final String[] ECLIPSELINK_CONFIG_BUILDER_LOCATIONS = new String[] {
 			"/org/springframework/orm/jpa/eclipselink/eclipselink-manager-builder.xml",
@@ -33,4 +37,14 @@ public class EclipseLinkEntityManagerFactoryBuilderIntegrationTests extends Ecli
 		return ECLIPSELINK_CONFIG_BUILDER_LOCATIONS;
 	}
 
+	public void testCanCastNativeEntityManagerFactoryToTopLinkEntityManagerFactoryImpl() {
+		EntityManagerFactoryInfo emfi = (EntityManagerFactoryInfo) entityManagerFactory;
+		assertTrue(emfi.getNativeEntityManagerFactory().getClass().getName().endsWith("EntityManagerFactoryImpl"));
+	}
+
+	public void testCanCastSharedEntityManagerProxyToTopLinkEntityManager() {
+		assertTrue(sharedEntityManager instanceof JpaEntityManager);
+		JpaEntityManager eclipselinkEntityManager = (JpaEntityManager) sharedEntityManager;
+		assertNotNull(eclipselinkEntityManager.getActiveSession());
+	}
 }
