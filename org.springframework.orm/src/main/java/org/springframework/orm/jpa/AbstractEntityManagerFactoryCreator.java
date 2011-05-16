@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2010 the original author or authors.
+ * Copyright 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
@@ -37,17 +38,12 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -78,9 +74,9 @@ import org.springframework.util.CollectionUtils;
  * @see LocalEntityManagerFactoryBean
  * @see LocalContainerEntityManagerFactoryBean
  */
-public abstract class AbstractEntityManagerFactoryBean implements
-		FactoryBean<EntityManagerFactory>, BeanClassLoaderAware, BeanFactoryAware, BeanNameAware,
-		InitializingBean, DisposableBean, EntityManagerFactoryInfo, PersistenceExceptionTranslator, Serializable {
+public abstract class AbstractEntityManagerFactoryCreator implements
+		BeanClassLoaderAware, BeanFactoryAware, BeanNameAware,
+		EntityManagerFactoryInfo, Serializable {
 
 	/** Logger available to subclasses */
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -109,8 +105,6 @@ public abstract class AbstractEntityManagerFactoryBean implements
 	public EntityManagerFactory nativeEntityManagerFactory;
 
 	private EntityManagerFactoryPlusOperations plusOperations;
-
-	protected EntityManagerFactory entityManagerFactory;
 
 	protected Set<Class> emfInterfaces = new LinkedHashSet<Class>();
 
@@ -259,34 +253,6 @@ public abstract class AbstractEntityManagerFactoryBean implements
 		return this.jpaVendorAdapter;
 	}
 
-	public void setBeanClassLoader(ClassLoader classLoader) {
-		this.beanClassLoader = classLoader;
-	}
-
-	public ClassLoader getBeanClassLoader() {
-		return this.beanClassLoader;
-	}
-
-	public void setBeanFactory(BeanFactory beanFactory) {
-		this.beanFactory = beanFactory;
-	}
-
-	public void setBeanName(String name) {
-		this.beanName = name;
-	}
-
-
-	public final void afterPropertiesSet() throws PersistenceException {
-		initialize();
-		determineEMFInterfaces(this.nativeEntityManagerFactory);
-
-		// Wrap the EntityManagerFactory in a factory implementing all its interfaces.
-		// This allows interception of createEntityManager methods to return an
-		// application-managed EntityManager proxy that automatically joins
-		// existing transactions.
-		this.entityManagerFactory = createEntityManagerFactoryProxy(this.nativeEntityManagerFactory);
-	}
-
 	protected void initialize() {
 		if (this.jpaVendorAdapter != null) {
 			if (this.persistenceProvider == null) {
@@ -336,9 +302,12 @@ public abstract class AbstractEntityManagerFactoryBean implements
 	 */
 	protected EntityManagerFactory createEntityManagerFactoryProxy(EntityManagerFactory emf) {
 		return (EntityManagerFactory) Proxy.newProxyInstance(
-				this.beanClassLoader, emfInterfaces.toArray(new Class[emfInterfaces.size()]),
-				new ManagedEntityManagerFactoryInvocationHandler(this));
+				this.beanClassLoader,
+				emfInterfaces.toArray(new Class[emfInterfaces.size()]),
+				getEMFProxyInvocationHandler());
 	}
+
+	protected abstract InvocationHandler getEMFProxyInvocationHandler();
 
 	protected void determineEMFInterfaces(EntityManagerFactory emf) {
 		if (this.entityManagerFactoryInterface != null) {
@@ -389,32 +358,22 @@ public abstract class AbstractEntityManagerFactoryBean implements
 		return null;
 	}
 
-
-	/**
-	 * Return the singleton EntityManagerFactory.
-	 */
-	public EntityManagerFactory getObject() {
-		return this.entityManagerFactory;
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
 	}
 
-	public Class<? extends EntityManagerFactory> getObjectType() {
-		return (this.entityManagerFactory != null ? this.entityManagerFactory.getClass() : EntityManagerFactory.class);
+	public ClassLoader getBeanClassLoader() {
+		return this.beanClassLoader;
 	}
 
-	public boolean isSingleton() {
-		return true;
+	public void setBeanFactory(BeanFactory beanFactory) {
+		this.beanFactory = beanFactory;
 	}
 
-
-	/**
-	 * Close the EntityManagerFactory on bean factory shutdown.
-	 */
-	public void destroy() {
-		if (logger.isInfoEnabled()) {
-			logger.info("Closing JPA EntityManagerFactory for persistence unit '" + getPersistenceUnitName() + "'");
-		}
-		this.entityManagerFactory.close();
+	public void setBeanName(String name) {
+		this.beanName = name;
 	}
+
 
 
 	//---------------------------------------------------------------------
@@ -474,9 +433,9 @@ public abstract class AbstractEntityManagerFactoryBean implements
 	 */
 	protected static class ManagedEntityManagerFactoryInvocationHandler implements InvocationHandler, Serializable {
 
-		protected final AbstractEntityManagerFactoryBean entityManagerFactoryBean;
+		protected final AbstractEntityManagerFactoryCreator entityManagerFactoryBean;
 
-		public ManagedEntityManagerFactoryInvocationHandler(AbstractEntityManagerFactoryBean emfb) {
+		public ManagedEntityManagerFactoryInvocationHandler(AbstractEntityManagerFactoryCreator emfb) {
 			this.entityManagerFactoryBean = emfb;
 		}
 

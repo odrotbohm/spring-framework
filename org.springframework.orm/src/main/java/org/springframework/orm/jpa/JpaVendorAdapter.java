@@ -30,7 +30,7 @@ import javax.persistence.spi.PersistenceProvider;
  * @author Juergen Hoeller
  * @author Rod Johnson
  * @since 2.0
- * @see AbstractEntityManagerFactoryBean#setJpaVendorAdapter
+ * @see AbstractEntityManagerFactoryCreator#setJpaVendorAdapter
  */
 public interface JpaVendorAdapter {
 

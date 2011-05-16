@@ -45,7 +45,7 @@ public abstract class AbstractEntityManagerFactoryBeanTests extends TestCase {
 		mockEmf = (EntityManagerFactory) emfMc.getMock();
 	}
 
-	protected void checkInvariants(AbstractEntityManagerFactoryBean demf) {
+	protected void checkInvariants(EntityManagerFactoryBeanOperations demf) {
 		assertTrue(EntityManagerFactory.class.isAssignableFrom(demf.getObjectType()));
 		Object gotObject = demf.getObject();
 		assertTrue("Object created by factory implements EntityManagerFactoryInfo",
@@ -65,7 +65,7 @@ public abstract class AbstractEntityManagerFactoryBeanTests extends TestCase {
 	}
 
 
-	protected static class DummyEntityManagerFactoryBean extends AbstractEntityManagerFactoryBean {
+	protected static class DummyEntityManagerFactoryBean extends LocalEntityManagerFactoryBean {
 
 		private final EntityManagerFactory emf;
 		
@@ -86,7 +86,7 @@ public abstract class AbstractEntityManagerFactoryBeanTests extends TestCase {
 			return "test";
 		}
 
-		public AbstractEntityManagerFactoryBean getEMFCreator() {
+		public AbstractEntityManagerFactoryCreator getEMFCreator() {
 			throw new UnsupportedOperationException();
 		}
 	}

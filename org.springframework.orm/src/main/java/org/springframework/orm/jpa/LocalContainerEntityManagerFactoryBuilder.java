@@ -28,29 +28,21 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 
 public class LocalContainerEntityManagerFactoryBuilder extends
-		LocalContainerEntityManagerFactoryBean {
+		AbstractLocalContainerEntityManagerFactoryCreator {
 
 	@Override
 	@SuppressWarnings("rawtypes")
 	protected EntityManagerFactory createEntityManagerFactoryProxy(EntityManagerFactory emf) {
-		final Set<Class> ifcsBuilder = new HashSet<Class>();
-		ifcsBuilder.add(EntityManagerFactoryInfo.class);
-		//ifcsBuilder.add(ResourceLoaderAware.class);
-		//ifcsBuilder.add(LoadTimeWeaverAware.class);
-		//ifcsBuilder.add(BeanClassLoaderAware.class);
-		ifcsBuilder.add(BeanFactoryAware.class);
-		ifcsBuilder.add(BeanNameAware.class);
-		//ifcsBuilder.add(InitializingBean.class);
-		ifcsBuilder.add(DisposableBean.class);
+		FullerManagedEntityManagerFactoryInvocationHandler handler = getEMFProxyInvocationHandler();
 
 		final Set<Class> ifcsAll = new HashSet<Class>();
 		ifcsAll.addAll(emfInterfaces);
-		ifcsAll.addAll(ifcsBuilder);
+		ifcsAll.addAll(handler.getInterfaces());
 
 		return (EntityManagerFactory) Proxy.newProxyInstance(
 				getBeanClassLoader(),
 				ifcsAll.toArray(new Class[ifcsAll.size()]),
-				new FullerManagedEntityManagerFactoryInvocationHandler(this, ifcsBuilder.toArray(new Class[ifcsBuilder.size()])));
+				handler);
 	}
 
 	public EntityManagerFactory buildEntityManagerFactory() {
@@ -61,11 +53,18 @@ public class LocalContainerEntityManagerFactoryBuilder extends
 
 	@SuppressWarnings("rawtypes")
 	private static class FullerManagedEntityManagerFactoryInvocationHandler extends ManagedEntityManagerFactoryInvocationHandler {
-		private final Class[] ifcsBuilder;
+		private final Set<Class> ifcsBuilder = new HashSet<Class>();
 
-		public FullerManagedEntityManagerFactoryInvocationHandler(AbstractEntityManagerFactoryBean emfb, Class[] ifcsBuilder) {
+		public FullerManagedEntityManagerFactoryInvocationHandler(AbstractEntityManagerFactoryCreator emfb) {
 			super(emfb);
-			this.ifcsBuilder = ifcsBuilder;
+			ifcsBuilder.add(EntityManagerFactoryInfo.class);
+			//ifcsBuilder.add(ResourceLoaderAware.class);
+			//ifcsBuilder.add(LoadTimeWeaverAware.class);
+			//ifcsBuilder.add(BeanClassLoaderAware.class);
+			ifcsBuilder.add(BeanFactoryAware.class);
+			ifcsBuilder.add(BeanNameAware.class);
+			//ifcsBuilder.add(InitializingBean.class);
+			ifcsBuilder.add(DisposableBean.class);
 		}
 
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -74,11 +73,19 @@ public class LocalContainerEntityManagerFactoryBuilder extends
 					return this.entityManagerFactoryBean;
 				}
 				if (ifc.isAssignableFrom(method.getDeclaringClass())) {
-					System.err.println(method);
 					return method.invoke(this.entityManagerFactoryBean, args);
 				}
 			}
 			return super.invoke(proxy, method, args);
 		}
+
+		public Set<Class> getInterfaces() {
+			return ifcsBuilder;
+		}
+	}
+
+	@Override
+	protected FullerManagedEntityManagerFactoryInvocationHandler getEMFProxyInvocationHandler() {
+		return new FullerManagedEntityManagerFactoryInvocationHandler(this);
 	}
 }

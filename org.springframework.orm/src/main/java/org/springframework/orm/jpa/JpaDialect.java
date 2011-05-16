@@ -49,8 +49,8 @@ import org.springframework.transaction.TransactionException;
  * @see JpaAccessor#setJpaDialect
  * @see JpaTransactionManager#setJpaDialect
  * @see JpaVendorAdapter#getJpaDialect()
- * @see AbstractEntityManagerFactoryBean#setJpaDialect
- * @see AbstractEntityManagerFactoryBean#setJpaVendorAdapter
+ * @see AbstractEntityManagerFactoryCreator#setJpaDialect
+ * @see AbstractEntityManagerFactoryCreator#setJpaVendorAdapter
  */
 public interface JpaDialect extends PersistenceExceptionTranslator {
 

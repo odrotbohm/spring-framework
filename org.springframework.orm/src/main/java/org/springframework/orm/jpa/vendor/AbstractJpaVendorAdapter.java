@@ -82,7 +82,7 @@ public abstract class AbstractJpaVendorAdapter<This extends AbstractJpaVendorAda
 	 * <p>Note that the exact semantics of this flag depend on the underlying
 	 * persistence provider. For any more advanced needs, specify the appropriate
 	 * vendor-specific settings as "jpaProperties".
-	 * @see org.springframework.orm.jpa.AbstractEntityManagerFactoryBean#setJpaProperties
+	 * @see org.springframework.orm.jpa.AbstractEntityManagerFactoryCreator#setJpaProperties
 	 */
 	public This setGenerateDdl(boolean generateDdl) {
 		this.generateDdl = generateDdl;
@@ -101,7 +101,7 @@ public abstract class AbstractJpaVendorAdapter<This extends AbstractJpaVendorAda
 	 * Set whether to show SQL in the log (or in the console).
 	 * <p>For more specific logging configuration, specify the appropriate
 	 * vendor-specific settings as "jpaProperties".
-	 * @see org.springframework.orm.jpa.AbstractEntityManagerFactoryBean#setJpaProperties
+	 * @see org.springframework.orm.jpa.AbstractEntityManagerFactoryCreator#setJpaProperties
 	 */
 	public This setShowSql(boolean showSql) {
 		this.showSql = showSql;

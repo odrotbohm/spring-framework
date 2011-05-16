@@ -16,6 +16,8 @@
 
 package org.springframework.orm.jpa;
 
+import java.lang.reflect.InvocationHandler;
+
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
@@ -65,7 +67,9 @@ import javax.persistence.spi.PersistenceProvider;
  * @see javax.persistence.Persistence#createEntityManagerFactory
  * @see javax.persistence.spi.PersistenceProvider#createEntityManagerFactory
  */
-public class LocalEntityManagerFactoryBean extends AbstractEntityManagerFactoryBean {
+public class LocalEntityManagerFactoryBean
+		extends AbstractEntityManagerFactoryCreator
+		implements EntityManagerFactoryBeanOperations {
 
 	/**
 	 * Initialize the EntityManagerFactory for the given configuration.
@@ -93,8 +97,52 @@ public class LocalEntityManagerFactoryBean extends AbstractEntityManagerFactoryB
 		}
 	}
 
-	public AbstractEntityManagerFactoryBean getEMFCreator() {
-		throw new UnsupportedOperationException();
+	public AbstractEntityManagerFactoryCreator getEMFCreator() {
+		return this;
+	}
+
+	@Override
+	protected InvocationHandler getEMFProxyInvocationHandler() {
+		return new ManagedEntityManagerFactoryInvocationHandler(this);
+	}
+
+	/**
+	 * Return the singleton EntityManagerFactory.
+	 */
+	public EntityManagerFactory getObject() {
+		return this.entityManagerFactory;
+	}
+
+	public Class<? extends EntityManagerFactory> getObjectType() {
+		return (this.entityManagerFactory != null ? this.entityManagerFactory.getClass() : EntityManagerFactory.class);
+	}
+
+	public boolean isSingleton() {
+		return true;
+	}
+
+	private EntityManagerFactory entityManagerFactory;
+
+
+	/**
+	 * Close the EntityManagerFactory on bean factory shutdown.
+	 */
+	public void destroy() {
+		if (logger.isInfoEnabled()) {
+			logger.info("Closing JPA EntityManagerFactory for persistence unit '" + getPersistenceUnitName() + "'");
+		}
+		this.entityManagerFactory.close();
+	}
+
+	public final void afterPropertiesSet() throws PersistenceException {
+		initialize();
+		determineEMFInterfaces(this.nativeEntityManagerFactory);
+
+		// Wrap the EntityManagerFactory in a factory implementing all its interfaces.
+		// This allows interception of createEntityManager methods to return an
+		// application-managed EntityManager proxy that automatically joins
+		// existing transactions.
+		this.entityManagerFactory = createEntityManagerFactoryProxy(this.nativeEntityManagerFactory);
 	}
 
 }

@@ -46,9 +46,9 @@ public class ContainerManagedEntityManagerIntegrationTests extends AbstractEntit
 	
 	@NotTransactional
 	public void testExceptionTranslationWithDialectFoundOnEntityManagerFactoryBean() throws Exception {
-		AbstractEntityManagerFactoryBean aefb =
-				(AbstractEntityManagerFactoryBean) applicationContext.getBean("&entityManagerFactory");
-		assertNotNull("Dialect must have been set", aefb.getJpaDialect());
+		EntityManagerFactoryBeanOperations aefb =
+				(EntityManagerFactoryBeanOperations) applicationContext.getBean("&entityManagerFactory");
+		assertNotNull("Dialect must have been set", ((AbstractEntityManagerFactoryCreator)aefb).getJpaDialect());
 		doTestExceptionTranslationWithDialectFound(aefb);
 	}
 		
