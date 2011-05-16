@@ -33,8 +33,8 @@ import org.springframework.orm.jpa.persistenceunit.SmartPersistenceUnitInfo;
 import org.springframework.util.ClassUtils;
 
 
-abstract class AbstractLocalContainerEntityManagerFactoryCreator extends
-		AbstractEntityManagerFactoryCreator {
+public abstract class AbstractLocalContainerEntityManagerFactoryCreator<This extends AbstractLocalContainerEntityManagerFactoryCreator<This>> extends
+		AbstractEntityManagerFactoryCreator<This> {
 
 	private PersistenceUnitManager persistenceUnitManager;
 
@@ -42,7 +42,6 @@ abstract class AbstractLocalContainerEntityManagerFactoryCreator extends
 			new DefaultPersistenceUnitManager();
 
 	private PersistenceUnitInfo persistenceUnitInfo;
-
 
 	/**
 	 * Set the PersistenceUnitManager to use for obtaining the JPA persistence unit
@@ -60,8 +59,9 @@ abstract class AbstractLocalContainerEntityManagerFactoryCreator extends
 	 * @see #setLoadTimeWeaver
 	 * @see org.springframework.orm.jpa.persistenceunit.DefaultPersistenceUnitManager
 	 */
-	public void setPersistenceUnitManager(PersistenceUnitManager persistenceUnitManager) {
+	public This setPersistenceUnitManager(PersistenceUnitManager persistenceUnitManager) {
 		this.persistenceUnitManager = persistenceUnitManager;
+		return this.instance;
 	}
 
 	/**
@@ -74,8 +74,9 @@ abstract class AbstractLocalContainerEntityManagerFactoryCreator extends
 	 * that this LocalContainerEntityManagerFactoryBean should parse
 	 * @see #setPersistenceUnitManager
 	 */
-	public void setPersistenceXmlLocation(String persistenceXmlLocation) {
+	public This setPersistenceXmlLocation(String persistenceXmlLocation) {
 		this.internalPersistenceUnitManager.setPersistenceXmlLocations(new String[] {persistenceXmlLocation});
+		return this.instance;
 	}
 
 	/**
@@ -90,9 +91,10 @@ abstract class AbstractLocalContainerEntityManagerFactoryCreator extends
 	 * @see javax.persistence.spi.PersistenceUnitInfo#getNonJtaDataSource()
 	 * @see #setPersistenceUnitManager
 	 */
-	public void setDataSource(DataSource dataSource) {
+	public This setDataSource(DataSource dataSource) {
 		this.internalPersistenceUnitManager.setDataSourceLookup(new SingleDataSourceLookup(dataSource));
 		this.internalPersistenceUnitManager.setDefaultDataSource(dataSource);
+		return this.instance;
 	}
 
 	/**

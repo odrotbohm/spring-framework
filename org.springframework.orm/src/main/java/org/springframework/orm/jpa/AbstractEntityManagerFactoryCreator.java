@@ -74,7 +74,7 @@ import org.springframework.util.CollectionUtils;
  * @see LocalEntityManagerFactoryBean
  * @see LocalContainerEntityManagerFactoryBean
  */
-public abstract class AbstractEntityManagerFactoryCreator implements
+public abstract class AbstractEntityManagerFactoryCreator<This extends AbstractEntityManagerFactoryCreator<This>> implements
 		BeanClassLoaderAware, BeanFactoryAware, BeanNameAware,
 		EntityManagerFactoryInfo, Serializable {
 
@@ -108,6 +108,9 @@ public abstract class AbstractEntityManagerFactoryCreator implements
 
 	protected Set<Class> emfInterfaces = new LinkedHashSet<Class>();
 
+	@SuppressWarnings("unchecked")
+	protected This instance = (This) this;
+
 	/**
 	 * Set the PersistenceProvider implementation class to use for creating the
 	 * EntityManagerFactory. If not specified, the persistence provider will be
@@ -117,9 +120,10 @@ public abstract class AbstractEntityManagerFactoryCreator implements
 	 * @see javax.persistence.spi.PersistenceProvider
 	 * @see javax.persistence.Persistence
 	 */
-	public void setPersistenceProviderClass(Class<? extends PersistenceProvider> persistenceProviderClass) {
+	public This setPersistenceProviderClass(Class<? extends PersistenceProvider> persistenceProviderClass) {
 		Assert.isAssignable(PersistenceProvider.class, persistenceProviderClass);
 		this.persistenceProvider = BeanUtils.instantiateClass(persistenceProviderClass);
+		return this.instance;
 	}
 
 	/**
@@ -131,8 +135,9 @@ public abstract class AbstractEntityManagerFactoryCreator implements
 	 * @see javax.persistence.spi.PersistenceProvider
 	 * @see javax.persistence.Persistence
 	 */
-	public void setPersistenceProvider(PersistenceProvider persistenceProvider) {
+	public This setPersistenceProvider(PersistenceProvider persistenceProvider) {
 		this.persistenceProvider = persistenceProvider;
+		return this.instance;
 	}
 
 	public PersistenceProvider getPersistenceProvider() {
@@ -146,8 +151,9 @@ public abstract class AbstractEntityManagerFactoryCreator implements
 	 * ambiguous EntityManager configurations are found.
 	 * @see javax.persistence.Persistence#createEntityManagerFactory(String)
 	 */
-	public void setPersistenceUnitName(String persistenceUnitName) {
+	public This setPersistenceUnitName(String persistenceUnitName) {
 		this.persistenceUnitName = persistenceUnitName;
+		return this.instance;
 	}
 
 	public String getPersistenceUnitName() {
@@ -162,8 +168,9 @@ public abstract class AbstractEntityManagerFactoryCreator implements
 	 * @see javax.persistence.Persistence#createEntityManagerFactory(String, java.util.Map)
 	 * @see javax.persistence.spi.PersistenceProvider#createContainerEntityManagerFactory(javax.persistence.spi.PersistenceUnitInfo, java.util.Map)
 	 */
-	public void setJpaProperties(Properties jpaProperties) {
+	public This setJpaProperties(Properties jpaProperties) {
 		CollectionUtils.mergePropertiesIntoMap(jpaProperties, this.jpaPropertyMap);
+		return this.instance;
 	}
 
 	/**
@@ -173,10 +180,11 @@ public abstract class AbstractEntityManagerFactoryCreator implements
 	 * @see javax.persistence.Persistence#createEntityManagerFactory(String, java.util.Map)
 	 * @see javax.persistence.spi.PersistenceProvider#createContainerEntityManagerFactory(javax.persistence.spi.PersistenceUnitInfo, java.util.Map)
 	 */
-	public void setJpaPropertyMap(Map<String, ?> jpaProperties) {
+	public This setJpaPropertyMap(Map<String, ?> jpaProperties) {
 		if (jpaProperties != null) {
 			this.jpaPropertyMap.putAll(jpaProperties);
 		}
+		return this.instance;
 	}
 
 	/**
@@ -197,9 +205,10 @@ public abstract class AbstractEntityManagerFactoryCreator implements
 	 * interface else.
 	 * @see JpaVendorAdapter#getEntityManagerFactoryInterface()
 	 */
-	public void setEntityManagerFactoryInterface(Class<? extends EntityManagerFactory> emfInterface) {
+	public This setEntityManagerFactoryInterface(Class<? extends EntityManagerFactory> emfInterface) {
 		Assert.isAssignable(EntityManagerFactory.class, emfInterface);
 		this.entityManagerFactoryInterface = emfInterface;
+		return this.instance;
 	}
 
 	/**
@@ -211,9 +220,10 @@ public abstract class AbstractEntityManagerFactoryCreator implements
 	 * @see JpaVendorAdapter#getEntityManagerInterface()
 	 * @see EntityManagerFactoryInfo#getEntityManagerInterface()
 	 */
-	public void setEntityManagerInterface(Class<? extends EntityManager> emInterface) {
+	public This setEntityManagerInterface(Class<? extends EntityManager> emInterface) {
 		Assert.isAssignable(EntityManager.class, emInterface);
 		this.entityManagerInterface = emInterface;
+		return this.instance;
 	}
 
 	public Class<? extends EntityManager> getEntityManagerInterface() {
@@ -227,8 +237,9 @@ public abstract class AbstractEntityManagerFactoryCreator implements
 	 * accessors that intend to use JpaDialect functionality.
 	 * @see EntityManagerFactoryInfo#getJpaDialect()
 	 */
-	public void setJpaDialect(JpaDialect jpaDialect) {
+	public This setJpaDialect(JpaDialect jpaDialect) {
 		this.jpaDialect = jpaDialect;
+		return this.instance;
 	}
 
 	public JpaDialect getJpaDialect() {
@@ -241,8 +252,9 @@ public abstract class AbstractEntityManagerFactoryCreator implements
 	 * such as persistence provider class and JpaDialect, unless locally
 	 * overridden in this FactoryBean.
 	 */
-	public void setJpaVendorAdapter(JpaVendorAdapter jpaVendorAdapter) {
+	public This setJpaVendorAdapter(JpaVendorAdapter jpaVendorAdapter) {
 		this.jpaVendorAdapter = jpaVendorAdapter;
+		return this.instance;
 	}
 
 	/**

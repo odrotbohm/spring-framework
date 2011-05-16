@@ -26,9 +26,25 @@ import javax.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.instrument.classloading.LoadTimeWeaver;
+import org.springframework.util.Assert;
 
 public class LocalContainerEntityManagerFactoryBuilder extends
-		AbstractLocalContainerEntityManagerFactoryCreator {
+		AbstractLocalContainerEntityManagerFactoryCreator<LocalContainerEntityManagerFactoryBuilder> {
+
+	public LocalContainerEntityManagerFactoryBuilder(ClassLoader beanClassLoader, ResourceLoader resourceLoader) {
+		this(beanClassLoader, resourceLoader, null);
+	}
+
+	public LocalContainerEntityManagerFactoryBuilder(ClassLoader beanClassLoader, ResourceLoader resourceLoader, LoadTimeWeaver loadTimeWeaver) {
+		Assert.notNull(beanClassLoader, "bean ClassLoader must not be null");
+		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
+
+		this.setBeanClassLoader(beanClassLoader);
+		this.setResourceLoader(resourceLoader);
+		this.setLoadTimeWeaver(loadTimeWeaver);
+	}
 
 	@Override
 	@SuppressWarnings("rawtypes")

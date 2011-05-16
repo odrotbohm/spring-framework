@@ -38,24 +38,10 @@ public class EntityManagerFactoryConfig implements BeanClassLoaderAware, Resourc
 
 	@Autowired
 	DataSource dataSource;
+
 	private ResourceLoader resourceLoader;
 	private LoadTimeWeaver loadTimeWeaver;
 	private ClassLoader beanClassLoader;
-
-	/*
-	@Bean(name="entityManagerFactory")
-	public LocalContainerEntityManagerFactoryBean fromFactory() {
-		LocalContainerEntityManagerFactoryBean fb = new LocalContainerEntityManagerFactoryBean();
-		fb.setPersistenceXmlLocation("org/springframework/orm/jpa/domain/persistence.xml");
-		fb.setDataSource(dataSource);
-		fb.setJpaVendorAdapter(
-			new EclipseLinkJpaVendorAdapter()
-				.setDatabase(Database.HSQL)
-				.setShowSql(true)
-				.setGenerateDdl(true));
-		return fb;
-	}
-	*/
 
 	public void setLoadTimeWeaver(LoadTimeWeaver loadTimeWeaver) {
 		this.loadTimeWeaver = loadTimeWeaver;
@@ -71,21 +57,16 @@ public class EntityManagerFactoryConfig implements BeanClassLoaderAware, Resourc
 
 	@Bean(name="entityManagerFactory")
 	public EntityManagerFactory fromBuilder() {
-		LocalContainerEntityManagerFactoryBuilder builder = new LocalContainerEntityManagerFactoryBuilder();
-		builder.setPersistenceXmlLocation("org/springframework/orm/jpa/domain/persistence.xml");
-		builder.setDataSource(dataSource);
-		if (loadTimeWeaver != null) {
-			builder.setLoadTimeWeaver(loadTimeWeaver);
-		}
-		builder.setBeanClassLoader(beanClassLoader);
-		builder.setResourceLoader(resourceLoader);
-		builder.setJpaVendorAdapter(
-			new EclipseLinkJpaVendorAdapter()
-				.setDatabase(Database.HSQL)
-				.setShowSql(true)
-				.setGenerateDdl(true)
-		);
-		return builder.buildEntityManagerFactory();
+		return new LocalContainerEntityManagerFactoryBuilder(beanClassLoader, resourceLoader, loadTimeWeaver)
+			.setPersistenceXmlLocation("org/springframework/orm/jpa/domain/persistence.xml")
+			.setDataSource(dataSource)
+			.setJpaVendorAdapter(
+				new EclipseLinkJpaVendorAdapter()
+					.setDatabase(Database.HSQL)
+					.setShowSql(true)
+					.setGenerateDdl(true)
+			)
+			.buildEntityManagerFactory();
 	}
 
 	@Bean
