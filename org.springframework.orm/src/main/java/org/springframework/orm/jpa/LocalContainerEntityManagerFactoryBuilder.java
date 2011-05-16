@@ -16,8 +16,6 @@
 
 package org.springframework.orm.jpa;
 
-import java.io.Serializable;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashSet;
@@ -25,29 +23,13 @@ import java.util.Set;
 
 import javax.persistence.EntityManagerFactory;
 
-import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ResourceLoaderAware;
-import org.springframework.context.weaving.LoadTimeWeaverAware;
 
 public class LocalContainerEntityManagerFactoryBuilder extends
 		LocalContainerEntityManagerFactoryBean {
 
-//	@Override
-//	protected void determineEMFInterfaces(EntityManagerFactory emf) {
-//		super.determineEMFInterfaces(emf);
-//		final Set<Class<?>> ifcsEmf = new HashSet<Class<?>>();
-//		ifcsEmf.add(EntityManagerFactory.class);
-//		ifcsEmf.add(EntityManagerFactoryInfo.class);
-//		ifcsEmf.add(Serializable.class);
-//
-//		emfInterfaces.addAll(ifcsEmf);
-//		emfInterfaces.addAll(ifcsBuilder);
-//
-//	}
 	@Override
 	@SuppressWarnings("rawtypes")
 	protected EntityManagerFactory createEntityManagerFactoryProxy(EntityManagerFactory emf) {
