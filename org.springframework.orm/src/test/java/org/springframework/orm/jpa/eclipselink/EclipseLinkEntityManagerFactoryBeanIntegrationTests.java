@@ -17,6 +17,7 @@
 package org.springframework.orm.jpa.eclipselink;
 
 import org.eclipse.persistence.jpa.JpaEntityManager;
+import org.junit.Ignore;
 import org.springframework.orm.jpa.AbstractContainerEntityManagerFactoryIntegrationTests;
 import org.springframework.orm.jpa.EntityManagerFactoryInfo;
 
@@ -26,10 +27,11 @@ import org.springframework.orm.jpa.EntityManagerFactoryInfo;
  * @author Chris Beams
  * @since 3.1
  */
-public class EclipseLinkEntityManagerFactoryBuilderIntegrationTests extends AbstractContainerEntityManagerFactoryIntegrationTests {
+@Ignore
+public class EclipseLinkEntityManagerFactoryBeanIntegrationTests extends AbstractContainerEntityManagerFactoryIntegrationTests {
 
 	public static final String[] ECLIPSELINK_CONFIG_LOCATIONS = new String[] {
-			"/org/springframework/orm/jpa/eclipselink/eclipselink-manager-builder.xml",
+			"/org/springframework/orm/jpa/eclipselink/eclipselink-manager.xml",
 			"/org/springframework/orm/jpa/memdb.xml",
 			"/org/springframework/orm/jpa/inject.xml"};
 
