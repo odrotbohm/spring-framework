@@ -81,7 +81,7 @@ public class LocalContainerEntityManagerFactoryBuilder extends
 	private static class FullerManagedEntityManagerFactoryInvocationHandler extends ManagedEntityManagerFactoryInvocationHandler {
 		private final Class[] ifcsBuilder;
 
-		public FullerManagedEntityManagerFactoryInvocationHandler(CopyOfAbstractEntityManagerFactoryBean emfb, Class[] ifcsBuilder) {
+		public FullerManagedEntityManagerFactoryInvocationHandler(AbstractEntityManagerFactoryBean emfb, Class[] ifcsBuilder) {
 			super(emfb);
 			this.ifcsBuilder = ifcsBuilder;
 		}

@@ -86,7 +86,7 @@ public abstract class AbstractEntityManagerFactoryBeanTests extends TestCase {
 			return "test";
 		}
 
-		public CopyOfAbstractEntityManagerFactoryBean getEMFCreator() {
+		public AbstractEntityManagerFactoryBean getEMFCreator() {
 			throw new UnsupportedOperationException();
 		}
 	}

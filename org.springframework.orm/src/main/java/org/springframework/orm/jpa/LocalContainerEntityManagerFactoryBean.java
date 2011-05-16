@@ -78,7 +78,7 @@ import org.springframework.util.ClassUtils;
  * @see org.springframework.orm.jpa.support.SharedEntityManagerBean
  * @see javax.persistence.spi.PersistenceProvider#createContainerEntityManagerFactory
  */
-public class LocalContainerEntityManagerFactoryBean extends CopyOfAbstractEntityManagerFactoryBean
+public class LocalContainerEntityManagerFactoryBean extends AbstractEntityManagerFactoryBean
 		implements ResourceLoaderAware, LoadTimeWeaverAware {
 
 	private PersistenceUnitManager persistenceUnitManager;
@@ -281,7 +281,7 @@ public class LocalContainerEntityManagerFactoryBean extends CopyOfAbstractEntity
 		return this.internalPersistenceUnitManager.getDefaultDataSource();
 	}
 
-	public CopyOfAbstractEntityManagerFactoryBean getEMFCreator() {
+	public AbstractEntityManagerFactoryBean getEMFCreator() {
 		return this;
 	}
 

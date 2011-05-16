@@ -110,8 +110,9 @@ public abstract class AbstractEntityManagerFactoryBean implements
 
 	private EntityManagerFactoryPlusOperations plusOperations;
 
-	private EntityManagerFactory entityManagerFactory;
+	protected EntityManagerFactory entityManagerFactory;
 
+	protected Set<Class> emfInterfaces = new LinkedHashSet<Class>();
 
 	/**
 	 * Set the PersistenceProvider implementation class to use for creating the
@@ -276,6 +277,17 @@ public abstract class AbstractEntityManagerFactoryBean implements
 
 
 	public final void afterPropertiesSet() throws PersistenceException {
+		initialize();
+		determineEMFInterfaces(this.nativeEntityManagerFactory);
+
+		// Wrap the EntityManagerFactory in a factory implementing all its interfaces.
+		// This allows interception of createEntityManager methods to return an
+		// application-managed EntityManager proxy that automatically joins
+		// existing transactions.
+		this.entityManagerFactory = createEntityManagerFactoryProxy(this.nativeEntityManagerFactory);
+	}
+
+	protected void initialize() {
 		if (this.jpaVendorAdapter != null) {
 			if (this.persistenceProvider == null) {
 				this.persistenceProvider = this.jpaVendorAdapter.getPersistenceProvider();
@@ -313,12 +325,6 @@ public abstract class AbstractEntityManagerFactoryBean implements
 		if (this.jpaVendorAdapter != null) {
 			this.jpaVendorAdapter.postProcessEntityManagerFactory(this.nativeEntityManagerFactory);
 		}
-
-		// Wrap the EntityManagerFactory in a factory implementing all its interfaces.
-		// This allows interception of createEntityManager methods to return an
-		// application-managed EntityManager proxy that automatically joins
-		// existing transactions.
-		this.entityManagerFactory = createEntityManagerFactoryProxy(this.nativeEntityManagerFactory);
 	}
 
 	/**
@@ -329,21 +335,23 @@ public abstract class AbstractEntityManagerFactoryBean implements
 	 * @return proxy entity manager
 	 */
 	protected EntityManagerFactory createEntityManagerFactoryProxy(EntityManagerFactory emf) {
-		Set<Class> ifcs = new LinkedHashSet<Class>();
+		return (EntityManagerFactory) Proxy.newProxyInstance(
+				this.beanClassLoader, emfInterfaces.toArray(new Class[emfInterfaces.size()]),
+				new ManagedEntityManagerFactoryInvocationHandler(this));
+	}
+
+	protected void determineEMFInterfaces(EntityManagerFactory emf) {
 		if (this.entityManagerFactoryInterface != null) {
-			ifcs.add(this.entityManagerFactoryInterface);
+			emfInterfaces.add(this.entityManagerFactoryInterface);
 		}
 		else {
-			ifcs.addAll(ClassUtils.getAllInterfacesForClassAsSet(emf.getClass(), this.beanClassLoader));
+			emfInterfaces.addAll(ClassUtils.getAllInterfacesForClassAsSet(emf.getClass(), this.beanClassLoader));
 		}
-		ifcs.add(EntityManagerFactoryInfo.class);
+		emfInterfaces.add(EntityManagerFactoryInfo.class);
 		if (getJpaDialect() != null && getJpaDialect().supportsEntityManagerFactoryPlusOperations()) {
 			this.plusOperations = getJpaDialect().getEntityManagerFactoryPlusOperations(emf);
-			ifcs.add(EntityManagerFactoryPlusOperations.class);
+			emfInterfaces.add(EntityManagerFactoryPlusOperations.class);
 		}
-		return (EntityManagerFactory) Proxy.newProxyInstance(
-				this.beanClassLoader, ifcs.toArray(new Class[ifcs.size()]),
-				new ManagedEntityManagerFactoryInvocationHandler(this));
 	}
 
 	/**
@@ -442,19 +450,19 @@ public abstract class AbstractEntityManagerFactoryBean implements
 	 * Minimal bean reference to the surrounding AbstractEntityManagerFactoryBean.
 	 * Resolved to the actual AbstractEntityManagerFactoryBean instance on deserialization.
 	 */
-	private static class SerializedEntityManagerFactoryBeanReference implements Serializable {
+	protected static class SerializedEntityManagerFactoryBeanReference implements Serializable {
 
 		private final BeanFactory beanFactory;
 
-		private final String lookupName;
+		private final String beanName;
 
 		public SerializedEntityManagerFactoryBeanReference(BeanFactory beanFactory, String beanName) {
 			this.beanFactory = beanFactory;
-			this.lookupName = BeanFactory.FACTORY_BEAN_PREFIX + beanName;
+			this.beanName = beanName;
 		}
 
 		private Object readResolve() {
-			return this.beanFactory.getBean(this.lookupName, AbstractEntityManagerFactoryBean.class);
+			return this.beanFactory.getBean(this.beanName, EntityManagerFactoryInfo.class).getEMFCreator();
 		}
 	}
 
@@ -464,9 +472,9 @@ public abstract class AbstractEntityManagerFactoryBean implements
 	 * return a proxy EntityManager if necessary from createEntityManager()
 	 * methods.
 	 */
-	private static class ManagedEntityManagerFactoryInvocationHandler implements InvocationHandler, Serializable {
+	protected static class ManagedEntityManagerFactoryInvocationHandler implements InvocationHandler, Serializable {
 
-		private final AbstractEntityManagerFactoryBean entityManagerFactoryBean;
+		protected final AbstractEntityManagerFactoryBean entityManagerFactoryBean;
 
 		public ManagedEntityManagerFactoryInvocationHandler(AbstractEntityManagerFactoryBean emfb) {
 			this.entityManagerFactoryBean = emfb;
