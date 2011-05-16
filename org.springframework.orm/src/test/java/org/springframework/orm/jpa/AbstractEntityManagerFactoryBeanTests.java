@@ -85,6 +85,10 @@ public abstract class AbstractEntityManagerFactoryBeanTests extends TestCase {
 		public String getPersistenceUnitName() {
 			return "test";
 		}
+
+		public CopyOfAbstractEntityManagerFactoryBean getEMFCreator() {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 }

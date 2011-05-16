@@ -93,4 +93,8 @@ public class LocalEntityManagerFactoryBean extends AbstractEntityManagerFactoryB
 		}
 	}
 
+	public CopyOfAbstractEntityManagerFactoryBean getEMFCreator() {
+		throw new UnsupportedOperationException();
+	}
+
 }

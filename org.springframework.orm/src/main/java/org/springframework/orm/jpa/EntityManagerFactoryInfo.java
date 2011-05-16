@@ -97,4 +97,5 @@ public interface EntityManagerFactoryInfo {
 	 */
 	ClassLoader getBeanClassLoader();
 
+	CopyOfAbstractEntityManagerFactoryBean getEMFCreator();
 }

@@ -16,21 +16,33 @@
 
 package org.springframework.orm.jpa.eclipselink;
 
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.context.weaving.LoadTimeWeaverAware;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.instrument.classloading.LoadTimeWeaver;
+import org.springframework.orm.jpa.JpaExceptionTranslator;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBuilder;
 import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter;
 
 @Configuration
-public class EntityManagerFactoryConfig {
+public class EntityManagerFactoryConfig implements BeanClassLoaderAware, ResourceLoaderAware, LoadTimeWeaverAware {
 
 	@Autowired
 	DataSource dataSource;
+	private ResourceLoader resourceLoader;
+	private LoadTimeWeaver loadTimeWeaver;
+	private ClassLoader beanClassLoader;
 
+	/*
 	@Bean(name="entityManagerFactory")
 	public LocalContainerEntityManagerFactoryBean fromFactory() {
 		LocalContainerEntityManagerFactoryBean fb = new LocalContainerEntityManagerFactoryBean();
@@ -43,19 +55,41 @@ public class EntityManagerFactoryConfig {
 				.setGenerateDdl(true));
 		return fb;
 	}
+	*/
 
-	/*
+	public void setLoadTimeWeaver(LoadTimeWeaver loadTimeWeaver) {
+		this.loadTimeWeaver = loadTimeWeaver;
+	}
+
+	public void setResourceLoader(ResourceLoader resourceLoader) {
+		this.resourceLoader = resourceLoader;
+	}
+
+	public void setBeanClassLoader(ClassLoader beanClassLoader) {
+		this.beanClassLoader = beanClassLoader;
+	}
+
 	@Bean(name="entityManagerFactory")
 	public EntityManagerFactory fromBuilder() {
-		LocalContainerEntityManagerBuilder builder = new LocalContainerEntityManagerBuilder();
+		LocalContainerEntityManagerFactoryBuilder builder = new LocalContainerEntityManagerFactoryBuilder();
 		builder.setPersistenceXmlLocation("org/springframework/orm/jpa/domain/persistence.xml");
 		builder.setDataSource(dataSource);
+		if (loadTimeWeaver != null) {
+			builder.setLoadTimeWeaver(loadTimeWeaver);
+		}
+		builder.setBeanClassLoader(beanClassLoader);
+		builder.setResourceLoader(resourceLoader);
 		builder.setJpaVendorAdapter(
 			new EclipseLinkJpaVendorAdapter()
 				.setDatabase(Database.HSQL)
 				.setShowSql(true)
 				.setGenerateDdl(true)
 		);
+		return builder.buildEntityManagerFactory();
 	}
-	*/
+
+	@Bean
+	public PersistenceExceptionTranslator pet() {
+		return new JpaExceptionTranslator();
+	}
 }

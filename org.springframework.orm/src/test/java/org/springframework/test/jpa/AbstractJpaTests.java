@@ -38,6 +38,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.context.weaving.LoadTimeWeaverAware;
 import org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver;
 import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.instrument.classloading.ResourceOverridingShadowingClassLoader;
@@ -45,6 +46,7 @@ import org.springframework.instrument.classloading.ShadowingClassLoader;
 import org.springframework.orm.jpa.ExtendedEntityManagerCreator;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.SharedEntityManagerCreator;
+import org.springframework.orm.jpa.eclipselink.EntityManagerFactoryConfig;
 import org.springframework.orm.jpa.persistenceunit.DefaultPersistenceUnitManager;
 import org.springframework.test.annotation.AbstractAnnotationAwareTransactionalTests;
 import org.springframework.util.StringUtils;
@@ -336,6 +338,9 @@ public abstract class AbstractJpaTests extends AbstractAnnotationAwareTransactio
 			}
 			if (bean instanceof DefaultPersistenceUnitManager) {
 				((DefaultPersistenceUnitManager) bean).setLoadTimeWeaver(this.ltw);
+			}
+			if (bean instanceof EntityManagerFactoryConfig) {
+				((LoadTimeWeaverAware) bean).setLoadTimeWeaver(this.ltw);
 			}
 			return bean;
 		}
