@@ -34,7 +34,6 @@ import javax.transaction.TransactionManager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.hibernate.HibernateException;
 import org.hibernate.Interceptor;
 import org.hibernate.Session;
@@ -48,8 +47,8 @@ import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.event.EventListeners;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
 import org.hibernate.transaction.JTATransactionFactory;
-
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.Builder;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.ClassPathResource;
@@ -139,7 +138,8 @@ import org.springframework.util.StringUtils;
  * @see org.hibernate.SessionFactory#getCurrentSession
  * @see HibernateTransactionManager
  */
-public abstract class SessionFactoryBuilderSupport<This extends SessionFactoryBuilderSupport<This>> {
+public abstract class SessionFactoryBuilderSupport<This extends SessionFactoryBuilderSupport<This>>
+		implements Builder<SessionFactory>{
 
 	static final ThreadLocal<DataSource> configTimeDataSourceHolder =
 			new ThreadLocal<DataSource>();
@@ -236,7 +236,7 @@ public abstract class SessionFactoryBuilderSupport<This extends SessionFactoryBu
 	 * transaction-aware proxy before it is exposed to the application)
 	 * @throws Exception in case of initialization failure
 	 */
-	public SessionFactory buildSessionFactory() throws Exception {
+	public SessionFactory build() throws Exception {
 		this.sessionFactory = wrapSessionFactoryIfNecessary(doBuildSessionFactory());
 		afterSessionFactoryCreation();
 		return this.sessionFactory;
@@ -537,7 +537,7 @@ public abstract class SessionFactoryBuilderSupport<This extends SessionFactoryBu
 	 */
 	protected final SessionFactory getSessionFactory() {
 		if (this.sessionFactory == null) {
-			throw new IllegalStateException("SessionFactory not initialized yet. Have you called buildSessionFactory()?");
+			throw new IllegalStateException("SessionFactory not initialized yet. Have you called build()?");
 		}
 		return this.sessionFactory;
 	}
@@ -565,9 +565,9 @@ public abstract class SessionFactoryBuilderSupport<This extends SessionFactoryBu
 	 * <p>Subclasses may override this to implement transaction awareness through
 	 * a {@code SessionFactory} proxy for example, or even to avoid creation of the
 	 * {@code DisposableBean} proxy altogether.
-	 * @param rawSf the raw {@code SessionFactory} as built by {@link #buildSessionFactory()}
+	 * @param rawSf the raw {@code SessionFactory} as built by {@link #build()}
 	 * @return the {@code SessionFactory} reference to expose
-	 * @see #buildSessionFactory()
+	 * @see #build()
 	 */
 	protected SessionFactory wrapSessionFactoryIfNecessary(final SessionFactory rawSf) {
 		return (SessionFactory) Proxy.newProxyInstance(

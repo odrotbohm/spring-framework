@@ -85,7 +85,7 @@ public interface SessionFactoryBeanOperations
 
 	/**
 	 * Build and expose the SessionFactory.
-	 * @see SessionFactoryBuilderSupport#buildSessionFactory
+	 * @see SessionFactoryBuilderSupport#build
 	 * @see SessionFactoryBuilderSupport#doBuildSessionFactory
 	 * @see SessionFactoryBuilderSupport#wrapSessionFactoryIfNecessary
 	 * @see SessionFactoryBuilderSupport#afterSessionFactoryCreation

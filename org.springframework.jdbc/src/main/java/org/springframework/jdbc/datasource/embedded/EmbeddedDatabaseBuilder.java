@@ -16,6 +16,7 @@
 
 package org.springframework.jdbc.datasource.embedded;
 
+import org.springframework.beans.factory.Builder;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -35,7 +36,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
  * @author Dave Syer
  * @since 3.0
  */
-public class EmbeddedDatabaseBuilder {
+public class EmbeddedDatabaseBuilder implements Builder<EmbeddedDatabase> {
 
 	private final EmbeddedDatabaseFactory databaseFactory;
 

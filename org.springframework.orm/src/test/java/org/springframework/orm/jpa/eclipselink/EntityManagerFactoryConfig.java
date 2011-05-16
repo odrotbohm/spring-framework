@@ -45,7 +45,7 @@ public class EntityManagerFactoryConfig {
 					.setDatabase(Database.HSQL)
 					.setShowSql(true)
 					.setGenerateDdl(true)
-			).buildEntityManagerFactory();
+			).build();
 	}
 
 	@Bean

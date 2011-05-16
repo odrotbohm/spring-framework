@@ -16,6 +16,7 @@
 
 package org.springframework.beans.factory.support;
 
+import org.springframework.beans.factory.Builder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.util.ObjectUtils;
 
@@ -30,7 +31,7 @@ import org.springframework.util.ObjectUtils;
  * @author Juergen Hoeller
  * @since 2.0
  */
-public class BeanDefinitionBuilder  {
+public class BeanDefinitionBuilder implements Builder<AbstractBeanDefinition> {
 
 	/**
 	 * Create a new <code>BeanDefinitionBuilder</code> used to construct a {@link GenericBeanDefinition}.
@@ -135,7 +136,7 @@ public class BeanDefinitionBuilder  {
 
 	/**
 	 * Return the current BeanDefinition object in its raw (unvalidated) form.
-	 * @see #getBeanDefinition()
+	 * @see #build()
 	 */
 	public AbstractBeanDefinition getRawBeanDefinition() {
 		return this.beanDefinition;
@@ -143,12 +144,20 @@ public class BeanDefinitionBuilder  {
 
 	/**
 	 * Validate and return the created BeanDefinition object.
+	 * @deprecated as of Spring 3.1 in favor of {@link #build()}
 	 */
+	@Deprecated
 	public AbstractBeanDefinition getBeanDefinition() {
+		return build();
+	}
+
+	/**
+	 * Validate and return the created BeanDefinition object.
+	 */
+	public AbstractBeanDefinition build() {
 		this.beanDefinition.validate();
 		return this.beanDefinition;
 	}
-
 
 	/**
 	 * Set the name of the parent definition of this bean definition.

@@ -42,7 +42,7 @@ import org.springframework.context.annotation.Bean;
  *         return new SessionFactoryBean()
  *             .setDataSource(dataSource())
  *             .setMappingLocations("classpath:com/myco/*.hbm.xml"})
- *             .buildSessionFactory();
+ *             .build();
  *     }
  * }
  * </pre>
@@ -60,7 +60,7 @@ import org.springframework.context.annotation.Bean;
  *                 cfg.setNamingStrategy(MyNamingStrategy.class);
  *             }
  *          })
- *         .buildSessionFactory();
+ *         .build();
  * </pre>
  *
  * @author Juergen Hoeller

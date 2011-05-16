@@ -61,7 +61,7 @@ import org.springframework.util.ClassUtils;
  *         return new AnnotationSessionFactoryBuilder()
  *             .setDataSource(dataSource())
  *             .setPackagesToScan("com.myco"})
- *             .buildSessionFactory();
+ *             .build();
  *     }
  * }
  * </pre>
@@ -79,7 +79,7 @@ import org.springframework.util.ClassUtils;
  *                 cfg.addAnnotatedClass(Foo.class);
  *             }
  *          })
- *         .buildSessionFactory();
+ *         .build();
  * </pre>
  *
  * @author Juergen Hoeller

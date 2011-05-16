@@ -25,13 +25,15 @@ import javax.persistence.EntityManagerFactory;
 
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.Builder;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.util.Assert;
 
-public class LocalContainerEntityManagerFactoryBuilder extends
-		AbstractLocalContainerEntityManagerFactoryCreator<LocalContainerEntityManagerFactoryBuilder> {
+public class LocalContainerEntityManagerFactoryBuilder
+		extends AbstractLocalContainerEntityManagerFactoryCreator<LocalContainerEntityManagerFactoryBuilder>
+		implements Builder<EntityManagerFactory> {
 
 	public LocalContainerEntityManagerFactoryBuilder(EntityManagerFactoryBuilderContext ctx) {
 		this(ctx.getBeanClassLoader(), ctx.getResourceLoader(), ctx.getLoadTimeWeaver());
@@ -41,7 +43,8 @@ public class LocalContainerEntityManagerFactoryBuilder extends
 		this(beanClassLoader, resourceLoader, null);
 	}
 
-	public LocalContainerEntityManagerFactoryBuilder(ClassLoader beanClassLoader, ResourceLoader resourceLoader, LoadTimeWeaver loadTimeWeaver) {
+	public LocalContainerEntityManagerFactoryBuilder(ClassLoader beanClassLoader,
+			ResourceLoader resourceLoader, LoadTimeWeaver loadTimeWeaver) {
 		Assert.notNull(beanClassLoader, "bean ClassLoader must not be null");
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null");
 
@@ -65,7 +68,7 @@ public class LocalContainerEntityManagerFactoryBuilder extends
 				handler);
 	}
 
-	public EntityManagerFactory buildEntityManagerFactory() {
+	public EntityManagerFactory build() {
 		initialize();
 		determineEMFInterfaces(this.nativeEntityManagerFactory);
 		return createEntityManagerFactoryProxy(this.nativeEntityManagerFactory);

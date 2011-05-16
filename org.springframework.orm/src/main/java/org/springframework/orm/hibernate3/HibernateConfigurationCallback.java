@@ -30,7 +30,7 @@ import org.hibernate.cfg.Configuration;
 public interface HibernateConfigurationCallback<C extends Configuration> {
 
 	/**
-	 * Configure the given Hibernate {@code Configuration type}. Note that methods
+	 * Configure the given Hibernate {@code Configuration type}. Note that typically
 	 * only setter methods should be called, and methods such as
 	 * {@link Configuration#buildSessionFactory()} should be avoided.
 	 * @throws Exception to propagate any exception thrown by

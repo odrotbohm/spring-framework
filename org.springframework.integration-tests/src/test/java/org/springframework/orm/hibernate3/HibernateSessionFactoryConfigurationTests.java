@@ -251,7 +251,7 @@ public class HibernateSessionFactoryConfigurationTests {
 						configuration.addAnnotatedClass(Foo.class);
 					}
 				})
-				.buildSessionFactory();
+				.build();
 		}
 	}
 
@@ -263,7 +263,7 @@ public class HibernateSessionFactoryConfigurationTests {
 			return new AnnotationSessionFactoryBuilder(dataSource())
 				.setSchemaUpdate(true)
 				.setPackagesToScan(Foo.class.getPackage().getName())
-				.buildSessionFactory();
+				.build();
 		}
 	}
 
@@ -274,7 +274,7 @@ public class HibernateSessionFactoryConfigurationTests {
 			return new AnnotationSessionFactoryBuilder(dataSource())
 				.setSchemaUpdate(true)
 				.setAnnotatedClasses(Foo.class, Foo.class)
-				.buildSessionFactory();
+				.build();
 		}
 	}
 
@@ -290,7 +290,7 @@ public class HibernateSessionFactoryConfigurationTests {
 						configuration.addAnnotatedClass(Foo.class);
 					}
 				})
-				.buildSessionFactory();
+				.build();
 		}
 	}
 
@@ -306,7 +306,7 @@ public class HibernateSessionFactoryConfigurationTests {
 						configuration.addFile(new File(this.getClass().getClassLoader().getResource("org/springframework/orm/hibernate3/scannable/FooMapping.hbm.xml").toURI()));
 					}
 				})
-				.buildSessionFactory();
+				.build();
 		}
 	}
 
@@ -324,7 +324,7 @@ public class HibernateSessionFactoryConfigurationTests {
 					}
 				});
 			assertThat(sfb.getConfiguration(), instanceOf(CustomHibernateConfiguration.class));
-			return sfb.buildSessionFactory();
+			return sfb.build();
 		}
 	}
 
@@ -341,7 +341,7 @@ public class HibernateSessionFactoryConfigurationTests {
 					}
 				})
 				.setConfigurationClass(CustomHibernateConfiguration.class)
-				.buildSessionFactory();
+				.build();
 		}
 	}
 
