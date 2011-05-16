@@ -339,7 +339,7 @@ public abstract class AbstractJpaTests extends AbstractAnnotationAwareTransactio
 			if (bean instanceof DefaultPersistenceUnitManager) {
 				((DefaultPersistenceUnitManager) bean).setLoadTimeWeaver(this.ltw);
 			}
-			if (bean instanceof EntityManagerFactoryConfig) {
+			if (bean instanceof LoadTimeWeaverAware) {
 				((LoadTimeWeaverAware) bean).setLoadTimeWeaver(this.ltw);
 			}
 			return bean;

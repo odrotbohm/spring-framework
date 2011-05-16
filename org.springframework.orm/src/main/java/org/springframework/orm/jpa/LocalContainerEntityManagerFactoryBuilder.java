@@ -33,6 +33,10 @@ import org.springframework.util.Assert;
 public class LocalContainerEntityManagerFactoryBuilder extends
 		AbstractLocalContainerEntityManagerFactoryCreator<LocalContainerEntityManagerFactoryBuilder> {
 
+	public LocalContainerEntityManagerFactoryBuilder(EntityManagerFactoryBuilderContext ctx) {
+		this(ctx.getBeanClassLoader(), ctx.getResourceLoader(), ctx.getLoadTimeWeaver());
+	}
+
 	public LocalContainerEntityManagerFactoryBuilder(ClassLoader beanClassLoader, ResourceLoader resourceLoader) {
 		this(beanClassLoader, resourceLoader, null);
 	}

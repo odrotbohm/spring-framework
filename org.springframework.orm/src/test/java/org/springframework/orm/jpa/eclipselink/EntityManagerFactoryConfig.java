@@ -19,45 +19,25 @@ package org.springframework.orm.jpa.eclipselink;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.weaving.LoadTimeWeaverAware;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
-import org.springframework.instrument.classloading.LoadTimeWeaver;
+import org.springframework.orm.jpa.EntityManagerFactoryBuilderContext;
 import org.springframework.orm.jpa.JpaExceptionTranslator;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBuilder;
 import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter;
 
 @Configuration
-public class EntityManagerFactoryConfig implements BeanClassLoaderAware, ResourceLoaderAware, LoadTimeWeaverAware {
+public class EntityManagerFactoryConfig {
 
 	@Autowired
 	DataSource dataSource;
 
-	private ResourceLoader resourceLoader;
-	private LoadTimeWeaver loadTimeWeaver;
-	private ClassLoader beanClassLoader;
-
-	public void setLoadTimeWeaver(LoadTimeWeaver loadTimeWeaver) {
-		this.loadTimeWeaver = loadTimeWeaver;
-	}
-
-	public void setResourceLoader(ResourceLoader resourceLoader) {
-		this.resourceLoader = resourceLoader;
-	}
-
-	public void setBeanClassLoader(ClassLoader beanClassLoader) {
-		this.beanClassLoader = beanClassLoader;
-	}
-
-	@Bean(name="entityManagerFactory")
-	public EntityManagerFactory fromBuilder() {
-		return new LocalContainerEntityManagerFactoryBuilder(beanClassLoader, resourceLoader, loadTimeWeaver)
+	@Bean
+	public EntityManagerFactory entityManagerFactory() {
+		return new LocalContainerEntityManagerFactoryBuilder(emfBuilderContext())
 			.setPersistenceXmlLocation("org/springframework/orm/jpa/domain/persistence.xml")
 			.setDataSource(dataSource)
 			.setJpaVendorAdapter(
@@ -65,12 +45,16 @@ public class EntityManagerFactoryConfig implements BeanClassLoaderAware, Resourc
 					.setDatabase(Database.HSQL)
 					.setShowSql(true)
 					.setGenerateDdl(true)
-			)
-			.buildEntityManagerFactory();
+			).buildEntityManagerFactory();
 	}
 
 	@Bean
-	public PersistenceExceptionTranslator pet() {
+	public EntityManagerFactoryBuilderContext emfBuilderContext() {
+		return new EntityManagerFactoryBuilderContext();
+	}
+
+	@Bean
+	public PersistenceExceptionTranslator exceptionTranslator() {
 		return new JpaExceptionTranslator();
 	}
 }
