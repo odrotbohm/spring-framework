@@ -34,6 +34,14 @@ public class EntityManagerFactoryConfig {
 
 	@Autowired
 	DataSource dataSource;
+	
+	/*
+	 * Options:
+	 * 
+	 * 1) Return the FactoryBean, chainable methods, and encourage @PersistenceContext use
+	 * 2) FactoryBean implements EntityManagerFactory bean and delegates
+	 * 3) defer the requirement for beanClassLoader / LTW / resourceLoader until and unless absolutely necessary
+	 */
 
 	@Bean
 	public EntityManagerFactory entityManagerFactory() {
