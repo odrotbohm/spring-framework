@@ -28,49 +28,8 @@ subprojects {
         mavenRepo urls: 'http://maven.springframework.org/milestone'
         mavenRepo urls: 'http://download.java.net/maven/2' // for javax.mail 1.4.3
     }
-}
-
-project('spring-core') {
-    description = 'Spring Core'
 
     dependencies {
-        // required
-        compile "commons-logging:commons-logging:1.1.1"
-        compile project(":spring-asm")
-
-        // optional (see http://issues.gradle.org/browse/GRADLE-1749)
-        compile("org.aspectj:aspectjweaver:1.6.8") {
-            optional = true
-        }
-        compile("log4j:log4j:1.2.15") {
-            optional = true
-            exclude group: 'javax.mail', module: 'mail'
-            exclude group: 'javax.jms', module: 'jms'
-            exclude group: 'com.sun.jdmk', module: 'jmxtools'
-            exclude group: 'com.sun.jmx', module: 'jmxri'
-        }
-        compile("net.sf.jopt-simple:jopt-simple:3.0") {
-            optional = true
-            exclude group: 'org.apache.ant', module: 'ant'
-        }
-
-        // test
-        testCompile "junit:junit:4.8.1"
-        testCompile "org.easymock:easymock:2.5.1"
-        testCompile "xmlunit:xmlunit:1.2"
-        testCompile "org.codehaus.woodstox:wstx-asl:3.2.7"
-    }
-}
-
-project('spring-beans') {
-    description = 'Spring Beans'
-
-    dependencies {
-        compile project(":spring-core")
-
-        compile("javax.el:el-api:1.0") { provided = true }
-        compile("javax.inject:javax.inject:1") { provided = true }
-        compile("cglib:cglib-nodep:2.2") { optional = true }
         testRuntime("log4j:log4j:1.2.15") {
             optional = true
             exclude group: 'javax.mail', module: 'mail'
@@ -84,24 +43,49 @@ project('spring-beans') {
     }
 }
 
+project('spring-core') {
+    description = 'Spring Core'
+
+    dependencies {
+        compile project(":spring-asm")
+        compile "commons-logging:commons-logging:1.1.1"
+        compile("org.aspectj:aspectjweaver:1.6.8") {
+            optional = true
+        }
+        compile("log4j:log4j:1.2.15") {
+            exclude group: 'javax.mail', module: 'mail'
+            exclude group: 'javax.jms', module: 'jms'
+            exclude group: 'com.sun.jdmk', module: 'jmxtools'
+            exclude group: 'com.sun.jmx', module: 'jmxri'
+            optional = true
+        }
+        compile("net.sf.jopt-simple:jopt-simple:3.0") {
+            exclude group: 'org.apache.ant', module: 'ant'
+            optional = true
+        }
+        testCompile "org.codehaus.woodstox:wstx-asl:3.2.7"
+    }
+}
+
+project('spring-beans') {
+    description = 'Spring Beans'
+
+    dependencies {
+        compile project(":spring-core")
+        compile("javax.el:el-api:1.0") { provided = true }
+        compile("javax.inject:javax.inject:1") { provided = true }
+        compile("cglib:cglib-nodep:2.2") { optional = true }
+    }
+}
+
 project('spring-aop') {
     description = 'Spring AOP'
 
     dependencies {
         compile project(":spring-beans")
-
         compile("com.jamonapi:jamon:2.4") { optional = true }
         compile("aopalliance:aopalliance:1.0") { optional = true }
         compile("commons-pool:commons-pool:1.5.3") { optional = true }
-        testRuntime("log4j:log4j:1.2.15") {
-            optional = true
-            exclude group: 'javax.mail', module: 'mail'
-            exclude group: 'javax.jms', module: 'jms'
-            exclude group: 'com.sun.jdmk', module: 'jmxtools'
-            exclude group: 'com.sun.jmx', module: 'jmxri'
-        }
-        testCompile "junit:junit:4.8.1"
-        testCompile "org.easymock:easymock:2.5.1"
     }
 }
 
