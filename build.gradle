@@ -99,6 +99,14 @@ project('spring-instrument') {
     }
 }
 
+project('spring-instrument-tomcat') {
+    description = 'Spring Instrument Tomcat'
+
+    dependencies {
+        compile("org.apache.tomcat:catalina:6.0.16") { provided = true }
+    }
+}
+
 // DONE: dependencies for .core
 // DONE: jarjar for .asm
 // DONE: build .beans
