@@ -140,6 +140,18 @@ project('spring-context') {
     }
 }
 
+project('spring-tx') {
+    description = 'Spring Transaction'
+
+    dependencies {
+        compile project(":spring-context")
+        compile("com.ibm.websphere:com.springsource.com.ibm.websphere.uow:6.0.2.17") { provided = true }
+        compile("javax.resource:com.springsource.javax.resource:1.5.0") { optional = true }
+        compile "aopalliance:aopalliance:1.0" // NOT optional, as opposed to in :spring-aop
+        testCompile "org.easymock:easymockclassextension:2.3"
+    }
+}
+
 // DONE: dependencies for .core
 // DONE: jarjar for .asm
 // DONE: build .beans
@@ -148,7 +160,7 @@ project('spring-context') {
 // DONE: build .instrument
 // DONE: build .instrument.tomcat
 // DONE: build .context
-// TODO: build .transaction
+// DONE: build .transaction
 // TODO: build .jms
 // TODO: build .jdbc
 // TODO: build .context.support
@@ -177,3 +189,4 @@ project('spring-context') {
 // TODO: remove all ant artifacts
 // TODO: enable -Xlint:all; fix warnings
 // TODO: ultimately get rid of .integration-tests? (depend on other modules' test classpaths)
+// TODO: need a way to visualize required deps vs. optional (a la `gradle dependencies`)
