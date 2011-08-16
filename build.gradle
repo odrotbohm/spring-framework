@@ -62,8 +62,9 @@ project('spring-core') {
     }
 }
 
-// TODO: jarjar for .asm
-// TODO: solve optional dependencies (GRADLE-1749)
+// DONE: dependencies for .core
 // TODO: integrate bundlor plugin
-// TODO: enable -Xlint:all; fix warnings
+// TODO: support optional dependencies (GRADLE-1749)
 // TODO: rename module dirs to spring-xyz; remove rename logic from settings.xml
+// TODO: remove all ant artifacts
+// TODO: enable -Xlint:all; fix warnings
