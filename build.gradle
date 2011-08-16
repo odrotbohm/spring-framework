@@ -36,7 +36,7 @@ project('spring-core') {
     dependencies {
         // required
         compile "commons-logging:commons-logging:1.1.1"
-        compile "org.springframework:spring-asm:3.1.0.BUILD-SNAPSHOT"
+        compile project(":spring-asm")
 
         // optional (see http://issues.gradle.org/browse/GRADLE-1749)
         compile("org.aspectj:aspectjweaver:1.6.8") {
@@ -63,6 +63,7 @@ project('spring-core') {
 }
 
 // DONE: dependencies for .core
+// DONE: jarjar for .asm
 // TODO: integrate bundlor plugin
 // TODO: support optional dependencies (GRADLE-1749)
 // TODO: rename module dirs to spring-xyz; remove rename logic from settings.xml
