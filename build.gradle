@@ -114,6 +114,8 @@ project('spring-aop') {
 // TODO: support optional dependencies (GRADLE-1749)
 // TODO: support provided dependencies
 
+// TODO: add license files, changelogs, readme
+
 // TODO: categorize (with @Rule or otherwise) 'timed' tests
 
 // TODO: rename module dirs to spring-xyz; remove rename logic from settings.xml
