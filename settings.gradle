@@ -5,6 +5,7 @@ include 'org.springframework.aop'
 include 'org.springframework.expression'
 include 'org.springframework.instrument'
 include 'org.springframework.instrument.tomcat'
+include 'org.springframework.context'
 
 rootProject.children.each { project ->
     project.name = project.name.replace('org.springframework', 'spring').replace('.', '-')
