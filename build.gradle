@@ -83,10 +83,19 @@ project('spring-aop') {
     }
 }
 
+project('spring-expression') {
+    description = 'Spring Expression Language (SpEL)'
+
+    dependencies {
+        compile project(":spring-core")
+    }
+}
+
 // DONE: dependencies for .core
 // DONE: jarjar for .asm
 // DONE: build .beans
 // DONE: build .aop
+// DONE: build .expression
 // TODO: un-@Ignore CallbacksSecurityTests (see TODO within)
 // TODO: integrate bundlor plugin
 // TODO: support optional dependencies (GRADLE-1749)

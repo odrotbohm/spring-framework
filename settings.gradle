@@ -2,6 +2,7 @@ include 'org.springframework.core'
 include 'org.springframework.asm'
 include 'org.springframework.beans'
 include 'org.springframework.aop'
+include 'org.springframework.expression'
 
 rootProject.children.each { project ->
     project.name = project.name.replace('org.springframework.', 'spring-')
