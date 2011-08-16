@@ -91,17 +91,28 @@ project('spring-expression') {
     }
 }
 
+project('spring-instrument') {
+    description = 'Spring Instrument'
+
+    dependencies {
+        compile project(":spring-core")
+    }
+}
+
 // DONE: dependencies for .core
 // DONE: jarjar for .asm
 // DONE: build .beans
 // DONE: build .aop
 // DONE: build .expression
+// DONE: build .instrument
+// TODO: produce source jars
 // TODO: un-@Ignore CallbacksSecurityTests (see TODO within)
 // TODO: integrate bundlor plugin
 // TODO: support optional dependencies (GRADLE-1749)
 // TODO: support provided dependencies
 
-// TODO: add license files, changelogs, readme
+// TODO: add license files, changelogs, readme (verify this is already done)
+// TODO: META-INF/INDEX.LIST -- ?
 
 // TODO: categorize (with @Rule or otherwise) 'timed' tests
 
