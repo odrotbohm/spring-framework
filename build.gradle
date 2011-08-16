@@ -105,6 +105,22 @@ project('spring-instrument') {
 // DONE: build .aop
 // DONE: build .expression
 // DONE: build .instrument
+// TODO: build .instrument.tomcat
+// TODO: build .context
+// TODO: build .transaction
+// TODO: build .jms
+// TODO: build .jdbc
+// TODO: build .context.support
+// TODO: build .oxm
+// TODO: build .web
+// TODO: build .web.servlet
+// TODO: build .web.portlet
+// TODO: build .web.struts
+// TODO: build .orm
+// TODO: build .aspects
+// TODO: build .test
+// TODO: build .spring-library -- ?
+// TODO: build .integration-tests
 // TODO: produce source jars
 // TODO: un-@Ignore CallbacksSecurityTests (see TODO within)
 // TODO: integrate bundlor plugin
@@ -119,3 +135,4 @@ project('spring-instrument') {
 // TODO: rename module dirs to spring-xyz; remove rename logic from settings.xml
 // TODO: remove all ant artifacts
 // TODO: enable -Xlint:all; fix warnings
+// TODO: ultimately get rid of .integration-tests? (depend on other modules' test classpaths)
