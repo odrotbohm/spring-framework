@@ -90,6 +90,10 @@ project('spring-beans') {
 // TODO: un-@Ignore CallbacksSecurityTests (see TODO within)
 // TODO: integrate bundlor plugin
 // TODO: support optional dependencies (GRADLE-1749)
+// TODO: support provided dependencies
+
+// TODO: categorize (with @Rule or otherwise) 'timed' tests
+
 // TODO: rename module dirs to spring-xyz; remove rename logic from settings.xml
 // TODO: remove all ant artifacts
 // TODO: enable -Xlint:all; fix warnings
