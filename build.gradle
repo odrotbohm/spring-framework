@@ -62,8 +62,32 @@ project('spring-core') {
     }
 }
 
+project('spring-beans') {
+    description = 'Spring Beans'
+
+    dependencies {
+        compile project(":spring-core")
+
+        compile("javax.el:el-api:1.0") { provided = true }
+        compile("javax.inject:javax.inject:1") { provided = true }
+        compile("cglib:cglib-nodep:2.2") { optional = true }
+        testRuntime("log4j:log4j:1.2.15") {
+            optional = true
+            exclude group: 'javax.mail', module: 'mail'
+            exclude group: 'javax.jms', module: 'jms'
+            exclude group: 'com.sun.jdmk', module: 'jmxtools'
+            exclude group: 'com.sun.jmx', module: 'jmxri'
+        }
+        testCompile "junit:junit:4.8.1"
+        testCompile "org.easymock:easymock:2.5.1"
+        testCompile "org.hamcrest:hamcrest-all:1.1"
+    }
+}
+
 // DONE: dependencies for .core
 // DONE: jarjar for .asm
+// DONE: build .beans
+// TODO: un-@Ignore CallbacksSecurityTests (see TODO within)
 // TODO: integrate bundlor plugin
 // TODO: support optional dependencies (GRADLE-1749)
 // TODO: rename module dirs to spring-xyz; remove rename logic from settings.xml

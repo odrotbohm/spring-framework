@@ -1,5 +1,6 @@
 include 'org.springframework.core'
 include 'org.springframework.asm'
+include 'org.springframework.beans'
 
 rootProject.children.each { project ->
     project.name = project.name.replace('org.springframework.', 'spring-')
