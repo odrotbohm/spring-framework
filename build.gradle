@@ -195,6 +195,29 @@ project('spring-jdbc') {
     }
 }
 
+project('spring-context-support') {
+    description = 'Spring Context Support'
+
+    dependencies {
+        compile project(":spring-jdbc")
+        compile("com.bea.commonj:com.springsource.commonj:1.1.0") { optional = true }
+        compile("opensymphony:quartz:1.6.2") { optional = true }
+        compile("javax.mail:mail:1.4") { optional = true }
+        compile("velocity:velocity:1.5") { optional = true }
+        compile("commons-collections:commons-collections:3.2") { optional = true }
+        compile("org.freemarker:freemarker:2.3.15") { optional = true }
+        compile("jasperreports:jasperreports:2.0.5") { transitive = false; optional = true }
+        compile("commons-digester:commons-digester:1.8.1") { optional = true }
+        compile("commons-beanutils:commons-beanutils:1.8.0") { optional = true }
+        compile("com.lowagie:itext:2.0.8") { optional = true }
+        testCompile "hsqldb:hsqldb:1.8.0.10"
+        testCompile "org.apache.poi:poi:3.0.2-FINAL"
+    }
+
+    // pick up **/*.types files in src/main
+    sourceSets.test.resources.srcDirs += 'src/main/java'
+}
+
 // DONE: dependencies for .core
 // DONE: jarjar for .asm
 // DONE: build .beans
@@ -208,7 +231,7 @@ project('spring-jdbc') {
 // TODO: integrate xjc for .oxm
 // DONE: build .jms
 // DONE: build .jdbc
-// TODO: build .context.support
+// DONE: build .context.support
 // TODO: build .web
 // TODO: build .web.servlet
 // TODO: build .web.portlet
@@ -234,3 +257,4 @@ project('spring-jdbc') {
 // TODO: enable -Xlint:all; fix warnings
 // TODO: ultimately get rid of .integration-tests? (depend on other modules' test classpaths)
 // TODO: need a way to visualize required deps vs. optional (a la `gradle dependencies`)
+// TODO: normalize ' vs " in build script
