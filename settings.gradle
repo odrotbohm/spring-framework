@@ -11,6 +11,7 @@ include 'org.springframework.oxm'
 include 'org.springframework.jms'
 include 'org.springframework.jdbc'
 include 'org.springframework.context.support'
+include 'org.springframework.web'
 
 rootProject.children.each { project ->
     project.name = project.name.replace('org.springframework', 'spring').replace('.', '-')
