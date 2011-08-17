@@ -8,6 +8,7 @@ include 'org.springframework.instrument.tomcat'
 include 'org.springframework.context'
 include 'org.springframework.transaction'
 include 'org.springframework.oxm'
+include 'org.springframework.jms'
 
 rootProject.children.each { project ->
     project.name = project.name.replace('org.springframework', 'spring').replace('.', '-')

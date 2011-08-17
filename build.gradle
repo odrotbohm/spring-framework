@@ -173,6 +173,15 @@ project('spring-oxm') {
     }
 }
 
+project('spring-jms') {
+    description = 'Spring JMS'
+
+    dependencies {
+        compile project(":spring-oxm")
+        compile project(":spring-tx")
+    }
+}
+
 // DONE: dependencies for .core
 // DONE: jarjar for .asm
 // DONE: build .beans
@@ -184,7 +193,7 @@ project('spring-oxm') {
 // DONE: build .transaction
 // DONE: build .oxm
 // TODO: integrate xjc for .oxm
-// TODO: build .jms
+// DONE: build .jms
 // TODO: build .jdbc
 // TODO: build .context.support
 // TODO: build .web
