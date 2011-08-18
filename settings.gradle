@@ -14,6 +14,7 @@ include 'org.springframework.context.support'
 include 'org.springframework.web'
 include 'org.springframework.orm'
 include 'org.springframework.web.servlet'
+include 'org.springframework.test'
 include 'org.springframework.web.portlet'
 
 rootProject.children.each { project ->
