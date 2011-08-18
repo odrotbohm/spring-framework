@@ -359,5 +359,8 @@ project('spring-struts') {
 // TODO: remove all ant artifacts
 // TODO: enable -Xlint:all; fix warnings
 // TODO: ultimately get rid of .integration-tests? (depend on other modules' test classpaths)
-// TODO: need a way to visualize required deps vs. optional (a la `gradle dependencies`)
 // TODO: normalize ' vs " in build script
+
+// TODO: GRADLE req: need a way to visualize required deps vs. optional (a la `gradle dependencies`)
+// TODO: GRADLE req: for depth limit on `gradle dependencies`
+// TODO: GRADLE req: for configuration filter on `gradle dependencies` (e.g. for compile, testCompile)
