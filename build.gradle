@@ -250,8 +250,11 @@ project('spring-orm') {
         compile("com.oracle.toplink.essentials:com.springsource.oracle.toplink.essentials:2.0.0.b41-beta2") { optional = true }
         compile("javax.jdo:jdo2-api:2.1") { optional = true }
         compile("org.apache.ibatis:ibatis-sqlmap:2.3.4.726") { optional = true }
-        //testCompile "org.eclipse.persistence:org.eclipse.persistence.asm:1.0.1"
-        //testCompile "org.eclipse.persistence:org.eclipse.persistence.antlr:1.0.1"
+        testCompile "javax.servlet:servlet-api:2.5"
+        testCompile "org.slf4j:slf4j-log4j12:1.5.3"
+        testCompile "commons-dbcp:commons-dbcp:1.2.2"
+        testCompile "org.eclipse.persistence:com.springsource.org.eclipse.persistence.asm:1.0.1"
+        testCompile "org.eclipse.persistence:com.springsource.org.eclipse.persistence.antlr:1.0.1"
     }
 }
 
@@ -337,7 +340,8 @@ project('spring-struts') {
 // DONE: build .context.support
 // DONE: build .web
 // TODO: fix and un-@Ignore JaxWsSupportTests (see TODO within)
-// TEST: build .orm
+// DONE: build .orm
+// TODO: fix and un-@Ignore OpenJpaEntityManagerFactoryWithAspectJWeavingIntegrationTests and TopLinkMultiEntityManagerFactoryIntegrationTests (see TODOs within)
 // TEST: build .web.servlet
 // TEST: build .web.portlet
 // TEST: build .web.struts
