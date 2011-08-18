@@ -233,6 +233,27 @@ project('spring-web') {
     }
 }
 
+// TODO: test when online
+project('spring-orm') {
+    description = 'Spring Object/XML Mapping'
+    dependencies {
+        compile project(":spring-web")
+        compile project(":spring-jdbc")
+        compile("org.hibernate:hibernate-core:3.3.1.GA") { optional = true }
+        compile("org.hibernate:hibernate-cglib-repack:2.1_3") { optional = true }
+        compile("org.hibernate:hibernate-annotations:3.4.0.GA") { optional = true }
+        compile("javax.persistence:persistence-api:1.0") { optional = true }
+        compile("org.hibernate:hibernate-entitymanager:3.4.0.GA") { optional = true }
+        compile("org.apache.openjpa:openjpa:1.1.0") { optional = true }
+        compile("org.eclipse.persistence:org.eclipse.persistence.core:1.0.1") { optional = true }
+        compile("org.eclipse.persistence:org.eclipse.persistence.jpa:1.0.1") { optional = true }
+        compile("javax.jdo:jdo2-api:2.1") { optional = true }
+        compile("org.apache.ibatis:ibatis-sqlmap:2.3.4.726") { optional = true }
+        testCompile "org.eclipse.persistence:org.eclipse.persistence.asm:1.0.1"
+        testCompile "org.eclipse.persistence:org.eclipse.persistence.antlr:1.0.1"
+    }
+}
+
 // DONE: dependencies for .core
 // DONE: jarjar for .asm
 // DONE: build .beans
@@ -252,7 +273,7 @@ project('spring-web') {
 // TODO: build .web.servlet
 // TODO: build .web.portlet
 // TODO: build .web.struts
-// TODO: build .orm
+// TEST: build .orm
 // TODO: build .aspects
 // TODO: build .test
 // TODO: build .spring-library -- ?
