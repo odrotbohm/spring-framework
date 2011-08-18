@@ -308,6 +308,18 @@ project('spring-test') {
     }
 }
 
+// TODO: test when online
+project('spring-struts') {
+    description = 'Spring Struts'
+    dependencies {
+        compile project(":spring-webmvc")
+        compile "struts:struts:1.2.9"
+        compile "commons-beanutils:commons-beanutils:1.7.0"
+        compile("javax.servlet:servlet-api:2.5") { provided = true }
+        testCompile project(":spring-test")
+    }
+}
+
 // DONE: dependencies for .core
 // DONE: jarjar for .asm
 // DONE: build .beans
@@ -324,10 +336,10 @@ project('spring-test') {
 // DONE: build .context.support
 // DONE: build .web
 // TODO: fix and un-@Ignore JaxWsSupportTests (see TODO within)
-// TODO: build .web.struts
 // TEST: build .orm
 // TEST: build .web.servlet
 // TEST: build .web.portlet
+// TEST: build .web.struts
 // TEST: build .test
 // TODO: build .aspects
 // TODO: build .spring-library -- ?
