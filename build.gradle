@@ -41,7 +41,6 @@ subprojects {
 
 project('spring-core') {
     description = 'Spring Core'
-
     dependencies {
         compile project(":spring-asm")
         compile "commons-logging:commons-logging:1.1.1"
@@ -66,7 +65,6 @@ project('spring-core') {
 
 project('spring-beans') {
     description = 'Spring Beans'
-
     dependencies {
         compile project(":spring-core")
         compile("javax.el:el-api:1.0") { provided = true }
@@ -77,7 +75,6 @@ project('spring-beans') {
 
 project('spring-aop') {
     description = 'Spring AOP'
-
     dependencies {
         compile project(":spring-beans")
         compile("com.jamonapi:jamon:2.4") { optional = true }
@@ -88,7 +85,6 @@ project('spring-aop') {
 
 project('spring-expression') {
     description = 'Spring Expression Language (SpEL)'
-
     dependencies {
         compile project(":spring-core")
     }
@@ -96,7 +92,6 @@ project('spring-expression') {
 
 project('spring-instrument') {
     description = 'Spring Instrument'
-
     dependencies {
         compile project(":spring-core")
     }
@@ -104,7 +99,6 @@ project('spring-instrument') {
 
 project('spring-instrument-tomcat') {
     description = 'Spring Instrument Tomcat'
-
     dependencies {
         compile("org.apache.tomcat:catalina:6.0.16") { provided = true }
     }
@@ -112,7 +106,6 @@ project('spring-instrument-tomcat') {
 
 project('spring-context') {
     description = 'Spring Context'
-
     dependencies {
         compile project(":spring-aop")
         compile project(":spring-expression")
@@ -142,7 +135,6 @@ project('spring-context') {
 
 project('spring-tx') {
     description = 'Spring Transaction'
-
     dependencies {
         compile project(":spring-context")
         compile("com.ibm.websphere:com.springsource.com.ibm.websphere.uow:6.0.2.17") { provided = true }
@@ -154,7 +146,6 @@ project('spring-tx') {
 
 project('spring-oxm') {
     description = 'Spring Object/XML Marshalling'
-
     dependencies {
         compile project(":spring-context")
         compile "commons-lang:commons-lang:2.5"
@@ -175,7 +166,6 @@ project('spring-oxm') {
 
 project('spring-jms') {
     description = 'Spring JMS'
-
     dependencies {
         compile project(":spring-oxm")
         compile project(":spring-tx")
@@ -184,7 +174,6 @@ project('spring-jms') {
 
 project('spring-jdbc') {
     description = 'Spring JDBC'
-
     dependencies {
         compile project(":spring-tx")
         compile("c3p0:c3p0:0.9.1.2") { optional = true }
@@ -197,7 +186,6 @@ project('spring-jdbc') {
 
 project('spring-context-support') {
     description = 'Spring Context Support'
-
     dependencies {
         compile project(":spring-jdbc")
         compile("com.bea.commonj:com.springsource.commonj:1.1.0") { optional = true }
@@ -220,7 +208,6 @@ project('spring-context-support') {
 
 project('spring-web') {
     description = 'Spring Web'
-
     dependencies {
         compile project(":spring-oxm")
         compile("com.caucho:com.springsource.com.caucho:3.2.1") { optional = true }
