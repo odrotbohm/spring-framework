@@ -18,10 +18,13 @@ include 'org.springframework.test'
 include 'org.springframework.web.portlet'
 include 'org.springframework.web.struts'
 
+// transform project names to maven-central artifact naming
+// e.g.: org.springframework.context.support => spring-context-support
 rootProject.children.each { project ->
     project.name = project.name.replace('org.springframework', 'spring').replace('.', '-')
 }
 
+// special cases
 project(":spring-transaction").name = 'spring-tx'
 project(":spring-web-servlet").name = 'spring-webmvc'
 project(":spring-web-portlet").name = 'spring-webmvc-portlet'
