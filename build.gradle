@@ -254,6 +254,26 @@ project('spring-orm') {
     }
 }
 
+// TODO: test when online
+project('spring-webmvc') {
+    description = 'Spring Web MVC'
+    dependencies {
+        compile project(":spring-web")
+        compile project(":spring-orm")
+        compile project(":spring-context-support")
+        testCompile "rhino:js:1.7R1"
+        testCompile "xmlunit:xmlunit:1.2"
+        testCompile("dom4j:dom4j:1.6.1") {
+            exclude group: 'xml-apis', module: 'xml-apis'
+        }
+        testCompile("jaxen:jaxen:1.1.1") {
+            exclude group: 'xml-apis', module: 'xml-apis'
+            exclude group: 'xom', module: 'xom'
+            exclude group: 'xerces', module: 'xercesImpl'
+        }
+    }
+}
+
 // DONE: dependencies for .core
 // DONE: jarjar for .asm
 // DONE: build .beans
@@ -270,10 +290,10 @@ project('spring-orm') {
 // DONE: build .context.support
 // DONE: build .web
 // TODO: fix and un-@Ignore JaxWsSupportTests (see TODO within)
-// TODO: build .web.servlet
 // TODO: build .web.portlet
 // TODO: build .web.struts
 // TEST: build .orm
+// TEST: build .web.servlet
 // TODO: build .aspects
 // TODO: build .test
 // TODO: build .spring-library -- ?

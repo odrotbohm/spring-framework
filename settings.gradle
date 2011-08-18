@@ -13,9 +13,11 @@ include 'org.springframework.jdbc'
 include 'org.springframework.context.support'
 include 'org.springframework.web'
 include 'org.springframework.orm'
+include 'org.springframework.web.servlet'
 
 rootProject.children.each { project ->
     project.name = project.name.replace('org.springframework', 'spring').replace('.', '-')
 }
 
 project(":spring-transaction").name = 'spring-tx'
+project(":spring-web-servlet").name = 'spring-webmvc'
