@@ -14,6 +14,7 @@ include 'org.springframework.context.support'
 include 'org.springframework.web'
 include 'org.springframework.orm'
 include 'org.springframework.web.servlet'
+include 'org.springframework.web.portlet'
 
 rootProject.children.each { project ->
     project.name = project.name.replace('org.springframework', 'spring').replace('.', '-')
@@ -21,3 +22,4 @@ rootProject.children.each { project ->
 
 project(":spring-transaction").name = 'spring-tx'
 project(":spring-web-servlet").name = 'spring-webmvc'
+project(":spring-web-portlet").name = 'spring-webmvc-portlet'
