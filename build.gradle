@@ -272,6 +272,9 @@ project('spring-webmvc') {
             exclude group: 'xerces', module: 'xercesImpl'
         }
     }
+
+    // pick up DispatcherServlet.properties in src/main
+    sourceSets.test.resources.srcDirs += 'src/main/java'
 }
 
 // DONE: dependencies for .core
