@@ -231,9 +231,11 @@ project('spring-web') {
         compile("com.sun.syndication:com.springsource.com.sun.syndication:1.0.0") { optional = true }
         testCompile "xmlunit:xmlunit:1.2"
     }
+
+    // pick up ContextLoader.properties in src/main
+    sourceSets.test.resources.srcDirs += 'src/main/java'
 }
 
-// TODO: test when online
 project('spring-orm') {
     description = 'Spring Object/XML Mapping'
     dependencies {
