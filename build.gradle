@@ -261,6 +261,15 @@ project('spring-webmvc') {
         compile project(":spring-web")
         compile project(":spring-orm")
         compile project(":spring-context-support")
+        compile("org.apache.tiles:tiles-api:2.1.2") { optional = true }
+        compile("org.apache.tiles:tiles-core:2.1.2") { optional = true }
+        compile("org.apache.tiles:tiles-jsp:2.1.2") { optional = true }
+        compile("org.apache.tiles:tiles-servlet:2.1.2") { optional = true }
+        compile("velocity-tools:velocity-tools-view:1.4") { optional = true }
+        compile("net.sourceforge.jexcelapi:jxl:2.6.3") { optional = true }
+        compile("org.apache.poi:poi:3.0.2-FINAL") { optional = true }
+        compile("javax.servlet:jstl:1.1.2") { provided = true }
+        testCompile "org.slf4j:slf4j-log4j12:1.5.3"
         testCompile "rhino:js:1.7R1"
         testCompile "xmlunit:xmlunit:1.2"
         testCompile("dom4j:dom4j:1.6.1") {
