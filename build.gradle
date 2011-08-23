@@ -293,7 +293,6 @@ project('spring-webmvc-portlet') {
         compile project(":spring-webmvc")
         // TODO: is the following a conflict with servlet-api 3.0 in spring-web?
         compile("javax.servlet:servlet-api:2.5") { provided = true }
-        testCompile("javax.servlet:jstl:1.1.2")
     }
 }
 
