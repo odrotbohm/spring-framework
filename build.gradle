@@ -196,7 +196,7 @@ project('spring-context-support') {
     }
 
     // pick up **/*.types files in src/main
-    sourceSets.test.resources.srcDirs += 'src/main/java'
+    sourceSets.main.resources.srcDirs += 'src/main/java'
 }
 
 project('spring-web') {
@@ -226,7 +226,7 @@ project('spring-web') {
     }
 
     // pick up ContextLoader.properties in src/main
-    sourceSets.test.resources.srcDirs += 'src/main/java'
+    sourceSets.main.resources.srcDirs += 'src/main/java'
 }
 
 project('spring-orm') {
@@ -282,7 +282,7 @@ project('spring-webmvc') {
     }
 
     // pick up DispatcherServlet.properties in src/main
-    sourceSets.test.resources.srcDirs += 'src/main/java'
+    sourceSets.main.resources.srcDirs += 'src/main/java'
 }
 
 // TODO: test when online
