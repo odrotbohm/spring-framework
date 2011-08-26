@@ -47,3 +47,6 @@ TODO: deal with com.springsource dependencies (won't fly in maven central)
 TODO: GRADLE req: need a way to visualize required deps vs. optional (a la `gradle dependencies`)
 TODO: GRADLE req: for depth limit on `gradle dependencies`
 TODO: GRADLE req: for configuration filter on `gradle dependencies` (e.g. for compile, testCompile)
+
+TODO: test with gradle STS plugin
+TODO: test in IDEA
