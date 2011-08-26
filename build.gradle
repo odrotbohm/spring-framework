@@ -306,7 +306,6 @@ project('spring-test') {
     }
 }
 
-// TODO: test when online
 project('spring-struts') {
     description = 'Spring Struts'
     dependencies {

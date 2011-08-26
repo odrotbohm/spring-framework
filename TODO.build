@@ -18,7 +18,7 @@ DONE: build .orm
 TODO: fix and un-@Ignore OpenJpaEntityManagerFactoryWithAspectJWeavingIntegrationTests and TopLinkMultiEntityManagerFactoryIntegrationTests (see TODOs within)
 DONE: build .web.servlet
 TEST: build .web.portlet
-TEST: build .web.struts
+DONE: build .web.struts
 DONE: build .test
 TODO: fix and un-@Ignore tests in .test
 TODO: build .aspects
