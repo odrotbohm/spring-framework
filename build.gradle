@@ -168,10 +168,10 @@ project('spring-oxm') {
         testCompile "org.codehaus.jettison:jettison:1.0.1"
         testCompile "xmlunit:xmlunit:1.2"
         testCompile "xmlpull:xmlpull:1.1.3.4a"
-    }
-
-    task test(overwrite: true) {
-        println "WARNING: Skipping tests for spring-oxm until xjc integration is complete"
+        // this is a workaround until we have xjc/etc generation plugged in
+        // in order for this to work, you must FIRST run `ant test` within the
+        // .oxm module.  that will create/populate the target/test-classes dir
+        testCompile(files("target/test-classes"))
     }
 }
 
