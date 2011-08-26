@@ -16,7 +16,7 @@ DONE: build .web
 TODO: fix and un-@Ignore JaxWsSupportTests (see TODO within)
 DONE: build .orm
 TODO: fix and un-@Ignore OpenJpaEntityManagerFactoryWithAspectJWeavingIntegrationTests and TopLinkMultiEntityManagerFactoryIntegrationTests (see TODOs within)
-TEST: build .web.servlet
+DONE: build .web.servlet
 TEST: build .web.portlet
 TEST: build .web.struts
 DONE: build .test
