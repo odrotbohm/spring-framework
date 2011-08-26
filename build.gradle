@@ -22,14 +22,7 @@ subprojects {
     }
 
     repositories {
-        mavenRepo urls: 'http://maven.springframework.org/snapshot'
-        mavenCentral()
-        mavenRepo urls: 'http://maven.springframework.org/release'
-        mavenRepo urls: 'http://maven.springframework.org/milestone'
-        //mavenRepo urls: 'http://download.java.net/maven/2'          // for javax.mail
-        //mavenRepo urls: 'http://repository.jboss.org/maven2'        // for inject-tck
-        //mavenRepo urls: 'http://download.java.net/maven/glassfish/' // for ejb 3
-        mavenRepo urls: 'http://repository.springsource.com/maven/bundles/external'
+        mavenRepo name: 'libs-repo', urls: "http://repository.springsource.org/spr"
     }
 
     dependencies {
