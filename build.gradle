@@ -284,14 +284,15 @@ project('spring-webmvc') {
     sourceSets.main.resources.srcDirs += 'src/main/java'
 }
 
-// TODO: test when online
 project('spring-webmvc-portlet') {
     description = 'Spring Web Portlet'
     dependencies {
-        compile project(":spring-webmvc")
-        // TODO: is the following a conflict with servlet-api 3.0 in spring-web?
         compile("javax.servlet:servlet-api:2.5") { provided = true }
+        compile project(":spring-webmvc")
     }
+
+    // pick up DispatcherPortlet.properties in src/main
+    sourceSets.main.resources.srcDirs += 'src/main/java'
 }
 
 project('spring-test') {
