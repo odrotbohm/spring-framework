@@ -336,3 +336,15 @@ project('spring-struts') {
         testCompile project(":spring-test")
     }
 }
+
+project('spring-aspects') {
+    description = 'Spring Aspects'
+    apply from: 'aspectJ.gradle'
+    compileJava.dependsOn project(":spring-orm").jar
+    dependencies {
+        aspects project(":spring-orm")
+        ajc "org.aspectj:aspectjtools:1.6.8"
+        compile "org.aspectj:aspectjrt:1.6.8"
+        testCompile project(":spring-test")
+    }
+}
