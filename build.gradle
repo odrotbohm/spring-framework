@@ -137,7 +137,9 @@ project('spring-context') {
         compile("org.codehaus.jsr166-mirror:jsr166:1.7.0") { provided = true }
         testCompile "commons-dbcp:commons-dbcp:1.2.2"
         testCompile("javax.xml:jaxrpc-api:1.1") { optional = true }
-        testCompile "javax.inject:com.springsource.org.atinject.tck:1.0.0"
+        testCompile("javax.inject:com.springsource.org.atinject.tck:1.0.0") {
+            exclude group: "org.junit", module: "com.springsource.junit"
+        }
         testCompile "org.slf4j:slf4j-log4j12:1.5.3"
     }
 }
