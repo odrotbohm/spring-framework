@@ -18,3 +18,5 @@ spring-build
 target
 .gradle
 build
+.classpath
+.project

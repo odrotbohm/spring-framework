@@ -32,10 +32,26 @@ subprojects {
     }
 }
 
+configure(subprojects - project(":spring-asm")) {
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+
+    // servlet-api (2.5) and tomcat-servlet-api (3.0) classpath entries should not be
+    // exported to dependent projects in Eclipse to avoid false compilation errors due
+    // to changing APIs across these versions
+    eclipseClasspath {
+        whenConfigured { classpath ->
+            classpath.entries.findAll { entry -> entry.path.contains('servlet-api') }*.exported = false
+        }
+    }
+}
+
 project('spring-core') {
     description = 'Spring Core'
     dependencies {
-        compile project(":spring-asm")
+        compile files(project(":spring-asm").jar.archivePath) {
+            builtBy project(":spring-asm").jar
+        }
         compile "commons-logging:commons-logging:1.1.1"
         compile("org.aspectj:aspectjweaver:1.6.8") {
             optional = true
@@ -232,8 +248,6 @@ project('spring-web') {
 project('spring-orm') {
     description = 'Spring Object/XML Mapping'
     dependencies {
-        compile project(":spring-web")
-        compile project(":spring-jdbc")
         compile("org.hibernate:hibernate-core:3.3.1.GA") { optional = true }
         compile("org.hibernate:hibernate-cglib-repack:2.1_3") { optional = true }
         compile("org.hibernate:hibernate-annotations:3.4.0.GA") { optional = true }
@@ -250,6 +264,8 @@ project('spring-orm') {
         testCompile "commons-dbcp:commons-dbcp:1.2.2"
         testCompile "org.eclipse.persistence:com.springsource.org.eclipse.persistence.asm:1.0.1"
         testCompile "org.eclipse.persistence:com.springsource.org.eclipse.persistence.antlr:1.0.1"
+        compile project(":spring-web")
+        compile project(":spring-jdbc")
     }
 }
 
@@ -267,6 +283,7 @@ project('spring-webmvc') {
         compile("net.sourceforge.jexcelapi:jxl:2.6.3") { optional = true }
         compile("org.apache.poi:poi:3.0.2-FINAL") { optional = true }
         compile("javax.servlet:jstl:1.1.2") { provided = true }
+        compile("org.apache.tomcat:tomcat-servlet-api:7.0.8") { provided = true } // servlet-api 3.0
         testCompile "org.slf4j:slf4j-log4j12:1.5.3"
         testCompile "rhino:js:1.7R1"
         testCompile "xmlunit:xmlunit:1.2"
