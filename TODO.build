@@ -24,7 +24,8 @@ DONE: build .test
 TODO: fix and un-@Ignore tests in .test
 DONE: build .aspects
 TODO: build .spring-library -- ?
-TODO: build .integration-tests
+DONE: build .integration-tests
+TODO: fix and un-@Ignore HibernateSessionFactoryConfigurationTests (see TODO within)
 TODO: produce source jars
 TODO: un-@Ignore CallbacksSecurityTests (see TODO within)
 TODO: integrate bundlor plugin

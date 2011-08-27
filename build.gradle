@@ -348,3 +348,13 @@ project('spring-aspects') {
         testCompile project(":spring-test")
     }
 }
+
+project('spring-integration-tests') {
+    description = 'Spring Integration Tests'
+    dependencies {
+        testCompile project(":spring-test")
+        testCompile project(":spring-webmvc-portlet")
+        testCompile "org.hibernate:hibernate-core:3.3.1.GA"
+        testCompile "javax.servlet:servlet-api:2.5"
+    }
+}
