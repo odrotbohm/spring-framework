@@ -359,3 +359,19 @@ project('spring-integration-tests') {
         testCompile "javax.servlet:servlet-api:2.5"
     }
 }
+
+task apidocs(type: Javadoc) {
+    subprojects.each { project ->
+        source project.sourceSets.main.allJava
+    }
+    subprojects.each { subproject ->
+        if(classpath) {
+            classpath += subproject.sourceSets.main.classes + subproject.sourceSets.main.compileClasspath
+        }
+        else {
+            classpath = subproject.sourceSets.main.classes + subproject.sourceSets.main.compileClasspath
+        }
+    }
+    destinationDir = file('build/docs/javadoc')
+    maxMemory = '1024m'
+}
