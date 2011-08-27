@@ -1,10 +1,11 @@
 description = 'Spring Framework'
 
-allprojects {
+configure(allprojects) {
     group = 'org.springframework'
+    version = '3.1.0.BUILD-SNAPSHOT'
 }
 
-subprojects {
+configure(subprojects) {
     apply plugin: 'java'
 
     sourceCompatibility=1.5
@@ -30,9 +31,7 @@ subprojects {
         testCompile "org.easymock:easymock:2.5.1"
         testCompile "org.hamcrest:hamcrest-all:1.1"
     }
-}
 
-configure(subprojects - project(":spring-asm")) {
     apply plugin: 'eclipse'
     apply plugin: 'idea'
 
@@ -45,6 +44,42 @@ configure(subprojects - project(":spring-asm")) {
         }
     }
 }
+
+configure(subprojects - project(":spring-integration-tests")) {
+    apply plugin: 'maven'
+
+    // in order to upload archives, add REPO_USERNAME and REPO_PASSWORD
+    // entries to $HOME/.gradle/gradle.properties. These values must
+    // correspond to an account at repository.springsource.org having
+    // sufficient rights.
+    uploadArchives {
+        onlyIf {
+            project.hasProperty('REPO_USERNAME') && project.hasProperty('REPO_PASSWORD')
+        }
+
+        repositories.mavenDeployer {
+            repository(url: "http://repository.springsource.org/libs-snapshot-local") {
+                authentication(
+                    userName: project.properties['REPO_USERNAME'],
+                    password: project.properties['REPO_PASSWORD'])
+            }
+        }
+    }
+}
+
+
+configure(subprojects - project(":spring-asm") - project(":spring-integration-tests")) {
+
+    task sourcesJar(type: Jar, dependsOn:classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives sourcesJar
+    }
+}
+
 
 project('spring-core') {
     description = 'Spring Core'
