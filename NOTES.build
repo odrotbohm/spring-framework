@@ -1,0 +1,7 @@
+Keep it as simple as possible in order to avoid the need for plugins
+
+e.g.: don't allow for building with maven.  don't generate 'source' poms.
+
+keep all extraneous tasks out of the main 'build' flow
+
+
