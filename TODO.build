@@ -32,6 +32,8 @@ TODO: integrate bundlor plugin
 TODO: support optional dependencies (GRADLE-1749)
 TODO: support provided dependencies
 
+TODO: compare generated pom with manually maintained pom
+
 TODO: add license files, changelogs, readme (verify this is already done)
 TODO: META-INF/INDEX.LIST -- ?
 
