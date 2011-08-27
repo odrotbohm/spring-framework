@@ -49,6 +49,11 @@ configure(subprojects - project(":spring-asm")) {
 project('spring-core') {
     description = 'Spring Core'
     dependencies {
+        // depend on spring-asm project in order to have it show up as a
+        // <dependency> in the generated pom
+        compile project(":spring-asm")
+        // depend directly on the spring-asm jar to avoid errors in
+        // Eclipse/STS
         compile files(project(":spring-asm").jar.archivePath) {
             builtBy project(":spring-asm").jar
         }
