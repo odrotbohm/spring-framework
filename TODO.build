@@ -9,6 +9,7 @@ DONE: build .context
 DONE: build .transaction
 DONE: build .oxm
 TODO: integrate xjc for .oxm
+TODO: remove org.springframework.oxm/target/test-classes
 TODO: fix JibxMarshallerTests and JibxUnmarshallerTests (see TODOs within)
 DONE: build .jms
 DONE: build .jdbc
