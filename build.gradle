@@ -1,12 +1,49 @@
 description = 'Spring Framework'
 
-configure(allprojects) {
+buildscript {
+    repositories {
+        mavenRepo(urls: 'http://repo.jfrog.org/artifactory/gradle-plugins').setChecksums('sha1')
+    }
+    dependencies {
+        classpath(group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '2.0.6')
+    }
+}
+
+configure(subprojects - project(":spring-integration-tests")) {
+    apply plugin: 'maven'
+}
+
+configure(allprojects - project(":spring-integration-tests")) {
+    apply plugin: 'artifactory'
     group = 'org.springframework'
     version = '3.1.0.BUILD-SNAPSHOT'
+
+    // see http://wiki.jfrog.org/confluence/display/RTF/Gradle+Artifactory+Plugin
+    artifactory {
+        contextUrl = 'http://repository.springsource.org'
+        publish {
+            repository {
+                repoKey = 'libs-snapshot-local'
+                username = project.properties['REPO_USERNAME']
+                password = project.properties['REPO_PASSWORD']
+            }
+        }
+        resolve {
+            repository {
+                repoKey = 'spr'
+            }
+        }
+    }
+
+    artifactoryPublish.onlyIf {
+        project.hasProperty('REPO_USERNAME') && project.hasProperty('REPO_PASSWORD')
+    }
 }
 
 configure(subprojects) {
     apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
 
     sourceCompatibility=1.5
     targetCompatibility=1.5
@@ -32,9 +69,6 @@ configure(subprojects) {
         testCompile "org.hamcrest:hamcrest-all:1.1"
     }
 
-    apply plugin: 'eclipse'
-    apply plugin: 'idea'
-
     // servlet-api (2.5) and tomcat-servlet-api (3.0) classpath entries should not be
     // exported to dependent projects in Eclipse to avoid false compilation errors due
     // to changing APIs across these versions
@@ -43,28 +77,7 @@ configure(subprojects) {
             classpath.entries.findAll { entry -> entry.path.contains('servlet-api') }*.exported = false
         }
     }
-}
 
-configure(subprojects - project(":spring-integration-tests")) {
-    apply plugin: 'maven'
-
-    // in order to upload archives, add REPO_USERNAME and REPO_PASSWORD
-    // entries to $HOME/.gradle/gradle.properties. These values must
-    // correspond to an account at repository.springsource.org having
-    // sufficient rights.
-    uploadArchives {
-        onlyIf {
-            project.hasProperty('REPO_USERNAME') && project.hasProperty('REPO_PASSWORD')
-        }
-
-        repositories.mavenDeployer {
-            repository(url: "http://repository.springsource.org/libs-snapshot-local") {
-                authentication(
-                    userName: project.properties['REPO_USERNAME'],
-                    password: project.properties['REPO_PASSWORD'])
-            }
-        }
-    }
 }
 
 
