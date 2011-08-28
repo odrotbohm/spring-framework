@@ -6,6 +6,8 @@ keep all extraneous tasks out of the main 'build' flow
 
 What must be done in order to switch?
 
+* Optional dependencies reflected in POMs
+* Comparison of POMs
 * Test in IDEA
 * Generate equivalent poms to current snapshots
 * Bundlor-generated manifests
