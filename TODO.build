@@ -24,6 +24,7 @@ DONE: build .web.portlet
 DONE: build .web.struts
 DONE: build .test
 TODO: fix and un-@Ignore tests in .test
+TODO: un-comment and fix compilation errors in ReflectionTestUtilsTests#invokeMethodWithReturnValueWithAutoboxingAndUnboxing
 DONE: build .aspects
 TODO: build .spring-library -- ?
 DONE: build .integration-tests
