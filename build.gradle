@@ -2,7 +2,7 @@ description = 'Spring Framework'
 
 buildscript {
     repositories {
-        mavenRepo(urls: 'http://repo.jfrog.org/artifactory/gradle-plugins').setChecksums('sha1')
+        mavenRepo(urls: 'http://repository.springframework.org/plugins-release').setChecksums('sha1')
     }
     dependencies {
         classpath(group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '2.0.6')
@@ -60,7 +60,7 @@ configure(subprojects) {
     }
 
     repositories {
-        mavenRepo name: 'libs-repo', urls: "http://repository.springsource.org/spr"
+        mavenRepo name: 'libs-release', urls: "http://repository.springsource.org/libs-release"
     }
 
     dependencies {
