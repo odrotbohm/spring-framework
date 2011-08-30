@@ -64,7 +64,7 @@ configure(subprojects) {
     }
 
     dependencies {
-        testCompile "junit:junit:4.8.2"
+        testCompile "org.junit:com.springsource.org.junit:4.9.0"
         testCompile "org.easymock:easymock:2.5.1"
         testCompile "org.hamcrest:hamcrest-all:1.1"
     }
@@ -186,9 +186,7 @@ project('spring-context') {
         compile("org.codehaus.jsr166-mirror:jsr166:1.7.0") { provided = true }
         testCompile "commons-dbcp:commons-dbcp:1.2.2"
         testCompile("javax.xml:jaxrpc-api:1.1") { optional = true }
-        testCompile("javax.inject:com.springsource.org.atinject.tck:1.0.0") {
-            exclude group: "org.junit", module: "com.springsource.junit"
-        }
+        testCompile("javax.inject:com.springsource.org.atinject.tck:1.0.0")
         testCompile "org.slf4j:slf4j-log4j12:1.5.3"
     }
 }
@@ -369,7 +367,7 @@ project('spring-test') {
         compile project(":spring-webmvc-portlet")
         compile("javax.activation:activation:1.0") { provided = true }
         compile("org.testng:testng:5.10:jdk15") { optional = true }
-        compile("junit:junit:4.8.2") { optional = true }
+        compile("org.junit:com.springsource.org.junit:4.9.0") { optional = true }
         compile("javax.servlet:servlet-api:2.5") { provided = true }
         testCompile "org.slf4j:slf4j-jcl:1.5.3"
     }
