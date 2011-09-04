@@ -306,7 +306,7 @@ project('spring-orm') {
         compile("org.eclipse.persistence:com.springsource.org.eclipse.persistence:1.0.1") { optional = true }
         compile("org.eclipse.persistence:com.springsource.org.eclipse.persistence.jpa:1.0.1") { optional = true }
         compile("com.oracle.toplink.essentials:com.springsource.oracle.toplink.essentials:2.0.0.b41-beta2") { optional = true }
-        compile("javax.jdo:jdo2-api:2.1") { optional = true }
+        compile("javax.jdo:jdo-api:3.0") { optional = true }
         compile("org.apache.ibatis:ibatis-sqlmap:2.3.4.726") { optional = true }
         testCompile "javax.servlet:servlet-api:2.5"
         testCompile "org.slf4j:slf4j-log4j12:1.5.3"
