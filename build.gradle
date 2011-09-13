@@ -1,8 +1,11 @@
+import org.apache.ivy.util.url.CredentialsStore
+
 description = 'Spring Framework'
 
 buildscript {
     repositories {
-        mavenRepo(urls: 'http://repository.springframework.org/plugins-release').setChecksums('sha1')
+        CredentialsStore.INSTANCE.addCredentials(REALM, HOST, USER, PASS);
+        mavenRepo(urls: 'http://repository.springsource.org/plugins-release').setChecksums('sha1')
     }
     dependencies {
         classpath(group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '2.0.6')
@@ -26,11 +29,6 @@ configure(allprojects - project(":spring-integration-tests")) {
                 repoKey = 'libs-snapshot-local'
                 username = project.properties['REPO_USERNAME']
                 password = project.properties['REPO_PASSWORD']
-            }
-        }
-        resolve {
-            repository {
-                repoKey = 'spr'
             }
         }
     }
@@ -60,6 +58,7 @@ configure(subprojects) {
     }
 
     repositories {
+        CredentialsStore.INSTANCE.addCredentials(REALM, HOST, USER, PASS);
         mavenRepo name: 'libs-release', urls: "http://repository.springsource.org/libs-release"
     }
 
