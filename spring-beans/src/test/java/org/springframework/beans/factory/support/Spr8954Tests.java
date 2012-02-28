@@ -57,6 +57,9 @@ public class Spr8954Tests {
 		Map<String, AnInterface> aiBeans = bf.getBeansOfType(AnInterface.class);
 		assertThat(1, equalTo(aiBeans.size()));
 		assertThat("&foo", equalTo(aiBeans.keySet().iterator().next()));
+
+		Map<String, PredictedType> predictedBeans = bf.getBeansOfType(PredictedType.class);
+		assertThat(predictedBeans.size(), is(1));
 	}
 
 	static class FooFactoryBean implements FactoryBean<Foo>, AnInterface {
