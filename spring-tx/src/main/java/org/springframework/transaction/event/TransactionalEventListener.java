@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2019 the original author or authors.
+ * Copyright 2002-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.springframework.core.annotation.AliasFor;
  *
  * @author Stephane Nicoll
  * @author Sam Brannen
+ * @author Oliver Drotbohm
  * @since 4.2
  */
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
@@ -45,6 +46,11 @@ import org.springframework.core.annotation.AliasFor;
 @Documented
 @EventListener
 public @interface TransactionalEventListener {
+	
+	/**
+	 * An optional identifier to uniquely reference the listener.
+	 */
+	String id() default "";
 
 	/**
 	 * Phase to bind the handling of an event to.

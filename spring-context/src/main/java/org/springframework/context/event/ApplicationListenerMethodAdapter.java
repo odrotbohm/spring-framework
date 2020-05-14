@@ -414,6 +414,9 @@ public class ApplicationListenerMethodAdapter implements GenericApplicationListe
 		return null;
 	}
 
+	protected final Method getMethod() {
+		return this.method;
+	}
 
 	@Override
 	public String toString() {

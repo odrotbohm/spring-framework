@@ -17,6 +17,10 @@
 package org.springframework.transaction.event;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ApplicationListenerMethodAdapter;
@@ -25,6 +29,9 @@ import org.springframework.context.event.GenericApplicationListener;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * {@link GenericApplicationListener} adapter that delegates the processing of
@@ -38,13 +45,19 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  *
  * @author Stephane Nicoll
  * @author Juergen Hoeller
+ * @author Oliver Drotbohm
  * @since 4.2
  * @see ApplicationListenerMethodAdapter
  * @see TransactionalEventListener
  */
-class ApplicationListenerMethodTransactionalAdapter extends ApplicationListenerMethodAdapter {
+class ApplicationListenerMethodTransactionalAdapter extends ApplicationListenerMethodAdapter 
+	implements TransactionalEventListenerMetadata {
 
 	private final TransactionalEventListener annotation;
+	
+	private final List<CompletionCallback> completionCallbacks;
+	
+	private final List<ErrorHandler> errorCallbacks;
 
 
 	public ApplicationListenerMethodTransactionalAdapter(String beanName, Class<?> targetClass, Method method) {
@@ -54,6 +67,8 @@ class ApplicationListenerMethodTransactionalAdapter extends ApplicationListenerM
 			throw new IllegalStateException("No TransactionalEventListener annotation found on method: " + method);
 		}
 		this.annotation = ann;
+		this.completionCallbacks = new ArrayList<>();
+		this.errorCallbacks = new ArrayList<>();
 	}
 
 
@@ -77,11 +92,48 @@ class ApplicationListenerMethodTransactionalAdapter extends ApplicationListenerM
 			}
 		}
 	}
-
-	private TransactionSynchronization createTransactionSynchronization(ApplicationEvent event) {
-		return new TransactionSynchronizationEventAdapter(this, event, this.annotation.phase());
+	
+	@Override
+	public String getId() {
+		return StringUtils.hasText(annotation.id()) ? annotation.id() : getDefaultId();
+	}
+	
+	@Override
+	public TransactionPhase getTransactionPhase() {
+		return annotation.phase();
+	}
+	
+	@Override
+	public void registerCompletionCallback(CompletionCallback callback) {
+		
+		Assert.notNull(callback, "Completion callback must not be null!");
+		this.completionCallbacks.add(callback);
+	}
+	
+	@Override
+	public void registerErrorCallback(ErrorHandler errorHandler) {
+		
+		Assert.notNull(errorHandler, "Error handler must not be null!");
+		this.errorCallbacks.add(errorHandler);
 	}
 
+	private TransactionSynchronization createTransactionSynchronization(ApplicationEvent event) {
+		return new TransactionSynchronizationEventAdapter(this, event, this.annotation.phase(),
+				this.getId(), this.completionCallbacks, this.errorCallbacks);
+	}
+
+	private String getDefaultId() {
+		return getDefaultIdFor(getMethod());
+	}
+
+	static String getDefaultIdFor(Method method) {
+
+		Class<?> type = ClassUtils.getUserClass(method.getDeclaringClass());
+		String methodName = ClassUtils.getQualifiedMethodName(method, type);
+		String parameterTypes = StringUtils.arrayToDelimitedString(method.getParameterTypes(), ", ");
+		
+		return String.format("%s(%s)", methodName, parameterTypes);
+	}
 
 	private static class TransactionSynchronizationEventAdapter implements TransactionSynchronization {
 
@@ -90,13 +142,22 @@ class ApplicationListenerMethodTransactionalAdapter extends ApplicationListenerM
 		private final ApplicationEvent event;
 
 		private final TransactionPhase phase;
+		
+		private final String identifier;
+		
+		private final List<CompletionCallback> completionCallbacks;
+		
+		private final List<ErrorHandler> errorHandlers;
 
 		public TransactionSynchronizationEventAdapter(ApplicationListenerMethodAdapter listener,
-				ApplicationEvent event, TransactionPhase phase) {
+				ApplicationEvent event, TransactionPhase phase, String identifier, List<CompletionCallback> completionCallbacks, List<ErrorHandler> errorHandlers) {
 
 			this.listener = listener;
 			this.event = event;
 			this.phase = phase;
+			this.identifier = identifier;
+			this.completionCallbacks = completionCallbacks;
+			this.errorHandlers = errorHandlers;
 		}
 
 		@Override
@@ -125,8 +186,34 @@ class ApplicationListenerMethodTransactionalAdapter extends ApplicationListenerM
 		}
 
 		protected void processEvent() {
-			this.listener.processEvent(this.event);
+			
+			try {
+			
+				this.listener.processEvent(this.event);
+
+				for (CompletionCallback callback : completionCallbacks) {
+					callback.onCompletion(event, identifier);
+				}
+			
+			} catch (RuntimeException t) {
+				
+				boolean exceptionHandled = false;
+				
+				for (ErrorHandler handler : errorHandlers) {
+					
+					RuntimeException result = handler.onError(event, identifier, t);
+					
+					if (result != null) {
+						throw result;
+					} else {
+						exceptionHandled = true;
+					}
+				}
+				
+				if (!exceptionHandled) {
+					throw t;
+				}
+			}
 		}
 	}
-
 }
